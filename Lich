@@ -1,2 +1,0 @@
-22/07: làm xong BE+FE cho đăng ký, đăng nhập, đăng xuất có xử lí các lỗi, render HomePage, ProfilePage cho role user, dừng ở xủ lí đăng xuất chưa xóa session
-23/07: làm xong UC quên mật khẩu, đổi mật khẩu, update thông tin cá nhân user, login có phân role, hiển thị trang /admin chưa có logic BE.
