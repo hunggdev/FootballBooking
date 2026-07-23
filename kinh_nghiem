@@ -1,0 +1,41 @@
+luồng FE: main.tsx -> routes (khai báo api) -> layout -> Page (render các components) -> Component(form) -> State (quản lí trạng thái, theo dõi các giá trị, hàm) -> Service (liên kết BE) -> types (định nghĩa kiểu, interface cho đối tượng)
+luồng BE: server.js (khởi động server) -> Routes (định nghĩa api ứng với mỗi func) -> Controller (logic func)
+
+secure: process.env.NODE_ENV === 'production',
+sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', 
+    -> cho phép đọc dữ liệu trên cookies ở local hoặc production
+
+f12 -> aplication để kiểm tra cookies
+f12 -> network để kiểm tra các response và request
+f12 -> console để kiểm tra các lỗi runtime
+f12 -> sources để kiểm tra các file js
+
+terminal BE -> kiểm tra lỗi hệ thống
+
+try catch error:
+-> dùng để bắt lỗi từ BE gửi về
+-> xử lý lỗi tại client
+-> tránh lỗi crash app
+-> trả về response đẹp mắt, dễ hiểu, có message
+
+
+Frontend: 
+- zustand: quản lí state tập trung
+- tanstack query: quản lí data và api
+- axios: xử lý api
+- zod: validate dữ liệu đầu vào của form, kiểm tra tính hợp lệ, đúng định dạng
+
+Backend: 
+- express: framework web
+- prisma: ORM ORM (Object-Relational Mapping) là một kỹ thuật lập trình cho phép ánh xạ các đối tượng (Objects) trong ngôn ngữ lập trình (như TypeScript, Java, C#) tới các bảng (Tables) trong cơ sở dữ liệu quan hệ (như PostgreSQL, MySQL). 
+    -> Giúp lập trình viên thao tác với database thông qua các đối tượng và phương thức của ngôn ngữ lập trình thay vì phải viết câu lệnh SQL thuần.
+
+Debug cơ bản nhất: đọc lỗi terminal/devtool -> tìm đến logic gây lỗi -> comment code để cô lập lỗi -> check lần lượt
+
+href vs navigate: điều sử dụng để chuyển trang, nhưng navigate chỉ render những component liên quan, href thì render lại toàn bộ -> hiệu năng kém, gây mất state, nên hạn chế dùng khi ở trong react app
+
+đặt tên Page, component, features theo cú quy tắc: PascalCase (viết hoa chữ cái đầu mỗi từ)
+    ví dụ: DashboardPage, ManageCustomerPage, ...
+    tên folder: camelCase
+    ví dụ: features, pages, components
+    

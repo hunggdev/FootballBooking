@@ -1,5 +1,5 @@
 import {create} from "zustand";
-import {toast, Toaster} from "sonner";
+import {toast} from "sonner";
 import { authService } from "@/services/authService";
 import type { AuthState } from "@/types/store";
 
@@ -49,14 +49,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     signOut: async () => {
         try {
             set({loading: true})
-            get().clearState();
             await authService.signOut();
             toast.success("Đăng xuất thành công");
         } catch (error) {
             console.error(error);
             toast.error("Đăng xuất không thành công");
         } finally {
-            set({loading: false})
+            get().clearState(); // luôn xóa state dù API thành công hay thất bại
         }
     },
 
@@ -84,10 +83,37 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             if(!user){
                 await fetchMe();
             }
+            toast.success("Refresh token thành công");
         } catch (error) {
             console.error(error);
             toast.error("Refresh token không thành công");
             get().clearState();
+        } finally {
+            set({loading: false});
+        }
+    },
+
+    forgotPassword: async (email: string) => {
+        try {
+            set({loading: true});
+            await authService.forgotPassword(email);
+            toast.success("Email đã được gửi");
+        } catch (error) {
+            console.error(error);
+            toast.error("Email không tồn tại");
+        } finally {
+            set({loading: false});
+        }
+    },
+
+    resetPassword: async (token: string, newPassword: string) => {
+        try {
+            set({loading: true});
+            await authService.resetPassword(token, newPassword);
+            toast.success("Đặt lại mật khẩu thành công");
+        } catch (error) {
+            console.error(error);
+            toast.error("Đặt lại mật khẩu không thành công");
         } finally {
             set({loading: false});
         }

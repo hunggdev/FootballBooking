@@ -6,6 +6,11 @@ import authRoute from './routes/authRoute.js';
 import cookieParser from 'cookie-parser';
 import userRoute from './routes/userRoute.js';
 import { protectedRoute } from './middlewares/authMiddleware.js';
+import { cleanExpiredUsers } from './utils/cleanExpiredUsers.js';
+import customerRoute from './routes/customerRoute.js';
+import cron from 'node-cron';
+
+// ----------------------------------------------
 dotenv.config();
 
 const app = express();
@@ -23,14 +28,20 @@ app.use('/api/auth', authRoute);
 // private routes
 app.use(protectedRoute);
 app.use('/api/users', userRoute)
+app.use('/api/customers', customerRoute);
 
-
+// ------------------------------------------------
 
 connectDB().then(() => {
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
     });
 })
+
+cron.schedule('*/1 * * * *', () => {
+    cleanExpiredUsers();
+});
+
 
 
 

@@ -4,7 +4,8 @@ import jwt from "jsonwebtoken";
 import crypto from 'crypto';
 import { sendEmail } from '../utils/sendEmail.js';
 
-const ACCESS_TOKEN_TTL = "30s";
+
+const ACCESS_TOKEN_TTL = 1 * 24 * 60 * 60 * 1000;
 const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000; 
 
 export const signUp = async (req, res) => {
@@ -153,10 +154,15 @@ export const signOut = async (req, res) => {
         const token = req.cookies?.refreshToken;
         console.log("👉 Token nhận được từ Cookie là:", token);
 
-        if(token) {
+        if (!token) {
+            return res.status(401).json({
+                message: "Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn."
+            });
+        }
+
             // xoa refresh token tron Session
             try {
-                await prisma.session.deleteMany({
+                await prisma.session.deleteMany ({
                     where: { refreshToken: token }
                 });
             } catch (dbError) {
@@ -168,9 +174,8 @@ export const signOut = async (req, res) => {
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             });
-        }
+            return res.status(200).json({ message: "Đăng xuất thành công" });
 
-        return res.sendStatus(204);
     } catch (error) {
         console.log('Lỗi khi gọi signOut', error);
         return res.status(500).json({message: "Lỗi hệ thống"});
@@ -215,6 +220,7 @@ export const verifyEmail = async (req, res) => {
     }
 };
 
+
 export const refreshToken = async (req, res) => {
     try {
         // lấy refresh token từ cookie
@@ -250,5 +256,153 @@ export const refreshToken = async (req, res) => {
     } catch (error) {
         console.error("Lỗi khi gọi refreshToken",error);
         return res.status(500).json({message: "Lỗi hệ thống"})
+    }
+}
+
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ message: "Email không được để trống" });
+        }
+
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user) {
+            return res.status(404).json({ message: "Email không chính xác" });
+        }
+
+        // Xóa token reset cũ nếu có
+        await prisma.passwordResetToken.deleteMany({
+            where: { userId: user.userId }
+        });
+
+        try {
+            // tạo activation token
+            const resetToken = jwt.sign({ userId: user.userId }, process.env.RESET_PASSWORD_TOKEN_SECRET, { expiresIn: '15m' });
+
+            const newPasswordResetToken = await prisma.passwordResetToken.create({
+                data: {
+                    userId: user.userId,
+                    token: resetToken,
+                    used: false,
+                    expiresAt: new Date(Date.now() + 15 * 60 * 1000)    //15 phút
+                }
+            });
+
+            // console.log(newPasswordResetToken);
+
+            // const all = await prisma.passwordResetToken.findMany();
+
+            // console.log("After create:", all);
+
+            // tạo URL để xác minh
+            const verificationUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}/reset-password?token=${resetToken}`;
+
+
+            // gửi email
+            const messageHtml = `
+                <h2>Xin chào ${user.fullName},</h2>
+                <p>Vui lòng click vào link bên dưới để xác thực reset mật khẩu (link hết hạn sau 15 phút):</p>
+                <a href="${verificationUrl}" style="padding: 10px 20px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px;">Xác thực reset mật khẩu</a>
+                <br/><br/>
+                <p>Hoặc copy link này dán vào trình duyệt: <br> <a href="${verificationUrl}">${verificationUrl}</a></p>
+            `;
+
+            await sendEmail({
+                to: user.email,
+                subject: 'Xác thực cấp lại mật khẩu',
+                html: messageHtml
+            });
+
+            return res.status(200).json({message: "Email reset password đã được gửi"})
+        } catch (processError) {
+            console.error('Lỗi xử lý cấp lại mật khẩu:', processError);
+            return res.status(500).json({ 
+                message: "Không thể gửi email cấp lại mật khẩu. Vui lòng kiểm tra lại cấu hình EMAIL_USER và EMAIL_PASS trong file .env",
+                errorDetail: processError.message
+            });
+        }
+
+    } catch (error) {
+        console.log('Lỗi khi gọi forgotPassword', error);
+        return res.status(500).json({ message: "Lỗi hệ thống" });
+    }
+}
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        console.log("Body:", req.body);
+
+        if (!token || !newPassword) {
+            return res.status(400).json({ message: "Token và mật khẩu không được để trống" });
+        }
+
+        console.log(token)
+ 
+        const passwordResetToken = await prisma.passwordResetToken.findFirst({
+            where: {
+                token: token
+            }
+        });
+
+        const all = await prisma.passwordResetToken.findMany({
+            where: {
+                token: token
+            }
+        });
+
+        console.log(all);
+
+        if (!passwordResetToken) {
+            return res.status(403).json({ message: "Token không hợp lệ hoặc đã hết hạn" });
+        }
+
+        if (passwordResetToken.expiresAt < new Date()) {
+            await prisma.passwordResetToken.delete({ where: { token: passwordResetToken.token } });
+            return res.status(403).json({ message: "Token đã hết hạn. Vui lòng yêu cầu lại" });
+        }
+
+        if (passwordResetToken.used) {
+            return res.status(400).json({
+                message: "Token đã được sử dụng."
+            });
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.RESET_PASSWORD_TOKEN_SECRET);
+        } catch (error) {
+            console.log("Lỗi khi verify token", error);
+            return res.status(500).json({message: "Lỗi hệ thống"});
+        }
+
+        if (decoded.userId !== passwordResetToken.userId) {
+            return res.status(400).json({
+                message: "Token không hợp lệ."
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await prisma.user.update({
+            where: { userId: passwordResetToken.userId },
+            data: { passwordHash: hashedPassword }
+        });
+
+        await prisma.passwordResetToken.update({
+            where: {
+                id: passwordResetToken.id
+            },
+            data: {
+                used: true
+            }
+        });
+
+        // await prisma.passwordResetToken.delete({ where: { token: token } });
+        return res.status(200).json({ message: "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập" });
+    } catch (error) {
+        console.log('Lỗi khi gọi resetPassword', error);
+        return res.status(500).json({ message: "Lỗi hệ thống" });
     }
 }

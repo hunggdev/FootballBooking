@@ -21,7 +21,7 @@ export const authService = {
 
     signOut: async() => {
         try {
-            const res = await api.post("/auth/signout", {}, {withCredentials: true});
+            await api.post("/auth/signout", {}, {withCredentials: true});
         } catch (error) {
             throw error;
         }
@@ -42,6 +42,24 @@ export const authService = {
             return res.data.accessToken;
         } catch (error) {
             throw error;    
+        }
+    },
+
+    forgotPassword: async(email: string) => {
+        try {
+            const res = await api.post("/auth/forgot-password", {email}, {withCredentials: true});
+            return res.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    resetPassword: async(token: string, newPassword: string) => {
+        try {
+            const res = await api.post("/auth/reset-password", {token, newPassword}, {withCredentials: true});
+            return res.data;
+        } catch (error) {
+            throw error;
         }
     },
 };

@@ -1,9 +1,10 @@
 import express from 'express'
-import { authMe, test } from '../controllers/userController.js';
+import { authMe, update, changePassword } from '../controllers/userController.js';
 
 const router = express.Router();
 
 router.get("/me", authMe);
-router.get("/test", test);
+router.patch("/update", update);
+router.patch("/change-password", changePassword)
 
 export default router;

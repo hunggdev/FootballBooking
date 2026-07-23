@@ -1,0 +1,11 @@
+sau khi sua schema
+-> npx prisma migrate dev --name update_schema
+
+reset
+->  npx prisma migrate reset
+
+npm install      # nếu cần
+npx prisma generate   # nếu vừa pull code mới
+npm run dev
+
+npx prisma generate
