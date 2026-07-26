@@ -55,3 +55,49 @@ model PasswordResetToken {
   @@index([userId])
   @@map("password_reset_tokens")
 }
+
+enum FieldStatus {
+    ACTIVE
+    MAINTENANCE
+    INACTIVE
+  }
+enum FieldType {
+  FIVE
+  SEVEN
+}
+model Field {
+
+  fieldId      Int         @id @default(autoincrement()) @map("field_id")
+  name         String
+  description  String?
+  image        String?
+  pricePerHour Decimal     @db.Decimal(10,2)
+  openTime     String
+  closeTime    String
+  status       FieldStatus @default(ACTIVE)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  fieldType    FieldType   @map("field_type")
+  @@map("field")
+
+}
+
+enum ServiceStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Service {
+  serviceId   Int            @id @default(autoincrement()) @map("service_id")
+  name        String
+  description String?
+  image       String?
+  price       Decimal        @db.Decimal(10,2)
+  quantity    Int           @default(0)
+  status      ServiceStatus  @default(ACTIVE)
+
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("service")
+}

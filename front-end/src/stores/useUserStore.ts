@@ -1,9 +1,8 @@
 import { create } from "zustand";
 import { toast } from "sonner";
 
-import { userService } from "@/services/userService";
 import type { UserState } from "@/types/store";
-
+import { userService } from "@/services/userService";
 export const useUserStore = create<UserState>((set) => ({
   user: null,
   loading: false,
