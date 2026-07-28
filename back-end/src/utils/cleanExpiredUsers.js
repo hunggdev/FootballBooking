@@ -2,11 +2,11 @@ import { prisma } from '../config/database.js';
 
 export const cleanExpiredUsers = async () => {
     try {
-        const expiredTime = new Date(Date.now() - 1 * 60 * 1000); 
+        const expiredTime = new Date(Date.now() - 30 * 60 * 1000); 
 
         const deletedUsers = await prisma.user.deleteMany({
             where: {
-                status: "inactive",
+                status: "INACTIVE",
                 createdAt: {
                     lt: expiredTime
                 }

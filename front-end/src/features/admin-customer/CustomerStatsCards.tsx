@@ -3,34 +3,36 @@ import { Users, UserPlus, ShieldCheck, ShieldX } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface Props {
-  totalCustomers: number;
-  newUsers: number;
+  customers: number,
+  totalUserInThisMonth: number,
+  online: number,
+  bannedCustomers: number,
 }
 
-export function CustomerStatsCards({totalCustomers, newUsers}: Props) {
+export function CustomerStatsCards({customers, totalUserInThisMonth, online, bannedCustomers}: Props) {
 
   const data = [{
     id: "1",
     label: "Tổng khách hàng",
-    value: totalCustomers,
+    value: customers,
     icon: Users
   },
   {
     id: "2",
     label: "Khách hàng mới (tháng)",
-    value: newUsers,
+    value: totalUserInThisMonth,
     icon: UserPlus
   },
   {
     id: "3",
     label: "Đang hoạt động",
-    value: "2",
+    value: online,
     icon: ShieldCheck
   },
   {
     id: "4",
     label: "Đã khóa",
-    value: "2",
+    value: bannedCustomers,
     icon: ShieldX
   },]
 

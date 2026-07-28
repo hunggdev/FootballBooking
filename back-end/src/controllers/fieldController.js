@@ -36,6 +36,7 @@ const validateField = ({
 
   return null;
 };
+
 const checkFieldConflict = async ({
   fieldId,
   name,
@@ -329,6 +330,7 @@ export const deleteField = async (req, res) => {
     });
   }
 };
+
 // Khi hoàn thành module Booking,
 // kiểm tra xem sân còn lịch đặt có trạng thái
 // PENDING / CONFIRMED / PLAYING hay không.

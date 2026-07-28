@@ -50,24 +50,12 @@ export function ManageField() {
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
-
-  const [dialogOpen, setDialogOpen] =
-    useState(false);
-
-  const [detailOpen, setDetailOpen] =
-    useState(false);
-
-  const [editingField, setEditingField] =
-    useState<Field | null>(null);
-
-  const [detailFieldId, setDetailFieldId] =
-    useState<number | null>(null);
-
-  const [formError, setFormError] =
-    useState<string | null>(null);
-
-  const [listError, setListError] =
-    useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [editingField, setEditingField] = useState<Field | null>(null);
+  const [detailFieldId, setDetailFieldId] = useState<number | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [listError, setListError] = useState<string | null>(null);
 
   const filteredFields = useMemo(() => {
     return fields.filter((field) => {
@@ -201,11 +189,6 @@ export function ManageField() {
       <PageHeader
         title="Quản lý sân bóng"
         subtitle="Quản lý thông tin sân bóng của hệ thống"
-        action={
-          <Button onClick={handleAdd}>
-            Thêm sân bóng
-          </Button>
-        }
       />
 
       <FieldFilterBar
@@ -213,6 +196,7 @@ export function ManageField() {
         onSearchChange={setSearch}
         status={status}
         onStatusChange={setStatus}
+        onClick={handleAdd}
       />
 
       {listError && (
@@ -228,22 +212,21 @@ export function ManageField() {
         onDelete={handleDelete}
       />
 
-    <FieldFormDialog
-  key={editingField?.fieldId ?? "create"}
-  open={dialogOpen}
-  onOpenChange={setDialogOpen}
-  initialData={editingField}
-  onSubmit={handleSubmit}
-  isSubmitting={createField.isPending || updateField.isPending}
-  serverError={formError}
-/>
+        <FieldFormDialog
+      key={editingField?.fieldId ?? "create"}
+      open={dialogOpen}
+      onOpenChange={setDialogOpen}
+      initialData={editingField}
+      onSubmit={handleSubmit}
+      isSubmitting={createField.isPending || updateField.isPending}
+      serverError={formError}
+    />
 
       <FieldDetailDialog
         fieldId={detailFieldId}
         open={detailOpen}
         onOpenChange={setDetailOpen}
       />
-
     </>
   );
 }

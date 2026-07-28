@@ -202,11 +202,6 @@ export function ManageService() {
       <PageHeader
         title="Quản lý dịch vụ"
         subtitle="Quản lý các dịch vụ đi kèm sân bóng của hệ thống"
-        action={
-          <Button onClick={handleAdd}>
-            Thêm dịch vụ
-          </Button>
-        }
       />
 
       <ServiceFilterBar
@@ -214,6 +209,7 @@ export function ManageService() {
         onSearchChange={setSearch}
         status={status}
         onStatusChange={setStatus}
+        onClick={handleAdd}
       />
 
       {listError && (

@@ -49,35 +49,20 @@ export function FieldsTable({
   return (
     <Card className="mt-5">
       <CardContent className="p-0">
-
         <Table>
-
           <TableHeader>
-
             <TableRow>
-
               <TableHead>Ảnh</TableHead>
-
               <TableHead>Tên sân</TableHead>
-
               <TableHead>Loại sân</TableHead>
-
               <TableHead>Giá / giờ</TableHead>
-
               <TableHead>Khung giờ</TableHead>
-
               <TableHead>Trạng thái</TableHead>
-
-              <TableHead className="text-right">
-                Hành động
-              </TableHead>
-
+              <TableHead className="text-right">Hành động</TableHead>
             </TableRow>
-
           </TableHeader>
 
           <TableBody>
-
             {fields.length === 0 && (
               <TableRow>
                 <TableCell
@@ -88,11 +73,8 @@ export function FieldsTable({
                 </TableCell>
               </TableRow>
             )}
-
             {fields.map((field) => (
-
               <TableRow key={field.fieldId}>
-
                 <TableCell>
 
                   {field.image ? (
@@ -106,7 +88,6 @@ export function FieldsTable({
                       No Image
                     </div>
                   )}
-
                 </TableCell>
 
                 <TableCell className="font-medium">

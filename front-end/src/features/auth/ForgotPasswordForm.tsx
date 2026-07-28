@@ -10,7 +10,12 @@ import { useAuthStore } from "@/stores/useAuthStore"
 
 
 const ForgotPasswordSchema = z.object({
-  email: z.email("Email không hợp lệ").min(1, "Email không được để trống"),
+  email: z
+    .string()
+    .trim()
+    .min(1, "Email không được để trống")
+    .email("Email không hợp lệ")
+    .max(255, "Email tối đa 255 ký tự"),
 });
 
 type ForgotPasswordFormValues = z.infer<typeof ForgotPasswordSchema>;

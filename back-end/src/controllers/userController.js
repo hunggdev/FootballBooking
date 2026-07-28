@@ -1,6 +1,7 @@
 import { decode } from "jsonwebtoken";
 import { prisma } from "../config/database.js";
 import bcrypt from "bcrypt";
+import { validateEmail, validatePhone, validateUser } from "../utils/validateUsers.js";
 
 export const authMe = async (req, res) => {
     try {
@@ -24,6 +25,12 @@ export const update = async (req, res) => {
     try {
         const {fullName, phone} = req.body;
         const userId = req.user.userId;
+
+        const error = validatePhone(phone);
+        if (error) {
+            return res.status(400).json({ message: error });
+        }
+
         const updatedUser = await prisma.user.update({
             where: {
                 userId,
@@ -65,6 +72,11 @@ export const changePassword = async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
         if (!isPasswordValid) {
             return res.status(401).json({message: "Mật khẩu không chính xác"});
+        }
+
+        const errorPassword = validatePassword(newPassword);
+        if (errorPassword) {
+            return res.status(400).json({message: errorPassword});
         }
 
         if (newPassword !== confirmPassword) {

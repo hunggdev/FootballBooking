@@ -18,9 +18,42 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useUserStore } from "@/stores/useUserStore";
 
 const ChangePasswordSchema = z.object({
-  password: z.string().nonempty("Mật khẩu không được để trống").min(8, "Mật khẩu phải có ít nhất 8 ký tự"),
-  newPassword: z.string().nonempty("Mật khẩu không được để trống").min(8, "Mật khẩu phải có ít nhất 8 ký tự"),
-  confirmPassword: z.string().nonempty("Mật khẩu không được để trống").min(8, "Mật khẩu phải có ít nhất 8 ký tự"),
+  password: z
+    .string()
+    .min(1, "Mật khẩu không được để trống")
+    .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+    .max(64, "Mật khẩu tối đa 64 ký tự")
+    .regex(/[a-z]/, "Mật khẩu phải có ít nhất 1 chữ thường")
+    .regex(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ hoa")
+    .regex(/[0-9]/, "Mật khẩu phải có ít nhất 1 chữ số")
+    .regex(
+      /[!@#$%^&*(),.?":{}|<>]/,
+      "Mật khẩu phải có ít nhất 1 ký tự đặc biệt"
+    ),
+  newPassword: z
+  .string()
+  .min(1, "Mật khẩu không được để trống")
+  .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+  .max(64, "Mật khẩu tối đa 64 ký tự")
+  .regex(/[a-z]/, "Mật khẩu phải có ít nhất 1 chữ thường")
+  .regex(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ hoa")
+  .regex(/[0-9]/, "Mật khẩu phải có ít nhất 1 chữ số")
+  .regex(
+    /[!@#$%^&*(),.?":{}|<>]/,
+    "Mật khẩu phải có ít nhất 1 ký tự đặc biệt"
+  ),
+  confirmPassword: z
+  .string()
+  .min(1, "Mật khẩu không được để trống")
+  .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+  .max(64, "Mật khẩu tối đa 64 ký tự")
+  .regex(/[a-z]/, "Mật khẩu phải có ít nhất 1 chữ thường")
+  .regex(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ hoa")
+  .regex(/[0-9]/, "Mật khẩu phải có ít nhất 1 chữ số")
+  .regex(
+    /[!@#$%^&*(),.?":{}|<>]/,
+    "Mật khẩu phải có ít nhất 1 ký tự đặc biệt"
+  ),
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: "Mật khẩu mới và xác nhận mật khẩu không khớp",
   path: ["confirmPassword"],

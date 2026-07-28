@@ -12,7 +12,7 @@ export const useFields = () => {
 
 export const useField = (fieldId: number) => {
     return useQuery({
-        queryKey: ["fields", fieldId],
+        queryKey: ["fields", fieldId], 
         queryFn: () => fieldService.getFieldById(fieldId),
         enabled: !!fieldId,
         retry: false

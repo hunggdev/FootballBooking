@@ -9,3 +9,5 @@ npx prisma generate   # nếu vừa pull code mới
 npm run dev
 
 npx prisma generate
+
+npx prisma db seed

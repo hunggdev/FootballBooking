@@ -26,8 +26,8 @@ export function AccountHeader({ user }: { user: User }) {
         <p className="text-base font-semibold">{user.fullName}</p>
         <p className="text-sm opacity-60">{user.email}</p>
         <div className="mt-1 flex gap-2">
-          <Badge variant="outline">{roleLabel[user.role]}</Badge>
-          <Badge variant="outline">{statusLabel[user.status]}</Badge>
+          <Badge variant="outline">{roleLabel[user.role.toLowerCase()]}</Badge>
+          <Badge variant="outline">{statusLabel[user.status.toLowerCase()]}</Badge>
         </div>
       </div>
     </div>

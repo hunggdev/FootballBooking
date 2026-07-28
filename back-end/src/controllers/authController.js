@@ -3,32 +3,25 @@ import { prisma } from "../config/database.js";
 import jwt from "jsonwebtoken";
 import crypto from 'crypto';
 import { sendEmail } from '../utils/sendEmail.js';
-
+import { validateUser, duplicateUser } from '../utils/validateUsers.js';
 
 const ACCESS_TOKEN_TTL = 1 * 24 * 60 * 60 * 1000;
 const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000; 
 
+
 export const signUp = async (req, res) => {
     try {
         const { fullName, email, phone, password } = req.body;
+        console.log(fullName)
 
-        if(!fullName || !email || !phone || !password) {
-            return res.status(400).json({ message: "Tất cả các trường không được để trống" });
+        const validationError = validateUser({ fullName, email, phone, password });
+        if (validationError) {
+          return res.status(400).json({ message: validationError });
         }
-
-    // kiểm tra email hoặc fullName đã tồn tại hay chưa
-    const duplicate = await prisma.user.findFirst({
-        where: {
-            OR: [
-                { email: email },
-                { fullName: fullName }
-            ]
+        const duplicate = await duplicateUser(email, phone);
+        if (duplicate) {
+          return res.status(400).json({ message: duplicate });
         }
-    });
-
-    if (duplicate) {
-        return res.status(400).json({ message: "Email hoặc tên đã tồn tại" });
-    }
 
     // mã hóa password
     const hashedPassword = await bcrypt.hash(password, 10); // salt = 10
@@ -40,8 +33,8 @@ export const signUp = async (req, res) => {
             email,
             phone,
             passwordHash: hashedPassword,
-            role: "user",
-            status: "inactive"
+            role: "CUSTOMER",
+            status: "INACTIVE"
         }
     });
 
@@ -113,7 +106,7 @@ export const signIn = async (req, res) => {
         }
 
         // kiem tra trang thai kich hoat
-        if(user.status !== "active") {
+        if(user.status !== "ACTIVE") {
             return res.status(403).json({ message: "Tài khoản của bạn chưa được kích hoạt. Vui lòng kiểm tra email để kích hoạt." });
         }
         // neu khop, tao accessToken voi jwt
@@ -152,7 +145,6 @@ export const signOut = async (req, res) => {
     try {
         // lay refresh token tu cookie
         const token = req.cookies?.refreshToken;
-        console.log("👉 Token nhận được từ Cookie là:", token);
 
         if (!token) {
             return res.status(401).json({
@@ -199,14 +191,14 @@ export const verifyEmail = async (req, res) => {
             return res.status(400).json({ message: "Người dùng không tồn tại" });
         }
 
-        if (user.status === 'active') {
+        if (user.status === 'ACTIVE') {
             return res.status(400).json({ message: "Tài khoản đã được kích hoạt trước đó" });
         }
 
         // cap nhat trang thai active
         await prisma.user.update({
             where: { email: decoded.email },
-            data: { status: 'active' }
+            data: { status: 'ACTIVE' }
         });
 
         return res.status(200).json({ message: "Tài khoản đã được kích hoạt thành công. Bây giờ bạn có thể đăng nhập." });
@@ -290,13 +282,6 @@ export const forgotPassword = async (req, res) => {
                 }
             });
 
-            // console.log(newPasswordResetToken);
-
-            // const all = await prisma.passwordResetToken.findMany();
-
-            // console.log("After create:", all);
-
-            // tạo URL để xác minh
             const verificationUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}/reset-password?token=${resetToken}`;
 
 
