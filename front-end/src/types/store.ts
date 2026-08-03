@@ -17,10 +17,16 @@ export interface AuthState {
     resetPassword: (token: string, newPassword: string) => Promise<void>;    
 }
 
+export interface ChatBotResponse {
+    answer: string;
+}
+
 export interface UserState {
     user: User | null;
     loading: boolean;
 
     updateMe: (fullName: string, phone: string) => Promise<void>;
     changePassword: (password: string, newPassword: string, confirmPassword: string) => Promise<void>;
+    chatbot: (question: string) => Promise<ChatBotResponse | null>;
 }
+

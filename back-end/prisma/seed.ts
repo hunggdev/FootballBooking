@@ -2,6 +2,30 @@ import { prisma } from "../src/config/database.js";
 
 const users = [
   {
+    fullName: "Viết Hùng",
+    email: "viethung67895@gmail.com",
+    phone: "0866142135",
+    passwordHash: "$2b$10$sBXdNBaUWrGkiJ3FVvNExuSsxQ3nw9v/jtkASVfP2dVucTNAeKx82",
+    role: "ADMIN",
+    status: "ACTIVE",
+  },
+  {
+    fullName: "Lê Lan",
+    email: "23t1020297@husc.edu.vn",
+    phone: "0866145135",
+    passwordHash: "$2b$10$80MxMe0mT43KTsABpFH5F.loX6urqVmgm5OX3etztSEX9rNxk.9hy",
+    role: "ADMIN",
+    status: "ACTIVE",
+  },
+  {
+    fullName: "ACC PHỤ",
+    email: "23t1020197@husc.edu.vn",
+    phone: "0912375601",
+    passwordHash: "$2b$10$1VNs8DJvjncXtuqXTT9jiuBMC6pZa3XXz7RGkBj509GaQg.lNlxQO",
+    role: "CUSTOMER",
+    status: "ACTIVE",
+  },
+  {
     fullName: "user01",
     email: "user01@gmail.com",
     phone: "0912345601",

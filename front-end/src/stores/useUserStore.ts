@@ -37,5 +37,20 @@ export const useUserStore = create<UserState>((set) => ({
     } finally {
       set({ loading: false });
     } 
+  },
+
+  chatbot: async (question) => {
+    try {
+        set({ loading: true });
+
+        return await userService.chatbot(question);
+
+    } catch (error) {
+        console.error(error);
+        toast.error("Chatbot không thành công");
+        return null;
+    } finally {
+        set({ loading: false });
+    }
   }
 }));

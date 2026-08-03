@@ -16,6 +16,7 @@ interface FieldFilterBarProps {
   status: string;
   onStatusChange: (value: string) => void;
   onClick: () => void;
+  onChangePage: (value: number) => void;
 }
 
 export function FieldFilterBar({
@@ -23,7 +24,8 @@ export function FieldFilterBar({
   onSearchChange,
   status,
   onStatusChange,
-  onClick
+  onClick,
+  onChangePage
 }: FieldFilterBarProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 border p-4">
@@ -37,7 +39,7 @@ export function FieldFilterBar({
 
         <Select
         value={status}
-        onValueChange={(value) => onStatusChange(value ?? "all")}
+        onValueChange={(value) => {onStatusChange(value ?? "all"); onChangePage(1); }}
         >
         <SelectTrigger className="w-44 border">
           <SelectValue placeholder="Lọc theo trạng thái" />

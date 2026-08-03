@@ -1,0 +1,11 @@
+BUG 3 — authController.js dòng 50: Hardcode localhost trong verification URL
+// ❌ URL luôn trỏ về localhost dù deploy lên production
+const verificationUrl = `http://localhost:${process.env.PORT || 5001}/api/auth/verify?token=...`;
+-> Cần fix lại khi lên product  
+
+BUG 10 — MatchFormDialog: validate() luôn trả về null
+const validate = () => {
+  return null;  // không validate gì cả!
+};
+Hậu quả: Có thể submit form với fieldType = "", costRule = "", minAge = 0 — data không hợp lệ gửi lên server.
+-> Cần fix lại

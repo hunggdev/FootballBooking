@@ -36,7 +36,7 @@ const navGroups: NavGroup[] = [
     items: [
       { id: "fields", label: "Sân bóng", path: "/admin/fields", icon: LayoutGrid, hasChevron: true },
       { id: "services", label: "Dịch vụ", path: "/admin/services", icon: PackageOpen, hasChevron: true },
-      { id: "odds", label: "Kèo đấu", path: "/admin/odds", icon: Trophy, hasChevron: true },
+      { id: "odds", label: "Kèo đấu", path: "/admin/matches", icon: Trophy, hasChevron: true },
       { id: "odds-requests", label: "Yêu cầu kèo", path: "/admin/odds/requests", icon: HelpCircle, hasChevron: true },
       { id: "bookings", label: "Đặt sân", path: "/admin/bookings", icon: CalendarCheck, hasChevron: true },
       { id: "booking-history", label: "Lịch sử đặt sân", path: "/admin/bookings/history", icon: History, hasChevron: true },

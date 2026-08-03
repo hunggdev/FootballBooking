@@ -10,6 +10,7 @@ import { cleanExpiredUsers } from "./utils/cleanExpiredUsers.js";
 import customerRoute from "./routes/customerRoute.js";
 import fieldRoute from "./routes/fieldRoute.js";
 import serviceRoute from "./routes/serviceRoute.js";
+import matchRoute from "./routes/matchRoute.js";
 import cron from "node-cron";
 
 // ----------------------------------------------
@@ -32,6 +33,7 @@ app.use("/api/users", userRoute);
 app.use("/api/customers", customerRoute);
 app.use("/api/fields", fieldRoute);
 app.use("/api/services", serviceRoute);
+app.use("/api/matches", matchRoute);
 
 // ------------------------------------------------
 

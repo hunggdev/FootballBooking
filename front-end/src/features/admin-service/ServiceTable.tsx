@@ -18,6 +18,8 @@ interface Props {
   onView: (service: Service) => void;
   onEdit: (service: Service) => void;
   onDelete: (service: Service) => void;
+  currentPage: number;
+  pageSize: number;
 }
 
 const statusLabel: Record<Service["status"], string> = {
@@ -38,7 +40,14 @@ export function ServiceTable({
   onView,
   onEdit,
   onDelete,
+  currentPage,
+  pageSize,
 }: Props) {
+
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const currentServices = services.slice(startIndex, endIndex);
+
   return (
     <Card className="mt-5">
       <CardContent className="p-0">
@@ -69,7 +78,7 @@ export function ServiceTable({
               </TableRow>
             )}
 
-            {services.map((service) => (
+            {currentServices.map((service) => (
               <TableRow key={service.serviceId}>
                 <TableCell>
                   {service.image ? (

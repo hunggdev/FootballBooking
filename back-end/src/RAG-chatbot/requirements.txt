@@ -1,0 +1,23 @@
+# langchain-text-splitters
+# langchain-community
+# langchain-openai
+# langchain-core
+# faiss-cpu
+# unstructured
+# pypdf
+# unstructured[md]
+# python-magic-bin
+# pip install langchain-experimental
+
+langchain
+langchain-community
+langchain-openai
+langchain-text-splitters
+langchain-core
+faiss-cpu
+rank_bm25
+python-dotenv
+unstructured
+tiktoken
+fastapi 
+uvicorn

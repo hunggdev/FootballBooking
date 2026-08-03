@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,17 +7,23 @@ datasource db {
 }
 
 model User {
-  userId       Int      @id @default(autoincrement()) @map("user_id")
-  fullName     String   @map("full_name")
-  email        String   @unique
-  phone        String?
-  passwordHash String   @map("password_hash")
-  role         String
-  status       String
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  sessions            Session[]
+  userId              Int                  @id @default(autoincrement()) @map("user_id")
+  fullName            String               @map("full_name")
+  email               String               @unique
+  phone               String?
+  passwordHash        String               @map("password_hash")
+  role                String
+  status              String
+  createdAt           DateTime             @default(now()) @map("created_at")
+  bookings            Booking[]
+  invoices            Invoice[]
+  matches             Match[]
+  matchParticipants   MatchParticipant[]
   passwordResetTokens PasswordResetToken[]
+  reviews             Review[]
+  sessions            Session[]
+  slotHolds           SlotHold[]
+  chatbotLogs         ChatbotLog[]
 
   @@map("users")
 }
@@ -30,56 +31,262 @@ model User {
 model Session {
   sessionId    Int       @id @default(autoincrement()) @map("session_id")
   userId       Int       @map("user_id")
-  refreshToken String    @map("refresh_token") @db.Text
-  userAgent    String?   @map("user_agent") @db.Text
+  refreshToken String    @map("refresh_token")
+  userAgent    String?   @map("user_agent")
   expiresAt    DateTime  @map("expires_at")
   revokedAt    DateTime? @map("revoked_at")
   createdAt    DateTime  @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: NoAction, map: "session_user_fk")
 
   @@index([userId])
+  @@index([userId], map: "idx_session_user")
   @@map("sessions")
 }
 
 model PasswordResetToken {
   id        Int      @id @default(autoincrement())
   userId    Int      @map("user_id")
-  token     String   @map("token") @db.Text
+  token     String   @map("token")
   expiresAt DateTime @map("expires_at")
   used      Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@index([userId])
+  @@index([userId], map: "idx_password_user")
   @@map("password_reset_tokens")
 }
 
+model Field {
+  fieldId     Int         @id @default(autoincrement()) @map("field_id")
+  name        String
+  description String?
+  image       String?
+  fieldType   FieldType   @map("field_type")
+  createdAt   DateTime?   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime?   @default(now()) @map("updated_at") @db.Timestamptz(6)
+  fieldSlots  FieldSlot[]
+  reviews     Review[]
+
+  @@map("field")
+}
+
+model Service {
+  serviceId       Int               @id @default(autoincrement()) @map("service_id")
+  name            String
+  description     String?
+  image           String?
+  price           Decimal           @db.Decimal(10, 2)
+  quantity        Int               @default(0)
+  status          ServiceStatus     @default(ACTIVE)
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  bookingServices BookingServices[]
+
+  @@map("service")
+}
+
+model Match {
+  matchId      Int                @id @default(autoincrement()) @map("match_id")
+  userId       Int                @map("user_id")
+  minAge       Int?               @map("min_age")
+  maxAge       Int?               @map("max_age")
+  fieldType    FieldType          @map("field_type")
+  timeNote     String?            @map("time_note")
+  description  String?
+  costRule     CostRule           @map("cost_rule")
+  status       MatchStatus        @default(OPEN)
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+  user         User               @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  participants MatchParticipant[]
+
+  @@index([userId])
+  @@map("match")
+}
+
+model MatchParticipant {
+  participantId Int      @id @default(autoincrement()) @map("participant_id")
+  userId        Int      @map("user_id")
+  matchId       Int      @map("match_id")
+  joinedAt      DateTime @default(now()) @map("joined_at")
+  match         Match    @relation(fields: [matchId], references: [matchId], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [userId])
+
+  @@unique([matchId, userId])
+  @@index([userId])
+  @@map("match_participants")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model BookingServices {
+  bookingServiceId Int      @id @default(autoincrement()) @map("booking_service_id")
+  bookingId        Int      @map("booking_id")
+  serviceId        Int      @map("service_id")
+  quantity         Int      @default(1)
+  price            Decimal  @db.Decimal(10, 2)
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  booking Booking @relation(fields: [bookingId], references: [bookingId], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [serviceId])
+
+  @@index([bookingId], map: "idx_booking_services_booking")
+  @@index([serviceId], map: "idx_booking_services_service")
+  @@map("booking_services")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Booking {
+  bookingId Int           @id @default(autoincrement()) @map("booking_id")
+  userId    Int           @map("user_id")
+  status    BookingStatus @default(HOLD)
+  type      BookingType   @default(ONE_TIME)
+
+  depositAmount Decimal @default(0) @map("deposit_amount") @db.Decimal(10, 2)
+  totalPrice    Decimal @map("total_price") @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  slotId      Int      @map("slot_id")
+  bookingDate DateTime @map("booking_date") @db.Date
+
+  paidAmount Decimal @default(0) @map("paid_amount") @db.Decimal(10, 2)
+
+  holdExpiredAt DateTime? @map("hold_expired_at") @db.Timestamp(6)
+  cancelledAt   DateTime? @map("cancelled_at") @db.Timestamp(6)
+  cancelReason  String?   @map("cancel_reason")
+  note          String?
+
+  bookingServices BookingServices[]
+  user            User              @relation(fields: [userId], references: [userId])
+  fieldSlot       FieldSlot         @relation(fields: [slotId], references: [slotId])
+  invoice         Invoice?
+  review          Review?
+
+  @@index([bookingDate], map: "idx_booking_date")
+  @@index([slotId], map: "idx_booking_slot")
+  @@index([userId], map: "idx_booking_user")
+  @@map("bookings")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model FieldSlot {
+  slotId  Int @id @default(autoincrement()) @map("slot_id")
+  fieldId Int @map("field_id")
+
+  startTime DateTime @map("start_time") @db.Time(6)
+  endTime   DateTime @map("end_time") @db.Time(6)
+
+  price Decimal @db.Decimal(10, 2)
+
+  status SlotStatus @default(AVAILABLE) @map("slot_status")
+
+  bookings  Booking[]
+  field     Field      @relation(fields: [fieldId], references: [fieldId])
+  slotHolds SlotHold[]
+
+  @@index([fieldId], map: "idx_field_slots_field")
+  @@index([fieldId], map: "idx_field_slots_field_id")
+  @@map("field_slots")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Invoice {
+  invoiceId Int @id @default(autoincrement()) @map("invoice_id")
+
+  bookingId Int @unique(map: "idx_invoice_booking") @map("booking_id")
+  userId    Int @map("user_id")
+
+  totalAmount Decimal @map("total_amount") @db.Decimal(10, 2)
+
+  status InvoiceStatus @default(PENDING)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  depositAmount Decimal @default(0) @map("deposit_amount") @db.Decimal(10, 2)
+
+  fieldAmount   Decimal @default(0) @map("field_amount") @db.Decimal(10, 2)
+  serviceAmount Decimal @default(0) @map("service_amount") @db.Decimal(10, 2)
+  remainAmount  Decimal @default(0) @map("remain_amount") @db.Decimal(10, 2)
+
+  paymentMethod String? @map("payment_method")
+
+  paidAt DateTime? @map("paid_at") @db.Timestamp(6)
+
+  booking Booking @relation(fields: [bookingId], references: [bookingId])
+
+  user User @relation(fields: [userId], references: [userId])
+
+  @@map("invoices")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Review {
+  reviewId Int @id @default(autoincrement()) @map("review_id")
+
+  bookingId Int @unique @map("booking_id")
+
+  userId Int @map("user_id")
+
+  fieldId Int @map("field_id")
+
+  rating Int @db.SmallInt
+
+  comment String?
+
+  reply String?
+
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  updatedAt DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  booking Booking @relation(fields: [bookingId], references: [bookingId])
+
+  field Field @relation(fields: [fieldId], references: [fieldId])
+
+  user User @relation(fields: [userId], references: [userId])
+
+  @@map("reviews")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model SlotHold {
+  holdId Int @id @default(autoincrement()) @map("hold_id")
+
+  slotId Int @map("slot_id")
+
+  userId Int @map("user_id")
+
+  bookingDate DateTime @map("booking_date") @db.Date
+
+  expiresAt DateTime @map("expires_at") @db.Timestamp(6)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  fieldSlot FieldSlot @relation(fields: [slotId], references: [slotId])
+
+  user User @relation(fields: [userId], references: [userId])
+
+  @@unique([slotId, bookingDate], map: "uq_slot_hold_slot_date")
+  @@index([slotId, bookingDate], map: "idx_slot_hold")
+  @@index([expiresAt], map: "idx_slot_hold_expire")
+  @@index([slotId], map: "idx_slot_hold_slot")
+  @@map("slot_holds")
+}
+
 enum FieldStatus {
-    ACTIVE
-    MAINTENANCE
-    INACTIVE
-  }
+  ACTIVE
+  MAINTENANCE
+  INACTIVE
+}
+
 enum FieldType {
   FIVE
   SEVEN
-}
-model Field {
-
-  fieldId      Int         @id @default(autoincrement()) @map("field_id")
-  name         String
-  description  String?
-  image        String?
-  pricePerHour Decimal     @db.Decimal(10,2)
-  openTime     String
-  closeTime    String
-  status       FieldStatus @default(ACTIVE)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  fieldType    FieldType   @map("field_type")
-  @@map("field")
-
+  ELEVEN
 }
 
 enum ServiceStatus {
@@ -87,17 +294,58 @@ enum ServiceStatus {
   INACTIVE
 }
 
-model Service {
-  serviceId   Int            @id @default(autoincrement()) @map("service_id")
-  name        String
-  description String?
-  image       String?
-  price       Decimal        @db.Decimal(10,2)
-  quantity    Int           @default(0)
-  status      ServiceStatus  @default(ACTIVE)
+enum CostRule {
+  SPLIT
+  LOSER_PAYS
+  WINNER_PAYS
+  NEGOTIATE
+}
 
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+enum MatchStatus {
+  OPEN
+  MATCHED
+  FINISHED
+  CANCELLED
+}
 
-  @@map("service")
+enum BookingStatus {
+  HOLD
+  CONFIRMED
+  CANCELLED
+}
+
+enum BookingType {
+  ONE_TIME
+  RECURRING
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+}
+
+enum SlotStatus {
+  AVAILABLE
+  HOLD
+  BOOKED
+  CLOSED
+}
+
+model ChatbotLog {
+  chatbotLogId Int @id @default(autoincrement()) @map("chatbot_log_id")
+
+  userId Int @map("user_id")
+
+  question String
+
+  answer String
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("chatbot_logs")
 }

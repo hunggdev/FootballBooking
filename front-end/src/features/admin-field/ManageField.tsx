@@ -9,6 +9,7 @@ import { FieldFilterBar } from "./FieldFilterBar";
 import { FieldsTable } from "./FieldsTable";
 import { FieldFormDialog } from "./FieldFormDialog";
 import { FieldDetailDialog } from "./FieldDetailDialog";
+import { FormPagination } from "@/components/common/Pagination";
 
 import {
   useFields,
@@ -34,14 +35,10 @@ function getErrorMessage(
 
   return axiosError.response?.data?.message ?? fallback;
 }
+const PAGE_SIZE = 10;
 
 export function ManageField() {
-  const {
-    data,
-    isLoading,
-    error,
-  } = useFields();
-
+  const { data, isLoading, error } = useFields();
   const createField = useCreateField();
   const updateField = useUpdateField();
   const deleteField = useDeleteField();
@@ -56,6 +53,8 @@ export function ManageField() {
   const [detailFieldId, setDetailFieldId] = useState<number | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [listError, setListError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
 
   const filteredFields = useMemo(() => {
     return fields.filter((field) => {
@@ -73,6 +72,8 @@ export function ManageField() {
 
     });
   }, [fields, search, status]);
+  const totalPages = Math.max(1, Math.ceil(filteredFields.length / PAGE_SIZE));
+
 
   const handleAdd = () => {
     setEditingField(null);
@@ -197,6 +198,7 @@ export function ManageField() {
         status={status}
         onStatusChange={setStatus}
         onClick={handleAdd}
+        onChangePage={setCurrentPage}
       />
 
       {listError && (
@@ -210,7 +212,11 @@ export function ManageField() {
         onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        currentPage={currentPage}
+        pageSize={PAGE_SIZE}
       />
+
+      <FormPagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
 
         <FieldFormDialog
       key={editingField?.fieldId ?? "create"}

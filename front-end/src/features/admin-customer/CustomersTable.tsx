@@ -20,6 +20,8 @@ interface Props {
   onView: (customer: Customer) => void;
   onEdit: (customer: Customer) => void;
   onDelete: (customer: Customer) => void;
+  currentPage: number;
+  pageSize: number;
 }
 
 const statusLabel: Record<Customer["status"], string> = {
@@ -43,7 +45,12 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("vi-VN");
 }
 
-export function CustomersTable({customers, onView, onEdit, onDelete,}: Props) {
+export function CustomersTable({customers, onView, onEdit, onDelete, currentPage, pageSize, }: Props) {
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+
+  const currentCustomers = customers.slice(startIndex, endIndex);
+
   return (
     <Card className="border">
       <CardContent className="p-0">
@@ -62,9 +69,9 @@ export function CustomersTable({customers, onView, onEdit, onDelete,}: Props) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {customers.map((customer, index) => (
+            {currentCustomers.map((customer, index) => (
               <TableRow key={customer.userId}>
-                <TableCell>{index + 1}</TableCell>
+                <TableCell>{startIndex + index + 1}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Avatar className="h-6 w-6 border">

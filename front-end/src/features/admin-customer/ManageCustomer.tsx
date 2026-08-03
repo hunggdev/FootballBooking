@@ -16,6 +16,7 @@ import type {
 } from "@/types/customer";
 import { CustomerDetailDialog } from "./CustomerDetailDialog";
 import { CustomerFormDialog } from "./CustomerFormDialog";
+import { FormPagination } from "@/components/common/Pagination";
 
 interface ErrorResponse {
   message?: string;
@@ -29,6 +30,8 @@ function getErrorMessage(
 
   return axiosError.response?.data?.message ?? fallback;
 }
+
+const PAGE_SIZE = 10;
 
 export function ManageCustomer() {
   const {data, isLoading, error} = useCustomers();
@@ -49,6 +52,7 @@ export function ManageCustomer() {
     const [detailCustomerId, setDetailCustomerId] = useState<number | null>(null);
     const [formError, setFormError] = useState<string | null>(null);
     const [listError, setListError] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const filteredCustomers = useMemo(() => {
         return customers.filter((customer) => {
@@ -66,6 +70,9 @@ export function ManageCustomer() {
     
         });
       }, [customers, search, status]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredCustomers.length / PAGE_SIZE));
+    
 
   console.log(data);
 
@@ -171,13 +178,29 @@ export function ManageCustomer() {
         online={stats?.online ?? 0} 
         bannedCustomers={stats?.bannedCustomers ?? 0}
       />
-      <CustomerFilterBar search={search} onSearchChange={setSearch} status={status} onStatusChange={setStatus} onClick={handleAdd}/>
+      <CustomerFilterBar 
+        search={search} 
+        onSearchChange={setSearch} 
+        status={status} 
+        onStatusChange={setStatus} 
+        onClick={handleAdd} 
+        onChangePage={setCurrentPage}
+      />
       {listError && (
         <p className="mt-4 text-sm text-red-500">
           {listError}
         </p>
       )}
-      <CustomersTable customers={filteredCustomers} onView={handleView} onEdit={handleEdit} onDelete={handleDelete}/>
+      <CustomersTable 
+        customers={filteredCustomers} 
+        onView={handleView} 
+        onEdit={handleEdit} 
+        onDelete={handleDelete}
+        currentPage={currentPage}
+        pageSize={PAGE_SIZE}
+      />
+      <FormPagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}  />
+      
       <CustomerDetailDialog
         customerId={detailCustomerId}
         open={detailOpen}

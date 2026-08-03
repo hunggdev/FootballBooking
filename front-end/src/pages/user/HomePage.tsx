@@ -4,6 +4,7 @@ import { FeaturedFields } from "../../features/user-homepage/FeaturedFields";
 import { PromotionSection } from "../../features/user-homepage/PromotionSection";
 import { Testimonials } from "../../features/user-homepage/Testimonials";
 import { StatsBar } from "../../features/user-homepage/StatsBar";
+import { ChatWidget } from "@/features/user-chatbot/ChatWidget";
 
 const HomePage = () => {
 
@@ -17,6 +18,7 @@ const HomePage = () => {
           <PromotionSection />
           <Testimonials />
           <StatsBar />
+          <ChatWidget/>
         </main>
       </div>
       

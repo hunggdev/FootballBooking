@@ -15,6 +15,7 @@ interface ServiceFilterBarProps {
   status: string;
   onStatusChange: (value: string) => void;
   onClick: () => void;
+  onChagePage: (value: number) => void;
 }
 
 export function ServiceFilterBar({
@@ -23,6 +24,7 @@ export function ServiceFilterBar({
   status,
   onStatusChange,
   onClick,
+  onChagePage
 }: ServiceFilterBarProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 border p-4">
@@ -36,7 +38,7 @@ export function ServiceFilterBar({
 
         <Select
           value={status}
-          onValueChange={(value) => onStatusChange(value ?? "all")}
+          onValueChange={(value) => {onStatusChange(value ?? "all"); onChagePage(1);}}
         >
           <SelectTrigger className="w-44 border">
             <SelectValue placeholder="Lọc theo trạng thái" />

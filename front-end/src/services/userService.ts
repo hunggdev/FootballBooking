@@ -18,4 +18,13 @@ export const userService = {
             throw error;
         }
     },
+
+    chatbot: async (question: string) => {
+        try {
+            const res = await api.post("/users/chatbot", {question}, {withCredentials: true});
+            return res.data;
+        } catch (error) {
+            throw error;
+        }
+    },
 };

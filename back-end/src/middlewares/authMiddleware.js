@@ -63,3 +63,36 @@ export const requireAdmin = (req, res, next) => {
 
   next();
 };
+
+
+// Quyền cập nhật kèo đấu
+
+export const requireMatchOwner = async (req, res, next) => {
+    if (req.user.role === "ADMIN") {
+        next();
+        return;
+    }
+  
+    const { matchId } = req.params;
+    const userId = req.user.userId;
+
+    const match = await prisma.match.findUnique({
+        where: { matchId }
+    });
+
+    if (!match) {
+        return res.status(404).json({
+            message: "Không tìm thấy kèo."
+        });
+    }
+
+    if (match.userId !== userId) {
+        return res.status(403).json({
+            message: "Bạn không có quyền."
+        });
+    }
+
+    req.match = match;
+
+    next();
+};

@@ -16,9 +16,10 @@ interface CustomerFilterBarProps {
   status: string;
   onStatusChange: (value: string) => void;
   onClick: () => void;
+  onChangePage: (value: number) => void;
 }
 
-export function CustomerFilterBar({search, onSearchChange, status, onStatusChange, onClick}: CustomerFilterBarProps) {
+export function CustomerFilterBar({search, onSearchChange, status, onStatusChange, onClick, onChangePage}: CustomerFilterBarProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 border p-4">
       <div className="flex flex-wrap items-center gap-3">
@@ -29,7 +30,7 @@ export function CustomerFilterBar({search, onSearchChange, status, onStatusChang
           className="w-64 border"  />
         <Select 
           value={status}
-          onValueChange={(value)=>{onStatusChange(value ?? "all")}}
+          onValueChange={(value)=>{onStatusChange(value ?? "all"); onChangePage(1); }}
         >
           <SelectTrigger className="w-44 border">
             <SelectValue placeholder="Trạng thái" />

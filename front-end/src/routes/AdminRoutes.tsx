@@ -5,6 +5,7 @@ import ManageCustomerPage from "@/pages/admin/ManageCustomerPage";
 import ManageFieldPage from "@/pages/admin/ManageFieldPage";
 import ManageServicePage from "@/pages/admin/ManageServicePage";
 import ProtectedRoute from "@/features/auth/ProtectedRoute";
+import ManageMatchPage from "@/pages/admin/ManageMatchPage";
 
 function AdminRoutes() {
 
@@ -16,6 +17,7 @@ function AdminRoutes() {
                     <Route path="customers" element={<ManageCustomerPage/>} />
                     <Route path="fields" element={<ManageFieldPage/>} />
                      <Route path="services" element={<ManageServicePage/>} />
+                     <Route path="matches" element={<ManageMatchPage/>} />
                     {/* <Route path=""  /> */}
                 </Route>
             </Route>

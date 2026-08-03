@@ -17,9 +17,9 @@ import { useNavigate } from "react-router";
 import LogOut from "@/features/auth/SignOutButton";
 
 const navItems = [
-  { id: "home", label: "Trang chủ" },
-  { id: "booking", label: "Đặt sân" },
-  { id: "odds", label: "Kèo đấu" },
+  { id: "home", label: "Trang chủ", url: "/" },
+  { id: "booking", label: "Đặt sân", url: "/" },
+  { id: "match", label: "Kèo đấu", url: "/match" },
 ];
 
 export function Header() {
@@ -72,7 +72,7 @@ export function Header() {
           <NavigationMenuList className="gap-1">
             {navItems.map((item) => (
               <NavigationMenuItem key={item.id}>
-                <NavigationMenuLink className="border px-3 py-1.5 text-sm" href="/">
+                <NavigationMenuLink className="border px-3 py-1.5 text-sm" href={item.url}>
                   {item.label}
                 </NavigationMenuLink>
               </NavigationMenuItem>

@@ -46,7 +46,7 @@ export const signUp = async (req, res) => {
             { expiresIn: '15m' }
         );
 
-        // tạo URL để xác minh
+        // tạo URL để xác minh, cần fix lại khi lên product
         const verificationUrl = `http://localhost:${process.env.PORT || 5001}/api/auth/verify?token=${activationToken}`;
 
         // gửi email
@@ -331,14 +331,6 @@ export const resetPassword = async (req, res) => {
                 token: token
             }
         });
-
-        const all = await prisma.passwordResetToken.findMany({
-            where: {
-                token: token
-            }
-        });
-
-        console.log(all);
 
         if (!passwordResetToken) {
             return res.status(403).json({ message: "Token không hợp lệ hoặc đã hết hạn" });

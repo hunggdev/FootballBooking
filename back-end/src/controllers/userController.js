@@ -1,7 +1,8 @@
 import { decode } from "jsonwebtoken";
 import { prisma } from "../config/database.js";
 import bcrypt from "bcrypt";
-import { validateEmail, validatePhone, validateUser } from "../utils/validateUsers.js";
+import { validatePassword, validatePhone } from "../utils/validateUsers.js";
+import axios from "axios";
 
 export const authMe = async (req, res) => {
     try {
@@ -9,8 +10,6 @@ export const authMe = async (req, res) => {
         return res.status(200).json({
             user
         })
-
-        return res.status(200).json({message: "Success"});
     } catch (error) {
         console.log('Lỗi khi gọi authMe:', error);
         return res.status(500).json({message: "Lỗi hệ thống"});
@@ -107,4 +106,25 @@ export const changePassword = async (req, res) => {
     }
 }
 
+export const chatbot = async (req, res) => {
+    try {
+        const { question } = req.body;
 
+        const response = await axios.post(
+            "http://localhost:8000/chat",
+            {
+                question,
+            }
+        );
+
+        console.log(response.data)
+        return res.json(response.data);
+
+    } catch (err) {
+        console.error(err);
+
+        return res.status(500).json({
+            message: "Chatbot error",
+        });
+    }
+};

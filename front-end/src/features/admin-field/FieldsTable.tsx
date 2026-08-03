@@ -18,6 +18,8 @@ interface Props {
   onView: (field: Field) => void;
   onEdit: (field: Field) => void;
   onDelete: (field: Field) => void;
+  currentPage: number;
+  pageSize: number;
 }
 
 const statusLabel: Record<Field["status"], string> = {
@@ -45,7 +47,13 @@ export function FieldsTable({
   onView,
   onEdit,
   onDelete,
+  currentPage,
+  pageSize,
 }: Props) {
+
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const currentFields = fields.slice(startIndex, endIndex);
   return (
     <Card className="mt-5">
       <CardContent className="p-0">
@@ -63,7 +71,7 @@ export function FieldsTable({
           </TableHeader>
 
           <TableBody>
-            {fields.length === 0 && (
+            {currentFields.length === 0 && (
               <TableRow>
                 <TableCell
                   colSpan={7}
@@ -73,7 +81,7 @@ export function FieldsTable({
                 </TableCell>
               </TableRow>
             )}
-            {fields.map((field) => (
+            {currentFields.map((field) => (
               <TableRow key={field.fieldId}>
                 <TableCell>
 
