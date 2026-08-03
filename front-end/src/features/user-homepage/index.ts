@@ -1,5 +1,4 @@
-// src/components/home/index.ts
-export * from "@/pages/user/HomePage";
+export { default as HomePage } from "@/pages/user/HomePage";
 export * from "@/layouts/user/TopBar";
 export * from "@/layouts/user/Header";
 export * from "./HeroSection";
@@ -13,6 +12,8 @@ export * from "./UpcomingEvents";
 export * from "./EventListItem";
 export * from "./Testimonials";
 export * from "./TestimonialCard";
-export * from "./StatsBar";
+
+export { default as StatsBar } from "./StatsBar";
+
 export * from "@/layouts/user/FooterSection";
-export * from "@/types/home.ts";
+export * from "@/types/home";

@@ -1,15 +1,12 @@
 import type { AxiosError } from "axios";
 import { useMemo, useState } from "react";
 
-import { Button } from "@/components/ui/button";
-
 import { PageHeader } from "@/layouts/admin/PageHeader";
 
 import { FieldFilterBar } from "./FieldFilterBar";
-import { FieldsTable } from "./FieldsTable";
+import { FieldsTable } from "./FieldTable";
 import { FieldFormDialog } from "./FieldFormDialog";
 import { FieldDetailDialog } from "./FieldDetailDialog";
-import { FormPagination } from "@/components/common/Pagination";
 
 import {
   useFields,
@@ -23,57 +20,44 @@ import type {
   CreateFieldPayload,
   UpdateFieldPayload,
 } from "@/types/field";
+
 interface ErrorResponse {
   message?: string;
 }
 
-function getErrorMessage(
-  error: unknown,
-  fallback: string
-): string {
+function getErrorMessage(error: unknown, fallback: string): string {
   const axiosError = error as AxiosError<ErrorResponse>;
-
   return axiosError.response?.data?.message ?? fallback;
 }
-const PAGE_SIZE = 10;
 
 export function ManageField() {
-  const { data, isLoading, error } = useFields();
+  const { data: fields = [], isLoading, error } = useFields();
+
   const createField = useCreateField();
   const updateField = useUpdateField();
   const deleteField = useDeleteField();
 
-  const fields: Field[] = data?.fields ?? [];
-
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
+  const [fieldType, setFieldType] = useState<"all" | "FIVE" | "SEVEN">("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [editingField, setEditingField] = useState<Field | null>(null);
   const [detailFieldId, setDetailFieldId] = useState<number | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [listError, setListError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-
 
   const filteredFields = useMemo(() => {
-    return fields.filter((field) => {
+    return fields.filter((field: Field) => {
+      const matchSearch = field.name
+        .toLowerCase()
+        .includes(search.trim().toLowerCase());
 
-      const matchSearch =
-        field.name
-          .toLowerCase()
-          .includes(search.trim().toLowerCase());
+      const matchFieldType =
+        fieldType === "all" || field.fieldType === fieldType;
 
-      const matchStatus =
-        status === "all" ||
-        field.status === status;
-
-      return matchSearch && matchStatus;
-
+      return matchSearch && matchFieldType;
     });
-  }, [fields, search, status]);
-  const totalPages = Math.max(1, Math.ceil(filteredFields.length / PAGE_SIZE));
-
+  }, [fields, search, fieldType]);
 
   const handleAdd = () => {
     setEditingField(null);
@@ -93,37 +77,22 @@ export function ManageField() {
   };
 
   const handleDelete = (field: Field) => {
-
-    const ok = confirm(
-      `Bạn có chắc muốn ngừng hoạt động sân "${field.name}"?`
-    );
-
+    const ok = confirm(`Bạn có chắc muốn xóa sân "${field.name}"?`);
     if (!ok) return;
 
     setListError(null);
 
     deleteField.mutate(field.fieldId, {
       onError(error) {
-        setListError(
-          getErrorMessage(
-            error,
-            "Xóa sân thất bại."
-          )
-        );
+        setListError(getErrorMessage(error, "Xóa sân thất bại."));
       },
     });
   };
 
-  const handleSubmit = (
-    values:
-      | CreateFieldPayload
-      | UpdateFieldPayload
-  ) => {
-
+  const handleSubmit = (values: CreateFieldPayload | UpdateFieldPayload) => {
     setFormError(null);
 
     if (editingField) {
-
       updateField.mutate(
         {
           fieldId: editingField.fieldId,
@@ -134,59 +103,36 @@ export function ManageField() {
             setDialogOpen(false);
             setEditingField(null);
           },
-
           onError(error) {
-            setFormError(
-              getErrorMessage(
-                error,
-                "Cập nhật sân thất bại."
-              )
-            );
+            setFormError(getErrorMessage(error, "Cập nhật sân thất bại."));
           },
         }
       );
-
       return;
     }
 
-    createField.mutate(
-      values as CreateFieldPayload,
-      {
-        onSuccess() {
-          setDialogOpen(false);
-        },
-
-        onError(error) {
-          setFormError(
-            getErrorMessage(
-              error,
-              "Tạo sân thất bại."
-            )
-          );
-        },
-      }
-    );
+    createField.mutate(values as CreateFieldPayload, {
+      onSuccess() {
+        setDialogOpen(false);
+      },
+      onError(error) {
+        setFormError(getErrorMessage(error, "Tạo sân thất bại."));
+      },
+    });
   };
 
   if (isLoading) {
-    return (
-      <div className="p-8">
-        Đang tải...
-      </div>
-    );
+    return <div className="p-8">Đang tải...</div>;
   }
 
   if (error) {
     return (
-      <div className="p-8 text-red-500">
-        Không thể tải danh sách sân.
-      </div>
+      <div className="p-8 text-red-500">Không thể tải danh sách sân.</div>
     );
   }
 
   return (
     <>
-
       <PageHeader
         title="Quản lý sân bóng"
         subtitle="Quản lý thông tin sân bóng của hệ thống"
@@ -195,16 +141,13 @@ export function ManageField() {
       <FieldFilterBar
         search={search}
         onSearchChange={setSearch}
-        status={status}
-        onStatusChange={setStatus}
+        fieldType={fieldType}
+        onFieldTypeChange={setFieldType}
         onClick={handleAdd}
-        onChangePage={setCurrentPage}
       />
 
       {listError && (
-        <p className="mt-4 text-sm text-red-500">
-          {listError}
-        </p>
+        <p className="mt-4 text-sm text-red-500">{listError}</p>
       )}
 
       <FieldsTable
@@ -212,21 +155,17 @@ export function ManageField() {
         onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        currentPage={currentPage}
-        pageSize={PAGE_SIZE}
       />
 
-      <FormPagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-
-        <FieldFormDialog
-      key={editingField?.fieldId ?? "create"}
-      open={dialogOpen}
-      onOpenChange={setDialogOpen}
-      initialData={editingField}
-      onSubmit={handleSubmit}
-      isSubmitting={createField.isPending || updateField.isPending}
-      serverError={formError}
-    />
+      <FieldFormDialog
+        key={editingField?.fieldId ?? "create"}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        initialData={editingField}
+        onSubmit={handleSubmit}
+        isSubmitting={createField.isPending || updateField.isPending}
+        serverError={formError}
+      />
 
       <FieldDetailDialog
         fieldId={detailFieldId}

@@ -10,9 +10,9 @@ export * from "@/features/admin-customer/AccountsPage";
 export * from "@/features/admin-customer/AccountsTable";
 
 // feedback
-export * from "@/features/admin-feedback/FeedbackPage";
-export * from "@/features/admin-feedback/FeedbackList";
-export * from "@/features/admin-feedback/FeedbackStatsCards";
-export * from "@/features/admin-feedback/FeedbackReplyDialog";
+export * from "@/features/admin-review/ReviewReplyDialog";
+export * from "@/features/admin-review/ReviewDetailDialog";
+export * from "@/features/admin-review/ManageReview";
+export * from "@/features/admin-review/ReviewFilterBar";
 
 export * from "@/features/admin-customer/types";

@@ -1,52 +1,74 @@
-// src/components/admin/dashboard/DashboardOverview.tsx
-import { Settings2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/layouts/admin/PageHeader";
+import { useEffect, useState } from "react";
+import { Users, UserRound, MapPinned, CalendarDays, Receipt, Wallet } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { StatsGrid } from "./StatsGrid";
-import { RevenueChartCard } from "./RevenueChartCard";
-import { BookingTimeDonutCard } from "./BookingTimeDonutCard";
-import { RecentActivityFeed } from "./RecentActivityFeed";
-import { RecentBookingsTable } from "./RecentBookingsTable";
-import { FeaturedOddsList } from "./FeaturedOddsList";
-import { SystemAlertsList } from "./SystemAlertsList";
+import type { StatItem } from "./types";
+import api from "@/lib/api";
 
-export function DashboardOverview() {
+export default function DashboardOverview() {
+  const [stats, setStats] = useState<StatItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const res = await api.get("/dashboard");
+        const dashboard = res.data.data;
+
+        const iconMap: Record<string, LucideIcon> = {
+          totalUsers: Users,
+          totalCustomers: UserRound,
+          totalFields: MapPinned,
+          totalBookings: CalendarDays,
+          totalInvoices: Receipt,
+          totalRevenue: Wallet,
+        };
+
+        const labelMap: Record<string, string> = {
+          totalUsers: "Tổng người dùng",
+          totalCustomers: "Khách hàng",
+          totalFields: "Sân bóng",
+          totalBookings: "Lượt đặt sân",
+          totalInvoices: "Hóa đơn",
+          totalRevenue: "Doanh thu",
+        };
+
+        const statKeys = [
+          "totalUsers",
+          "totalCustomers",
+          "totalFields",
+          "totalBookings",
+          "totalInvoices",
+          "totalRevenue",
+        ] as const;
+
+        const statsArray: StatItem[] = statKeys.map((key) => ({
+          id: key,
+          label: labelMap[key],
+          value: Number(dashboard[key] ?? 0),
+          icon: iconMap[key] ?? Users,
+        }));
+
+        setStats(statsArray);
+      } catch (err) {
+        console.error("Dashboard Error:", err);
+        setError(err instanceof Error ? err.message : "Đã xảy ra lỗi.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboard();
+  }, []);
+
+  if (loading) return <div className="p-6">Đang tải Dashboard...</div>;
+  if (error) return <div className="p-6 text-red-600">Lỗi: {error}</div>;
+
   return (
-    <>
-      <PageHeader
-        title="Tổng quan hệ thống"
-        subtitle="Theo dõi và quản lý hoạt động của hệ thống"
-        action={
-          <Button variant="outline" className="border">
-            <Settings2 className="mr-2 h-4 w-4" />
-            Tùy chỉnh
-          </Button>
-        }
-      />
-
-      <StatsGrid />
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-1">
-          <RevenueChartCard />
-        </div>
-        <div className="lg:col-span-1">
-          <BookingTimeDonutCard />
-        </div>
-        <div className="lg:col-span-1">
-          <RecentActivityFeed />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <RecentBookingsTable />
-        </div>
-        <div className="flex flex-col gap-4 lg:col-span-1">
-          <FeaturedOddsList />
-          <SystemAlertsList />
-        </div>
-      </div>
-    </>
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold">Tổng quan hệ thống</h2>
+      <StatsGrid stats={stats} />
+    </div>
   );
 }

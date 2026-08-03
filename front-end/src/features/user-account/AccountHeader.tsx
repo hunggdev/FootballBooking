@@ -1,14 +1,14 @@
 // src/components/account/AccountHeader.tsx
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import type { User } from "@/types/user";
+import type { User, UserRole, UserStatus } from "@/types/user";
 
-const roleLabel: Record<User["role"], string> = {
+const roleLabel: Record<UserRole, string> = {
   admin: "Quản trị viên",
   customer: "Khách hàng",
 };
 
-const statusLabel: Record<User["status"], string> = {
+const statusLabel: Record<UserStatus, string> = {
   active: "Đang hoạt động",
   inactive: "Ngưng hoạt động",
   banned: "Đã khóa",
@@ -26,8 +26,10 @@ export function AccountHeader({ user }: { user: User }) {
         <p className="text-base font-semibold">{user.fullName}</p>
         <p className="text-sm opacity-60">{user.email}</p>
         <div className="mt-1 flex gap-2">
-          <Badge variant="outline">{roleLabel[user.role.toLowerCase()]}</Badge>
-          <Badge variant="outline">{statusLabel[user.status.toLowerCase()]}</Badge>
+          <Badge variant="outline">
+            {user.role ? roleLabel[user.role] : "Khách hàng"}
+          </Badge>
+          <Badge variant="outline">{statusLabel[user.status]}</Badge>
         </div>
       </div>
     </div>

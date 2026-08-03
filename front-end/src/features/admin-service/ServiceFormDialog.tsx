@@ -3,15 +3,14 @@ import { useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
 import {
   Select,
   SelectContent,
@@ -20,223 +19,197 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import {
-  Field as FieldWrapper,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-
 import type {
   Service,
   CreateServicePayload,
   UpdateServicePayload,
 } from "@/types/service";
 
-interface ServiceFormDialogProps {
+interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialData?: Service | null;
-  onSubmit: (data: CreateServicePayload | UpdateServicePayload) => void;
-  isSubmitting?: boolean;
+  onSubmit: (values: CreateServicePayload | UpdateServicePayload) => void;
+  isSubmitting: boolean;
   serverError?: string | null;
 }
 
-const emptyForm = {
-  name: "",
-  description: "",
-  image: "",
-  price: "",
-  quantity: "",
-  status: "ACTIVE" as "ACTIVE" | "INACTIVE",
-};
+const getInitialFormState = (service?: Service | null) => ({
+  name: service?.name ?? "",
+  description: service?.description ?? "",
+  image: service?.image ?? "",
+  price: service?.price ?? 0,
+  quantity: service?.quantity ?? 0,
+  status: service?.status ?? "ACTIVE" as "ACTIVE" | "INACTIVE",
+});
 
 export function ServiceFormDialog({
   open,
   onOpenChange,
   initialData,
   onSubmit,
-  isSubmitting = false,
+  isSubmitting,
   serverError,
-}: ServiceFormDialogProps) {
-  const isEditing = !!initialData;
+}: Props) {
+  const [formState, setFormState] = useState(() =>
+    getInitialFormState(initialData)
+  );
 
-  const defaultForm = initialData
-    ? {
-        name: initialData.name,
-        description: initialData.description ?? "",
-        image: initialData.image ?? "",
-        price: String(initialData.price),
-        quantity: String(initialData.quantity ?? ""),
-        status: initialData.status,
-      }
-    : emptyForm;
+  const handleOpenChange = (value: boolean) => {
+    if (value) {
+      setFormState(getInitialFormState(initialData));
+    }
 
-  const [form, setForm] = useState(defaultForm);
-  const [error, setError] = useState<string | null>(null);
-
-  const updateField = <K extends keyof typeof form>(
-    key: K,
-    value: (typeof form)[K]
-  ) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    onOpenChange(value);
   };
 
-  const validate = () => {
-    if (!form.name.trim()) {
-      return "Tên dịch vụ không được để trống";
-    }
+const handleSubmit = () => {
+  if (initialData) {
+    onSubmit(formState as UpdateServicePayload);
+  } else {
+    onSubmit(formState as CreateServicePayload);
+  }
+};
 
-    if (form.name.length > 255) {
-      return "Tên dịch vụ tối đa 255 ký tự";
-    }
-
-    const price = Number(form.price);
-    if (Number.isNaN(price) || price <= 0) {
-      return "Giá dịch vụ phải lớn hơn 0";
-    }
-
-    // Thêm validation cho Số lượng
-    const quantity = Number(form.quantity);
-    if (form.quantity === "" || Number.isNaN(quantity) || quantity <= 0) {
-      return "Số lượng dịch vụ phải lớn hơn 0";
-    }
-
-    return null;
-  };
-
-  const handleSubmit = () => {
-    const err = validate();
-
-    if (err) {
-      setError(err);
-      return;
-    }
-
-    setError(null);
-
-    const payload: CreateServicePayload | UpdateServicePayload = {
-      name: form.name.trim(),
-      description: form.description.trim() || undefined,
-      image: form.image.trim() || undefined,
-      price: Number(form.price),
-      quantity: Number(form.quantity),
-      ...(isEditing ? { status: form.status } : {}),
-    };
-
-    onSubmit(payload);
-  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Sửa dịch vụ" : "Thêm dịch vụ"}
+            {initialData ? "Chỉnh sửa dịch vụ" : "Thêm dịch vụ mới"}
           </DialogTitle>
         </DialogHeader>
 
-        <FieldGroup className="space-y-4">
-          <FieldWrapper>
-            <FieldLabel>Tên dịch vụ</FieldLabel>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="name">Tên dịch vụ</Label>
             <Input
-              value={form.name}
-              onChange={(e) => updateField("name", e.target.value)}
+              id="name"
+              value={formState.name}
+              onChange={(e) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  name: e.target.value,
+                }))
+              }
             />
-          </FieldWrapper>
+          </div>
 
-          <FieldWrapper>
-            <FieldLabel>Giá dịch vụ</FieldLabel>
+          <div>
+            <Label htmlFor="description">Mô tả</Label>
+            <Textarea
+              id="description"
+              value={formState.description}
+              onChange={(e) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="image">Ảnh (URL)</Label>
             <Input
+              id="image"
+              value={formState.image}
+              onChange={(e) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  image: e.target.value,
+                }))
+              }
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="price">Giá</Label>
+            <Input
+              id="price"
               type="number"
-              value={form.price}
-              onChange={(e) => updateField("price", e.target.value)}
+              min={0}
+              value={formState.price}
+              onChange={(e) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  price: Number(e.target.value),
+                }))
+              }
             />
-          </FieldWrapper>
+          </div>
 
-          <FieldWrapper>
-            <FieldLabel>Số lượng</FieldLabel>
+          <div>
+            <Label htmlFor="quantity">Số lượng</Label>
             <Input
+              id="quantity"
               type="number"
-              value={form.quantity}
-              onChange={(e) => updateField("quantity", e.target.value)}
+              min={0}
+              value={formState.quantity}
+              onChange={(e) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  quantity: Number(e.target.value),
+                }))
+              }
             />
-          </FieldWrapper>
+          </div>
 
-          {isEditing && (
-            <FieldWrapper>
-              <FieldLabel>Trạng thái</FieldLabel>
+          {initialData && (
+            <div>
+              <Label>Trạng thái</Label>
 
               <Select
-                value={form.status}
+                value={formState.status}
                 onValueChange={(value) =>
-                  updateField(
-                    "status",
-                    (value ?? "ACTIVE") as "ACTIVE" | "INACTIVE"
-                  )
+                  setFormState((prev) => ({
+                    ...prev,
+                    status: value as "ACTIVE" | "INACTIVE",
+                  }))
                 }
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Chọn trạng thái" />
                 </SelectTrigger>
 
                 <SelectContent>
                   <SelectItem value="ACTIVE">
-                    Đang kinh doanh
+                    Đang hoạt động
                   </SelectItem>
 
                   <SelectItem value="INACTIVE">
-                    Ngừng kinh doanh
+                    Ngừng hoạt động
                   </SelectItem>
                 </SelectContent>
               </Select>
-            </FieldWrapper>
+            </div>
           )}
 
-          <FieldWrapper>
-            <FieldLabel>Ảnh (URL)</FieldLabel>
-            <Input
-              value={form.image}
-              onChange={(e) => updateField("image", e.target.value)}
-            />
-          </FieldWrapper>
-
-          <FieldWrapper>
-            <FieldLabel>Mô tả</FieldLabel>
-            <Textarea
-              value={form.description}
-              onChange={(e) => updateField("description", e.target.value)}
-            />
-          </FieldWrapper>
-
-          {(error || serverError) && (
-            <p className="text-sm text-red-500">
-              {error ?? serverError}
-            </p>
+          {serverError && (
+            <p className="text-sm text-red-500">{serverError}</p>
           )}
-        </FieldGroup>
 
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            Hủy
-          </Button>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => handleOpenChange(false)}
+            >
+              Hủy
+            </Button>
 
-          <Button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-          >
-            {isSubmitting
-              ? "Đang lưu..."
-              : isEditing
-              ? "Lưu thay đổi"
-              : "Tạo dịch vụ"}
-          </Button>
-        </DialogFooter>
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting
+                ? "Đang lưu..."
+                : initialData
+                ? "Cập nhật"
+                : "Tạo mới"}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

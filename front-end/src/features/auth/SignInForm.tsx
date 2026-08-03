@@ -21,16 +21,7 @@ const signInSchema = z.object({
 
   password: z
     .string()
-    .min(1, "Mật khẩu không được để trống")
-    .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-    .max(64, "Mật khẩu tối đa 64 ký tự")
-    .regex(/[a-z]/, "Mật khẩu phải có ít nhất 1 chữ thường")
-    .regex(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ hoa")
-    .regex(/[0-9]/, "Mật khẩu phải có ít nhất 1 chữ số")
-    .regex(
-      /[!@#$%^&*(),.?":{}|<>]/,
-      "Mật khẩu phải có ít nhất 1 ký tự đặc biệt"
-    ),
+    .min(1, "Mật khẩu không được để trống"),
 });
 
 type SignInFormValues = z.infer<typeof signInSchema>;
@@ -51,7 +42,7 @@ export function SigninForm({
     try {
       await signIn(email, password);
       const {user} = useAuthStore.getState();
-      navigate(user?.role.toLowerCase() === "admin" ? "/admin" : "/"); // chỉ navigate khi đăng nhập thành công
+      navigate(user?.role?.toLowerCase() === "admin" ? "/admin" : "/user"); // chỉ navigate khi đăng nhập thành công
     } catch {
       // lỗi đã được xử lý và hiển thị toast trong store
     }

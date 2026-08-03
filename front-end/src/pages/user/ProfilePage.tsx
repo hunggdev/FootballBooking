@@ -13,14 +13,22 @@ import { useAuthStore } from "@/stores/useAuthStore";
 const ProfilePage = () => {
   const user = useAuthStore((s)=>s.user);
 
+  if (!user) {
+    return (
+      <div className="mx-auto flex max-w-2xl flex-col gap-4 px-4 py-8">
+        <p className="text-sm text-muted-foreground">Đang tải thông tin tài khoản...</p>
+      </div>
+    );
+  }
+
   const mockUser: User = {
-    userId: user?.userId,
-    fullName: user?.fullName,
-    email: user?.email,
-    phone: user?.phone,
-    role: user?.role,
-    status: user?.status,
-    createdAt: user?.createdAt,
+    userId: user.userId,
+    fullName: user.fullName,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+    status: user.status,
+    createdAt: user.createdAt,
   };
   return (
     <div>

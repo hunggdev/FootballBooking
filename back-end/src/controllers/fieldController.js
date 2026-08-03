@@ -1,33 +1,9 @@
 import { prisma } from "../config/database.js";
-const validateField = ({
-  name,
-  pricePerHour,
-  openTime,
-  closeTime,
-  fieldType,
-}) => {
+const validateField = ({ name, fieldType }) => {
   const fieldName = (name ?? "").trim().replace(/\s+/g, " ");
 
   if (!fieldName) {
     return "Tên sân không được để trống";
-  }
-
-  if (fieldName.length > 255) {
-    return "Tên sân tối đa 255 ký tự";
-  }
-
-  const price = Number(pricePerHour);
-
-  if (Number.isNaN(price) || price <= 0) {
-    return "Giá thuê phải lớn hơn 0";
-  }
-
-  if (!openTime || !closeTime) {
-    return "Vui lòng nhập giờ hoạt động";
-  }
-
-  if (openTime >= closeTime) {
-    return "Giờ mở phải nhỏ hơn giờ đóng";
   }
 
   if (!["FIVE", "SEVEN"].includes(fieldType)) {
@@ -37,55 +13,43 @@ const validateField = ({
   return null;
 };
 
-const checkFieldConflict = async ({
-  fieldId,
-  name,
-  fieldType,
-  openTime,
-  closeTime,
-}) => {
-  const normalizedName = name.trim().replace(/\s+/g, " ");
-
+const checkFieldConflict = async ({ fieldId, name, fieldType }) => {
   return prisma.field.findFirst({
     where: {
-      fieldType,
-      status: {
-        in: ["ACTIVE", "MAINTENANCE"],
-      },
       name: {
-        equals: normalizedName,
+        equals: name,
         mode: "insensitive",
       },
-      ...(fieldId
-        ? {
-            NOT: {
-              fieldId,
-            },
-          }
-        : {}),
-      AND: [
-        {
-          openTime: {
-            lt: closeTime,
-          },
+      fieldType,
+
+      ...(fieldId && {
+        NOT: {
+          fieldId,
         },
-        {
-          closeTime: {
-            gt: openTime,
-          },
-        },
-      ],
+      }),
     },
   });
 };
-// Xem dsach
+
 export const getFields = async (req, res) => {
   try {
-    const isAdmin = req.user?.role === "admin";
-    const showAll = isAdmin && req.query.all === "1";
+    const { type } = req.query;
 
     const fields = await prisma.field.findMany({
-      where: showAll ? {} : { status: "ACTIVE" },
+      where: type
+        ? {
+            fieldType: type,
+          }
+        : {},
+
+      include: {
+        fieldSlots: {
+          orderBy: {
+            starttime: "asc",
+          },
+        },
+      },
+
       orderBy: {
         createdAt: "desc",
       },
@@ -96,7 +60,7 @@ export const getFields = async (req, res) => {
       fields,
     });
   } catch (error) {
-    console.error("GET FIELDS:", error);
+    console.log(error);
 
     return res.status(500).json({
       message: "Lỗi hệ thống",
@@ -104,7 +68,6 @@ export const getFields = async (req, res) => {
   }
 };
 
-//Xem chi tiết
 export const getFieldById = async (req, res) => {
   try {
     const fieldId = Number(req.params.id);
@@ -113,6 +76,13 @@ export const getFieldById = async (req, res) => {
       where: {
         fieldId,
       },
+      include: {
+        fieldSlots: {
+          orderBy: {
+            starttime: "asc",
+          },
+        },
+      },
     });
 
     if (!field) {
@@ -125,7 +95,7 @@ export const getFieldById = async (req, res) => {
       field,
     });
   } catch (error) {
-    console.error("GET FIELD:", error);
+    console.log(error);
 
     return res.status(500).json({
       message: "Lỗi hệ thống",
@@ -133,24 +103,12 @@ export const getFieldById = async (req, res) => {
   }
 };
 
-//Tạo sân
 export const createField = async (req, res) => {
   try {
-    const {
-      name,
-      description,
-      image,
-      pricePerHour,
-      openTime,
-      closeTime,
-      fieldType,
-    } = req.body;
+    const { name, description = null, image = null, fieldType } = req.body;
 
     const error = validateField({
       name,
-      pricePerHour,
-      openTime,
-      closeTime,
       fieldType,
     });
 
@@ -162,17 +120,14 @@ export const createField = async (req, res) => {
 
     const normalizedName = name.trim().replace(/\s+/g, " ");
 
-    const conflict = await checkFieldConflict({
+    const duplicated = await checkFieldConflict({
       name: normalizedName,
       fieldType,
-      openTime,
-      closeTime,
     });
 
-    if (conflict) {
+    if (duplicated) {
       return res.status(409).json({
-        message:
-          "Đã tồn tại sân cùng tên, cùng loại và thời gian hoạt động bị trùng.",
+        message: "Tên sân đã tồn tại",
       });
     }
 
@@ -181,11 +136,7 @@ export const createField = async (req, res) => {
         name: normalizedName,
         description: description?.trim() || null,
         image: image?.trim() || null,
-        pricePerHour: Number(pricePerHour),
-        openTime,
-        closeTime,
         fieldType,
-        status: "ACTIVE",
       },
     });
 
@@ -194,7 +145,7 @@ export const createField = async (req, res) => {
       field,
     });
   } catch (error) {
-    console.error("CREATE FIELD:", error);
+    console.log(error);
 
     return res.status(500).json({
       message: "Lỗi hệ thống",
@@ -202,40 +153,28 @@ export const createField = async (req, res) => {
   }
 };
 
-//update sân
 export const updateField = async (req, res) => {
   try {
     const fieldId = Number(req.params.id);
 
-    const {
-      name,
-      description,
-      image,
-      pricePerHour,
-      openTime,
-      closeTime,
-      fieldType,
-      status,
-    } = req.body;
-
-    const field = await prisma.field.findUnique({
+    const oldField = await prisma.field.findUnique({
       where: {
         fieldId,
       },
     });
 
-    if (!field) {
+    if (!oldField) {
       return res.status(404).json({
         message: "Không tìm thấy sân",
       });
     }
 
+    const finalName = req.body.name ?? oldField.name;
+    const finalType = req.body.fieldType ?? oldField.fieldType;
+
     const error = validateField({
-      name,
-      pricePerHour,
-      openTime,
-      closeTime,
-      fieldType,
+      name: finalName,
+      fieldType: finalType,
     });
 
     if (error) {
@@ -244,51 +183,48 @@ export const updateField = async (req, res) => {
       });
     }
 
-    if (!["ACTIVE", "MAINTENANCE", "INACTIVE"].includes(status)) {
-      return res.status(400).json({
-        message: "Trạng thái không hợp lệ",
-      });
-    }
+    const normalizedName = finalName.trim().replace(/\s+/g, " ");
 
-    const normalizedName = name.trim().replace(/\s+/g, " ");
-
-    const conflict = await checkFieldConflict({
+    const duplicated = await checkFieldConflict({
       fieldId,
       name: normalizedName,
-      fieldType,
-      openTime,
-      closeTime,
+      fieldType: finalType,
     });
 
-    if (conflict) {
+    if (duplicated) {
       return res.status(409).json({
-        message:
-          "Đã tồn tại sân cùng tên, cùng loại và thời gian hoạt động bị trùng.",
+        message: "Tên sân đã tồn tại",
       });
     }
 
-    const updatedField = await prisma.field.update({
+    const updated = await prisma.field.update({
       where: {
         fieldId,
       },
+
       data: {
         name: normalizedName,
-        description: description?.trim() || null,
-        image: image?.trim() || null,
-        pricePerHour: Number(pricePerHour),
-        openTime,
-        closeTime,
-        fieldType,
-        status,
+
+        description:
+          req.body.description !== undefined
+            ? req.body.description?.trim()
+            : oldField.description,
+
+        image:
+          req.body.image !== undefined
+            ? req.body.image?.trim()
+            : oldField.image,
+
+        fieldType: finalType,
       },
     });
 
     return res.status(200).json({
       message: "Cập nhật sân thành công",
-      field: updatedField,
+      field: updated,
     });
   } catch (error) {
-    console.error("UPDATE FIELD:", error);
+    console.log(error);
 
     return res.status(500).json({
       message: "Lỗi hệ thống",
@@ -296,13 +232,14 @@ export const updateField = async (req, res) => {
   }
 };
 
-// Deleted sân
 export const deleteField = async (req, res) => {
   try {
     const fieldId = Number(req.params.id);
 
     const field = await prisma.field.findUnique({
-      where: { fieldId },
+      where: {
+        fieldId,
+      },
     });
 
     if (!field) {
@@ -311,27 +248,20 @@ export const deleteField = async (req, res) => {
       });
     }
 
-    const updatedField = await prisma.field.update({
-      where: { fieldId },
-      data: {
-        status: "INACTIVE",
+    await prisma.field.delete({
+      where: {
+        fieldId,
       },
     });
 
     return res.status(200).json({
       message: "Xóa sân thành công",
-      field: updatedField,
     });
   } catch (error) {
-    console.error(error);
+    console.log(error);
 
     return res.status(500).json({
       message: "Lỗi hệ thống",
     });
   }
 };
-
-// Khi hoàn thành module Booking,
-// kiểm tra xem sân còn lịch đặt có trạng thái
-// PENDING / CONFIRMED / PLAYING hay không.
-// Nếu có thì không cho xóa.

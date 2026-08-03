@@ -49,7 +49,11 @@ const checkServiceConflict = async ({ serviceId, name }) => {
 // Xem danh sách
 export const getServices = async (req, res) => {
   try {
+    const isAdmin = req.user?.role === "ADMIN";
+    const showAll = isAdmin && req.query.all === "1";
+
     const services = await prisma.service.findMany({
+      where: showAll ? {} : { status: "ACTIVE" },
       orderBy: {
         createdAt: "desc",
       },

@@ -111,8 +111,8 @@ export interface Feedback {
 
 export interface TimeSlot {
   id: string;
-  startTime: string; // "06:00"
-  endTime: string; // "07:00"
+  starttime: string; // "06:00"
+  endtime: string; // "07:00"
   price: number;
   status: "available" | "booked" | "closed";
 }

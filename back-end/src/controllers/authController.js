@@ -123,13 +123,19 @@ export const signIn = async (req, res) => {
                 expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL),
             }
         });
-        // tra refresh token ve trong cookie
-        res.cookie('refreshToken', refreshToken,{
+        // tra access token & refresh token ve trong cookie
+        res.cookie('accessToken', accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',  // false ở localhost, true khi deploy
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: ACCESS_TOKEN_TTL,
+        });
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: REFRESH_TOKEN_TTL,
-        })
+        });
         
         // tra refresh token ve trong res 
         return res.status(200).json({ message: `User ${user.fullName} đã đăng nhập thành công` , accessToken });
@@ -161,6 +167,11 @@ export const signOut = async (req, res) => {
                 console.log('Session không tồn tại trong DB hoặc đã bị xóa trước đó.');
             }
             // xoa cookie
+            res.clearCookie('accessToken', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            });
             res.clearCookie('refreshToken', {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
@@ -241,6 +252,14 @@ export const refreshToken = async (req, res) => {
 
         // tạo access token mới
         const accessToken = jwt.sign({ userId: session.userId }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: ACCESS_TOKEN_TTL });
+
+        // luu access token vao cookie
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: ACCESS_TOKEN_TTL,
+        });
 
         // trả access token mới về cho client
         return res.status(200).json({ accessToken });

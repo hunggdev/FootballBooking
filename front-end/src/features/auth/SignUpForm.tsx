@@ -65,12 +65,8 @@ export function SignupForm({
   const onSubmit = async (data: SignUpFormValues) => {
     // goi BE de signup
     const {fullName, email, phone, password} = data;
-    try {
-      await signUp(fullName, email, phone, password); 
-      navigate("/signin");
-    } catch (error) {
-      throw error;
-    }
+    await signUp(fullName, email, phone, password);
+    navigate("/signin");
   };
 
   return (

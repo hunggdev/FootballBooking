@@ -8,52 +8,23 @@ import {
 } from "@/components/ui/table";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-import type { Field } from "@/types/field";
+import type { Field, FieldType } from "@/types/field";
 
 interface Props {
   fields: Field[];
   onView: (field: Field) => void;
   onEdit: (field: Field) => void;
   onDelete: (field: Field) => void;
-  currentPage: number;
-  pageSize: number;
 }
 
-const statusLabel: Record<Field["status"], string> = {
-  ACTIVE: "Đang hoạt động",
-  MAINTENANCE: "Bảo trì",
-  INACTIVE: "Ngừng hoạt động",
-};
-
-const statusVariant: Record<
-  Field["status"],
-  "default" | "secondary" | "destructive"
-> = {
-  ACTIVE: "default",
-  MAINTENANCE: "secondary",
-  INACTIVE: "destructive",
-};
-
-const fieldTypeLabel: Record<Field["fieldType"], string> = {
+const fieldTypeLabel: Record<FieldType, string> = {
   FIVE: "Sân 5 người",
   SEVEN: "Sân 7 người",
 };
 
-export function FieldsTable({
-  fields,
-  onView,
-  onEdit,
-  onDelete,
-  currentPage,
-  pageSize,
-}: Props) {
-
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const currentFields = fields.slice(startIndex, endIndex);
+export function FieldsTable({ fields, onView, onEdit, onDelete }: Props) {
   return (
     <Card className="mt-5">
       <CardContent className="p-0">
@@ -63,28 +34,24 @@ export function FieldsTable({
               <TableHead>Ảnh</TableHead>
               <TableHead>Tên sân</TableHead>
               <TableHead>Loại sân</TableHead>
-              <TableHead>Giá / giờ</TableHead>
-              <TableHead>Khung giờ</TableHead>
-              <TableHead>Trạng thái</TableHead>
               <TableHead className="text-right">Hành động</TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
-            {currentFields.length === 0 && (
+            {fields.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={4}
                   className="text-center py-10 text-muted-foreground"
                 >
                   Chưa có sân bóng.
                 </TableCell>
               </TableRow>
             )}
-            {currentFields.map((field) => (
+            {fields.map((field) => (
               <TableRow key={field.fieldId}>
                 <TableCell>
-
                   {field.image ? (
                     <img
                       src={field.image}
@@ -98,34 +65,11 @@ export function FieldsTable({
                   )}
                 </TableCell>
 
-                <TableCell className="font-medium">
-                  {field.name}
-                </TableCell>
+                <TableCell className="font-medium">{field.name}</TableCell>
 
-                <TableCell>
-                  {fieldTypeLabel[field.fieldType]}
-                </TableCell>
-
-                <TableCell>
-                  {Number(field.pricePerHour).toLocaleString("vi-VN")} đ
-                </TableCell>
-
-                <TableCell>
-                  {field.openTime} - {field.closeTime}
-                </TableCell>
-
-                <TableCell>
-
-                  <Badge
-                    variant={statusVariant[field.status]}
-                  >
-                    {statusLabel[field.status]}
-                  </Badge>
-
-                </TableCell>
+                <TableCell>{fieldTypeLabel[field.fieldType]}</TableCell>
 
                 <TableCell className="space-x-2 text-right">
-
                   <Button
                     size="sm"
                     variant="secondary"
@@ -145,22 +89,15 @@ export function FieldsTable({
                   <Button
                     size="sm"
                     variant="destructive"
-                    disabled={field.status === "INACTIVE"}
                     onClick={() => onDelete(field)}
                   >
                     Xóa
                   </Button>
-
                 </TableCell>
-
               </TableRow>
-
             ))}
-
           </TableBody>
-
         </Table>
-
       </CardContent>
     </Card>
   );

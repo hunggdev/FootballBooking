@@ -1,4 +1,3 @@
-import type { Customer } from "./customer";
 import type { User } from "./user";
 
 export interface AuthState {

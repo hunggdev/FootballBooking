@@ -6,16 +6,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import { Package } from "lucide-react";
+
+type StatusFilter = "all" | "ACTIVE" | "INACTIVE";
 
 interface ServiceFilterBarProps {
   search: string;
   onSearchChange: (value: string) => void;
-  status: string;
-  onStatusChange: (value: string) => void;
+  status: StatusFilter;
+  onStatusChange: (value: StatusFilter) => void;
   onClick: () => void;
-  onChagePage: (value: number) => void;
 }
 
 export function ServiceFilterBar({
@@ -24,7 +25,6 @@ export function ServiceFilterBar({
   status,
   onStatusChange,
   onClick,
-  onChagePage
 }: ServiceFilterBarProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 border p-4">
@@ -33,24 +33,25 @@ export function ServiceFilterBar({
           placeholder="Tìm kiếm theo tên dịch vụ..."
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-64 border"
+          className="flex-1 min-w-[200px] border"
         />
 
-        <Select
-          value={status}
-          onValueChange={(value) => {onStatusChange(value ?? "all"); onChagePage(1);}}
-        >
-          <SelectTrigger className="w-44 border">
-            <SelectValue placeholder="Lọc theo trạng thái" />
-          </SelectTrigger>
+       <Select
+  value={status}
+  onValueChange={(value) => onStatusChange((value ?? "all") as StatusFilter)}
+>
+  <SelectTrigger className="w-44 border">
+    <SelectValue placeholder="Lọc theo trạng thái" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="all">Tất cả trạng thái</SelectItem>
+    <SelectItem value="ACTIVE">Đang kinh doanh</SelectItem>
+    <SelectItem value="INACTIVE">Ngừng kinh doanh</SelectItem>
+  </SelectContent>
+</Select>
 
-          <SelectContent>
-            <SelectItem value="all">Tất cả trạng thái</SelectItem>
-            <SelectItem value="ACTIVE">Đang Kinh doanh</SelectItem>
-            <SelectItem value="INACTIVE">Ngừng kinh doanh</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
+
       <Button variant="outline" className="border" onClick={onClick}>
         <Package className="mr-2 h-4 w-4" />
         Thêm dịch vụ

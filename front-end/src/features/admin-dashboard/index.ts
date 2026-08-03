@@ -17,24 +17,16 @@ export * from "@/features/admin-dashboard/RecentBookingsTable";
 export * from "@/features/admin-dashboard/FeaturedOddsList";
 export * from "@/features/admin-dashboard/SystemAlertsList";
 
-// // customers
+// các module khác sẽ mở sau khi BE hoàn thiện
 // export * from "./customers/CustomersPage";
 // export * from "./customers/CustomersTable";
-
-// // fields
 // export * from "./fields/FieldsPage";
 // export * from "./fields/FieldsTable";
 // export * from "./fields/FieldTimeSlots";
-
-// // services
 // export * from "./services/ServicesPage";
 // export * from "./services/ServicesTable";
-
-// // odds
 // export * from "./odds/OddsPage";
 // export * from "./odds/OddsTable";
-
-// // revenue
 // export * from "./revenue/RevenuePage";
 // export * from "./revenue/RevenueSummaryCards";
 // export * from "./revenue/RevenueChartPlaceholder";
