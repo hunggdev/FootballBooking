@@ -4,9 +4,14 @@ import { prisma } from "../config/database.js";
 // authorization - xac minh nguoi dung la ai
 export const protectedRoute = (req, res, next) => {
   try {
-    // lay token tu header
+    // lay token tu header hoac cookies
     const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1];
+    let token = authHeader && authHeader.split(" ")[1];
+
+    if (!token && req.cookies) {
+      token = req.cookies.accessToken || req.cookies.token;
+    }
+
     if (!token) {
       return res.status(401).json({ message: "Không tìm thấy access token" });
     }
@@ -17,29 +22,33 @@ export const protectedRoute = (req, res, next) => {
       process.env.ACCESS_TOKEN_SECRET,
       async (err, decodedUser) => {
         if (err) {
-          console.error(err);
+          console.error("JWT verify error:", err.message);
           return res
-            .status(403)
+            .status(401)
             .json({ message: "Access token hết hạn hoặc không đúng" });
         }
-        // console.log(decodedUser);
+        
+        try {
+          // tim user
+          const user = await prisma.user.findUnique({
+            where: {
+              userId: decodedUser.userId,
+            },
+            omit: {
+              passwordHash: true,
+            },
+          });
 
-        // tim user
-        const user = await prisma.user.findUnique({
-          where: {
-            userId: decodedUser.userId,
-          },
-          omit: {
-            passwordHash: true,
-          },
-        });
+          if (!user) {
+            return res.status(401).json({ message: "User không tồn tại" });
+          }
 
-        if (!user) {
-          return res.status(401).json({ message: "User không tồn tại" });
+          req.user = user;
+          next();
+        } catch (dbErr) {
+          console.error("Lỗi khi tìm user trong authMiddleware", dbErr);
+          return res.status(500).json({ message: "Lỗi hệ thống" });
         }
-
-        req.user = user;
-        next();
       },
     );
   } catch (error) {
@@ -55,7 +64,7 @@ export const requireAdmin = (req, res, next) => {
     });
   }
 
-  if (req.user.role !== "ADMIN") {
+  if (req.user.role?.toUpperCase() !== "ADMIN") {
     return res.status(403).json({
       message: "Bạn không có quyền",
     });

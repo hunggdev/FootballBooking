@@ -1,11 +1,9 @@
 import type { AxiosError } from "axios";
 import { useMemo, useState } from "react";
 
+import { PageHeader } from "@/layouts/admin/PageHeader";
 import { Button } from "@/components/ui/button";
 
-import { PageHeader } from "@/layouts/admin/PageHeader";
-
-import { ServiceFilterBar } from "./ServiceFilterBar";
 import { ServiceTable } from "./ServiceTable";
 import { ServiceFormDialog } from "./ServiceFormDialog";
 import { ServiceDetailDialog } from "./ServiceDetailDialog";
@@ -27,65 +25,31 @@ interface ErrorResponse {
   message?: string;
 }
 
-function getErrorMessage(
-  error: unknown,
-  fallback: string
-): string {
+function getErrorMessage(error: unknown, fallback: string): string {
   const axiosError = error as AxiosError<ErrorResponse>;
-
   return axiosError.response?.data?.message ?? fallback;
 }
 
 export function ManageService() {
-  const {
-    data,
-    isLoading,
-    error,
-  } = useServices();
+  const { data: services = [], isLoading, error } = useServices();
 
   const createService = useCreateService();
   const updateService = useUpdateService();
   const deleteService = useDeleteService();
 
-  const services: Service[] = data?.services ?? [];
-
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
-
-  const [dialogOpen, setDialogOpen] =
-    useState(false);
-
-  const [detailOpen, setDetailOpen] =
-    useState(false);
-
-  const [editingService, setEditingService] =
-    useState<Service | null>(null);
-
-  const [detailServiceId, setDetailServiceId] =
-    useState<number | null>(null);
-
-  const [formError, setFormError] =
-    useState<string | null>(null);
-
-  const [listError, setListError] =
-    useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [editingService, setEditingService] = useState<Service | null>(null);
+  const [detailServiceId, setDetailServiceId] = useState<number | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [listError, setListError] = useState<string | null>(null);
 
   const filteredServices = useMemo(() => {
-    return services.filter((service) => {
-
-      const matchSearch =
-        service.name
-          .toLowerCase()
-          .includes(search.trim().toLowerCase());
-
-      const matchStatus =
-        status === "all" ||
-        service.status === status;
-
-      return matchSearch && matchStatus;
-
-    });
-  }, [services, search, status]);
+    return services.filter((service: Service) =>
+      service.name.toLowerCase().includes(search.trim().toLowerCase())
+    );
+  }, [services, search]);
 
   const handleAdd = () => {
     setEditingService(null);
@@ -105,37 +69,22 @@ export function ManageService() {
   };
 
   const handleDelete = (service: Service) => {
-
-    const ok = confirm(
-      `Bạn có chắc muốn ngừng hoạt động dịch vụ "${service.name}"?`
-    );
-
+    const ok = confirm(`Bạn có chắc muốn xóa dịch vụ "${service.name}"?`);
     if (!ok) return;
 
     setListError(null);
 
     deleteService.mutate(service.serviceId, {
       onError(error) {
-        setListError(
-          getErrorMessage(
-            error,
-            "Xóa dịch vụ thất bại."
-          )
-        );
+        setListError(getErrorMessage(error, "Xóa dịch vụ thất bại."));
       },
     });
   };
 
-  const handleSubmit = (
-    values:
-      | CreateServicePayload
-      | UpdateServicePayload
-  ) => {
-
+  const handleSubmit = (values: CreateServicePayload | UpdateServicePayload) => {
     setFormError(null);
 
     if (editingService) {
-
       updateService.mutate(
         {
           serviceId: editingService.serviceId,
@@ -146,76 +95,60 @@ export function ManageService() {
             setDialogOpen(false);
             setEditingService(null);
           },
-
           onError(error) {
-            setFormError(
-              getErrorMessage(
-                error,
-                "Cập nhật dịch vụ thất bại."
-              )
-            );
+            setFormError(getErrorMessage(error, "Cập nhật dịch vụ thất bại."));
           },
         }
       );
-
       return;
     }
 
-    createService.mutate(
-      values as CreateServicePayload,
-      {
-        onSuccess() {
-          setDialogOpen(false);
-        },
-
-        onError(error) {
-          setFormError(
-            getErrorMessage(
-              error,
-              "Tạo dịch vụ thất bại."
-            )
-          );
-        },
-      }
-    );
+    createService.mutate(values as CreateServicePayload, {
+      onSuccess() {
+        setDialogOpen(false);
+      },
+      onError(error) {
+        setFormError(getErrorMessage(error, "Tạo dịch vụ thất bại."));
+      },
+    });
   };
 
   if (isLoading) {
-    return (
-      <div className="p-8">
-        Đang tải...
-      </div>
-    );
+    return <div className="p-8">Đang tải...</div>;
   }
 
   if (error) {
     return (
-      <div className="p-8 text-red-500">
-        Không thể tải danh sách dịch vụ.
-      </div>
+      <div className="p-8 text-red-500">Không thể tải danh sách dịch vụ.</div>
     );
   }
 
   return (
     <>
-
       <PageHeader
         title="Quản lý dịch vụ"
-        subtitle="Quản lý các dịch vụ đi kèm sân bóng của hệ thống"
+        subtitle="Quản lý thông tin dịch vụ của hệ thống"
       />
 
-      <ServiceFilterBar
-        search={search}
-        onSearchChange={setSearch}
-        status={status}
-        onStatusChange={setStatus}
-        onClick={handleAdd}
-      />
+      <div className="flex items-center justify-between mt-4">
+        <input
+          type="text"
+          placeholder="Tìm kiếm dịch vụ..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="border rounded px-3 py-2 w-1/3"
+        />
+        <Button
+          variant="outline"
+          onClick={handleAdd}
+          className="border"
+        >
+          Thêm dịch vụ
+        </Button>
+      </div>
 
       {listError && (
-        <p className="mt-4 text-sm text-red-500">
-          {listError}
-        </p>
+        <p className="mt-4 text-sm text-red-500">{listError}</p>
       )}
 
       <ServiceTable
@@ -225,22 +158,21 @@ export function ManageService() {
         onDelete={handleDelete}
       />
 
-    <ServiceFormDialog
-  key={editingService?.serviceId ?? "create"}
-  open={dialogOpen}
-  onOpenChange={setDialogOpen}
-  initialData={editingService}
-  onSubmit={handleSubmit}
-  isSubmitting={createService.isPending || updateService.isPending}
-  serverError={formError}
-/>
+      <ServiceFormDialog
+        key={editingService?.serviceId ?? "create"}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        initialData={editingService}
+        onSubmit={handleSubmit}
+        isSubmitting={createService.isPending || updateService.isPending}
+        serverError={formError}
+      />
 
       <ServiceDetailDialog
         serviceId={detailServiceId}
         open={detailOpen}
         onOpenChange={setDetailOpen}
       />
-
     </>
   );
 }

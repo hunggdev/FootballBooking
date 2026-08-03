@@ -1,29 +1,43 @@
-import api from "@/lib/axios";
-import type { CreateServicePayload, UpdateServicePayload } from "@/types/service";
+import api from "@/lib/api";
+import type {
+  CreateServicePayload,
+  UpdateServicePayload,
+  Service,
+} from "@/types/service";
 
 export const serviceService = {
-    getAllServices: async () => {
-        const res = await api.get("/services", { withCredentials: true });
-        return res.data;
-    },
+  // Lấy danh sách dịch vụ
+  getServices: async (): Promise<Service[]> => {
+    const res = await api.get("/services");
+    return res.data.services;
+  },
 
-    getServiceById: async (serviceId: number) => {
-        const res = await api.get(`/services/${serviceId}`, { withCredentials: true });
-        return res.data;
-    },
+  // Lấy chi tiết dịch vụ
+  getService: async (serviceId: number): Promise<Service> => {
+    const res = await api.get(`/services/${serviceId}`);
+    return res.data.service;
+  },
 
-    createService: async (payload: CreateServicePayload) => {
-        const res = await api.post("/services", payload, { withCredentials: true });
-        return res.data;
-    },
+  // Tạo dịch vụ
+  createService: async (
+    payload: CreateServicePayload
+  ): Promise<Service> => {
+    const res = await api.post("/services", payload);
+    return res.data.service;
+  },
 
-    updateService: async (serviceId: number, payload: UpdateServicePayload) => {
-        const res = await api.put(`/services/${serviceId}`, payload, { withCredentials: true });
-        return res.data;
-    },
+  // Cập nhật dịch vụ
+  updateService: async (
+    serviceId: number,
+    payload: UpdateServicePayload
+  ): Promise<Service> => {
+    const res = await api.put(`/services/${serviceId}`, payload);
+    return res.data.service;
+  },
 
-    deleteService: async (serviceId: number) => {
-        const res = await api.delete(`/services/${serviceId}`, { withCredentials: true });
-        return res.data;
-    },
+  // Xóa dịch vụ
+  deleteService: async (serviceId: number): Promise<Service> => {
+    const res = await api.delete(`/services/${serviceId}`);
+    return res.data.service;
+  },
 };

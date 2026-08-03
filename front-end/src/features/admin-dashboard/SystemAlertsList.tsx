@@ -1,60 +1,43 @@
-// src/components/admin/dashboard/SystemAlertsList.tsx
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { SystemAlert } from "@/features/admin-dashboard/types";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, HelpCircle, Star } from "lucide-react";
-import type { SystemAlert } from "./types";
 
-const alerts: SystemAlert[] = [
-  {
-    id: "1",
-    icon: AlertTriangle,
-    title: "Sân D sắp hết hạn bảo trì",
-    subtitle: "Hết hạn: 18/07/2026",
-    actionLabel: "Xem ngay",
-    urgent: true,
-  },
-  {
-    id: "2",
-    icon: HelpCircle,
-    title: "5 yêu cầu kèo đang chờ xử lý",
-    actionLabel: "Xem chi tiết",
-  },
-  {
-    id: "3",
-    icon: Star,
-    title: "3 phản hồi đánh giá mới",
-    actionLabel: "Xem chi tiết",
-  },
-];
+interface Props {
+  alerts: SystemAlert[];
+}
 
-export function SystemAlertsList() {
+export function SystemAlertsList({ alerts }: Props) {
   return (
-    <Card className="border">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Cảnh báo hệ thống</CardTitle>
-        <Button variant="link" className="text-sm">
-          Xem tất cả →
-        </Button>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {alerts.map((alert) => {
-          const Icon = alert.icon;
-          return (
-            <div key={alert.id} className="flex items-center gap-3 border p-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center border">
-                <Icon className="h-4 w-4" />
+    <div className="border rounded p-4">
+      <h2 className="text-lg font-semibold mb-4">Cảnh báo hệ thống</h2>
+      <ul className="space-y-3">
+        {alerts.map((a) => (
+          <li
+            key={a.id}
+            className={`flex items-center justify-between border-b pb-2 ${
+              a.urgent ? "bg-red-50" : ""
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <a.icon className="h-5 w-5 text-gray-600" />
+              <div>
+                <p className="text-sm font-medium">{a.title}</p>
+                {a.subtitle && (
+                  <p className="text-xs text-gray-500">{a.subtitle}</p>
+                )}
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">{alert.title}</p>
-                {alert.subtitle && <p className="text-xs opacity-60">{alert.subtitle}</p>}
-              </div>
-              <Button variant="outline" size="sm" className="border">
-                {alert.actionLabel}
-              </Button>
             </div>
-          );
-        })}
-      </CardContent>
-    </Card>
+            <Button
+              variant={a.urgent ? "destructive" : "outline"}
+              size="sm"
+            >
+              {a.actionLabel}
+            </Button>
+          </li>
+        ))}
+        {alerts.length === 0 && (
+          <li className="text-center text-gray-500">Không có cảnh báo nào</li>
+        )}
+      </ul>
+    </div>
   );
 }

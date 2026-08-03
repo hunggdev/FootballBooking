@@ -10,7 +10,6 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { CustomerDetailDialog } from "./CustomerDetailDialog";
 import type { Customer } from "@/types/customer";
 
 import { Button } from "@/components/ui/button";
@@ -39,7 +38,8 @@ const statusVariant: Record<
   BANNED: "destructive",
 };
 
-function formatDate(iso: string) {
+function formatDate(iso?: string) {
+  if (!iso) return "--";
   return new Date(iso).toLocaleDateString("vi-VN");
 }
 
@@ -78,7 +78,7 @@ export function CustomersTable({customers, onView, onEdit, onDelete,}: Props) {
                 </TableCell>
                 <TableCell>{customer.phone ?? "Chưa cập nhật"}</TableCell>
                 <TableCell>{customer.bookingCount}</TableCell>
-                <TableCell>{customer.totalSpent.toLocaleString("vi-VN")}đ</TableCell>
+                <TableCell>{(customer.totalSpent ?? 0).toLocaleString("vi-VN")}đ</TableCell>
                 <TableCell>{formatDate(customer.createdAt)}</TableCell>
                 <TableCell>
                   <Badge variant={customer.isOnline ? "default" : "outline"}>

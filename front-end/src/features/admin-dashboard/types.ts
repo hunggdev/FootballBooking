@@ -1,4 +1,3 @@
-// src/components/admin/types.ts
 import type { LucideIcon } from "lucide-react";
 
 export interface NavItem {
@@ -11,16 +10,25 @@ export interface NavItem {
 
 export interface NavGroup {
   id: string;
-  title?: string; // không có title = nhóm đứng riêng (vd: "Tổng quan")
+  title?: string;
   items: NavItem[];
 }
 
 export interface StatItem {
   id: string;
   label: string;
-  value: string;
+  value: number;
   changeLabel?: string;
   icon: LucideIcon;
+}
+
+// Các interface khác giữ nguyên...
+export interface FeaturedOdds {
+  id: string;
+  title: string; // "7vs7 - Tối Thứ 6"
+  location: string; // "Sân A - 14/07 20:00"
+  participants: string; // "10/14 người"
+  status: "open" | "almost-full" | "closed";
 }
 
 export interface ActivityItem {
@@ -28,14 +36,6 @@ export interface ActivityItem {
   icon: LucideIcon;
   description: string;
   time: string;
-}
-
-export interface FeaturedOdds {
-  id: string;
-  title: string; // "7vs7 - Tối Thứ 6"
-  location: string; // "Sân A - 14/07 20:00"
-  participants: string; // "10/14 người"
-  status: "open" | "almost-full" | "closed";
 }
 
 export interface SystemAlert {
@@ -80,8 +80,8 @@ export interface Customer {
 
 export interface TimeSlot {
   id: string;
-  startTime: string; // "06:00"
-  endTime: string; // "07:00"
+  starttime: string; // "06:00"
+  endtime: string; // "07:00"
   price: number;
   status: "available" | "booked" | "closed";
 }

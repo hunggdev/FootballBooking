@@ -1,21 +1,19 @@
-// src/components/admin/dashboard/StatCard.tsx
-import { Card, CardContent } from "@/components/ui/card";
-import type { StatItem } from "./types";
+import type { StatItem } from "@/features/admin-dashboard/types";
 
-export function StatCard({ stat }: { stat: StatItem }) {
+interface Props {
+  stat: StatItem;
+}
+
+export function StatCard({ stat }: Props) {
   const Icon = stat.icon;
   return (
-    <Card className="border">
-      <CardContent className="flex flex-col gap-2 p-4">
-        <div className="flex h-8 w-8 items-center justify-center border">
-          <Icon className="h-4 w-4" />
-        </div>
-        <p className="text-xs opacity-60">{stat.label}</p>
-        <p className="text-xl font-semibold">{stat.value}</p>
-        {stat.changeLabel && (
-          <p className="text-xs opacity-60">{stat.changeLabel}</p>
-        )}
-      </CardContent>
-    </Card>
+    <div className="border rounded p-4 flex items-center gap-3">
+      <Icon className="h-6 w-6 text-blue-500" />
+      <div>
+        <p className="text-sm text-gray-500">{stat.label}</p>
+        <p className="text-lg font-bold">{stat.value}</p>
+        {stat.changeLabel && <p className="text-xs text-green-600">{stat.changeLabel}</p>}
+      </div>
+    </div>
   );
 }

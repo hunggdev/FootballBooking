@@ -60,11 +60,10 @@ export function ResetPasswordForm({
 
   const onSubmit = async (data: ResetPasswordFormValues) => {
     const {newPassword} = data;
-    try {
-      await resetPassword(token, newPassword);
-    } catch(error) {
-      throw error
+    if (!token) {
+      throw new Error("Thiếu token đặt lại mật khẩu.");
     }
+    await resetPassword(token, newPassword);
   };
 
   return (

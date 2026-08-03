@@ -1,5 +1,6 @@
 import {create} from "zustand";
 import {toast} from "sonner";
+import { isAxiosError } from "axios";
 import { authService } from "@/services/authService";
 import type { AuthState } from "@/types/store";
 
@@ -36,9 +37,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             toast.success("Đăng nhập thành công");
 
             
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(error);
-            const message = error?.response?.data?.message || "Đăng nhập không thành công";
+            const message = isAxiosError(error) && error.response?.data?.message
+                ? error.response.data.message
+                : "Đăng nhập không thành công";
             toast.error(message);
             throw error; // re-throw để form biết thất bại
         } finally {

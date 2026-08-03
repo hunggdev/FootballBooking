@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/table";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 import type { Service } from "@/types/service";
@@ -20,25 +19,7 @@ interface Props {
   onDelete: (service: Service) => void;
 }
 
-const statusLabel: Record<Service["status"], string> = {
-  ACTIVE: "Đang hoạt động",
-  INACTIVE: "Ngừng hoạt động",
-};
-
-const statusVariant: Record<
-  Service["status"],
-  "default" | "destructive"
-> = {
-  ACTIVE: "default",
-  INACTIVE: "destructive",
-};
-
-export function ServiceTable({
-  services,
-  onView,
-  onEdit,
-  onDelete,
-}: Props) {
+export function ServiceTable({ services, onView, onEdit, onDelete }: Props) {
   return (
     <Card className="mt-5">
       <CardContent className="p-0">
@@ -47,13 +28,12 @@ export function ServiceTable({
             <TableRow>
               <TableHead>Ảnh</TableHead>
               <TableHead>Tên dịch vụ</TableHead>
+              <TableHead>Mô tả</TableHead>
               <TableHead>Giá</TableHead>
-              {/* Thêm tiêu đề cột Số lượng */}
               <TableHead>Số lượng</TableHead>
               <TableHead>Trạng thái</TableHead>
-              <TableHead className="text-right">
-                Hành động
-              </TableHead>
+              <TableHead>Ngày tạo</TableHead>
+              <TableHead className="text-right">Hành động</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -61,15 +41,14 @@ export function ServiceTable({
             {services.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={6} // Đã sửa từ 5 thành 6 vì thêm 1 cột
+                  colSpan={8}
                   className="text-center py-10 text-muted-foreground"
                 >
                   Chưa có dịch vụ.
                 </TableCell>
               </TableRow>
             )}
-
-            {services.map((service) => (
+            {services.map((service: Service) => (
               <TableRow key={service.serviceId}>
                 <TableCell>
                   {service.image ? (
@@ -85,25 +64,25 @@ export function ServiceTable({
                   )}
                 </TableCell>
 
-                <TableCell className="font-medium">
-                  {service.name}
+                <TableCell className="font-medium">{service.name}</TableCell>
+                <TableCell className="max-w-xs truncate">
+                  {service.description ?? (
+                    <span className="text-muted-foreground">Không có mô tả</span>
+                  )}
                 </TableCell>
-
                 <TableCell>
-                  {Number(service.price).toLocaleString("vi-VN")} đ
+                  {service.price.toLocaleString("vi-VN")} đ
                 </TableCell>
-
-                {/* Thêm ô hiển thị Số lượng */}
+                <TableCell>{service.quantity}</TableCell>
                 <TableCell>
-                  {service.quantity}
+                  {service.status === "ACTIVE" ? (
+                    <span className="text-green-600 font-semibold">Đang hoạt động</span>
+                  ) : (
+                    <span className="text-red-600 font-semibold">Ngừng hoạt động</span>
+                  )}
                 </TableCell>
-
                 <TableCell>
-                  <Badge
-                    variant={statusVariant[service.status]}
-                  >
-                    {statusLabel[service.status]}
-                  </Badge>
+                  {new Date(service.createdAt).toLocaleString("vi-VN")}
                 </TableCell>
 
                 <TableCell className="space-x-2 text-right">
@@ -126,7 +105,6 @@ export function ServiceTable({
                   <Button
                     size="sm"
                     variant="destructive"
-                    disabled={service.status === "INACTIVE"}
                     onClick={() => onDelete(service)}
                   >
                     Xóa

@@ -1,25 +1,78 @@
-// src/components/home/StatsBar.tsx
-import type { StatItem } from "@/types/home.ts";
+import { useEffect, useState } from "react";
+import {
+  Users,
+  UserPlus,
+  Monitor,
+  Ban,
+  CircleCheck,
+  Clock3,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-const stats: StatItem[] = [
-  { id: "1", value: "500+", label: "Sân bóng chất lượng" },
-  { id: "2", value: "10K+", label: "Khách hàng hài lòng" },
-  { id: "3", value: "50K+", label: "Lượt đặt sân thành công" },
-  { id: "4", value: "99.9%", label: "Thời gian hoạt động" },
-  { id: "5", value: "24/7", label: "Hỗ trợ khách hàng" },
-];
+import { StatsGrid } from "@/features/admin-dashboard/StatsGrid";
+import type { StatItem } from "@/features/admin-dashboard/types";
 
-export function StatsBar() {
-  return (
-    <section className="mx-auto max-w-7xl px-4 py-6">
-      <div className="grid grid-cols-2 gap-4 border p-4 sm:grid-cols-3 md:grid-cols-5">
-        {stats.map((stat) => (
-          <div key={stat.id} className="flex flex-col items-center gap-1 border p-4 text-center">
-            <p className="text-xl font-semibold">{stat.value}</p>
-            <p className="text-xs opacity-60">{stat.label}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
+export default function StatsBar() {
+  const [stats, setStats] = useState<StatItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(
+          "http://localhost:5001/api/customers/stats",
+          {
+            credentials: "include",
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error("Không thể lấy thống kê");
+        }
+
+        const data = await res.json();
+
+        const iconMap: Record<string, LucideIcon> = {
+          customers: Users,
+          totalUserInThisMonth: UserPlus,
+          online: Monitor,
+          bannedCustomers: Ban,
+          activeCustomers: CircleCheck,
+          inactiveCustomers: Clock3,
+        };
+
+        const labelMap: Record<string, string> = {
+          customers: "Khách hàng",
+          totalUserInThisMonth: "Mới tháng này",
+          online: "Đang online",
+          bannedCustomers: "Bị khóa",
+          activeCustomers: "Đang hoạt động",
+          inactiveCustomers: "Không hoạt động",
+        };
+
+        const statsArray: StatItem[] = Object.entries(data).map(
+          ([key, value]) => ({
+            id: key,
+            label: labelMap[key] ?? key,
+            value: Number(value),
+            icon: iconMap[key] ?? Users,
+          })
+        );
+
+        setStats(statsArray);
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  if (loading) {
+    return <p>Đang tải thống kê...</p>;
+  }
+
+  return <StatsGrid stats={stats} />;
 }

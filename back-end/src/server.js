@@ -10,6 +10,10 @@ import { cleanExpiredUsers } from "./utils/cleanExpiredUsers.js";
 import customerRoute from "./routes/customerRoute.js";
 import fieldRoute from "./routes/fieldRoute.js";
 import serviceRoute from "./routes/serviceRoute.js";
+import bookingRoute from "./routes/bookingRoute.js";
+import invoiceRoute from "./routes/invoiceRoute.js";
+import reviewRoute from "./routes/reviewRoute.js";
+import dashboardRoute from "./routes/dashboardRoute.js";
 import cron from "node-cron";
 
 // ----------------------------------------------
@@ -32,7 +36,10 @@ app.use("/api/users", userRoute);
 app.use("/api/customers", customerRoute);
 app.use("/api/fields", fieldRoute);
 app.use("/api/services", serviceRoute);
-
+app.use("/api/bookings", bookingRoute);
+app.use("/api/invoices", invoiceRoute);
+app.use("/api/reviews", reviewRoute);
+app.use("/api/dashboard", dashboardRoute);
 // ------------------------------------------------
 
 connectDB().then(() => {

@@ -1,29 +1,44 @@
-// src/components/home/HeroSection.tsx
 import { HeroSearchForm } from "./HeroSearchForm";
+import { CheckCircle2, ShieldCheck, Zap } from "lucide-react";
 
 export function HeroSection() {
   return (
-    <section className="mx-auto max-w-7xl border px-4 py-8">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {/* Left: headline + supporting image placeholder */}
-        <div className="flex flex-col justify-center gap-4 border p-6">
-          <h1 className="text-2xl font-semibold">Tiêu đề chính (Headline)</h1>
-          <p className="text-sm opacity-70">Tiêu đề phụ (Subheadline)</p>
-          <p className="text-sm opacity-70">
-            Đoạn mô tả ngắn giới thiệu dịch vụ.
-          </p>
-          <div className="flex flex-wrap gap-4 pt-2 text-xs">
-            <div className="flex-1 border p-3">Điểm nổi bật 1</div>
-            <div className="flex-1 border p-3">Điểm nổi bật 2</div>
-            <div className="flex-1 border p-3">Điểm nổi bật 3</div>
+    <section className="relative mx-auto max-w-7xl px-4 py-8 md:py-12">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center">
+        {/* Left column */}
+        <div className="lg:col-span-7 space-y-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-500">
+            <Zap className="h-3.5 w-3.5" /> Hệ Thống Đặt Sân Bóng Đá Trực Tuyến
           </div>
-          <div className="mt-4 flex h-64 items-center justify-center border border-dashed text-sm opacity-60">
-            [ Hình ảnh minh họa ]
+
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl">
+            Đặt Sân Cực Nhanh, <br />
+            <span className="text-emerald-500">Giữ Chỗ Tự Động 10 Phút</span>
+          </h1>
+
+          <p className="text-sm sm:text-base text-muted-foreground max-w-xl">
+            Tìm kiếm sân bóng phù hợp, chọn khung giờ lý tưởng và dịch vụ đi kèm. Hệ thống hỗ trợ tạm giữ chỗ 10 phút giúp bạn hoàn tất xác nhận nhanh chóng.
+          </p>
+
+          {/* Highlights */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            <div className="flex items-center gap-2 rounded-lg border bg-card p-3 shadow-xs">
+              <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+              <span className="text-xs font-semibold">Giữ chỗ 10 phút tự động</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-lg border bg-card p-3 shadow-xs">
+              <ShieldCheck className="h-5 w-5 text-emerald-500 shrink-0" />
+              <span className="text-xs font-semibold">Thanh toán minh bạch</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-lg border bg-card p-3 shadow-xs">
+              <Zap className="h-5 w-5 text-emerald-500 shrink-0" />
+              <span className="text-xs font-semibold">Đánh giá thực tế</span>
+            </div>
           </div>
         </div>
 
-        {/* Right: search form */}
-        <div className="flex items-center">
+        {/* Right column: Search form */}
+        <div className="lg:col-span-5">
           <HeroSearchForm />
         </div>
       </div>

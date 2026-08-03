@@ -4,7 +4,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -52,7 +51,8 @@ interface CustomerDetailDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-function formatDate(iso: string) {
+function formatDate(iso?: string) {
+  if (!iso) return "--";
   return new Date(iso).toLocaleDateString("vi-VN");
 }
 

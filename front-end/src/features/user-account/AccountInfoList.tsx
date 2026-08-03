@@ -8,7 +8,8 @@ interface InfoRow {
   value: string;
 }
 
-function formatDate(iso: string) {
+function formatDate(iso?: string) {
+  if (!iso) return "--";
   return new Date(iso).toLocaleDateString("vi-VN");
 }
 

@@ -104,16 +104,27 @@ const [error, setError] = useState<string | null>(null);
 
     setError(null);
 
-    const payload: CreateCustomerPayload | UpdateCustomerPayload = {
-      userId: initialData?.userId,
+    if (isEditing && initialData) {
+      const updatePayload: UpdateCustomerPayload = {
+        userId: initialData.userId,
+        fullName: form.fullName.trim(),
+        phone: form.phone.trim(),
+        status: (form.status === "ACTIVE" ? "ACTIVE" : "INACTIVE") as "ACTIVE" | "INACTIVE",
+      };
+
+      onSubmit(updatePayload);
+      return;
+    }
+
+    const createPayload: CreateCustomerPayload = {
+      userId: 0,
       fullName: form.fullName.trim(),
-      email: form.email.trim() || undefined,
-      phone: form.phone.trim() || undefined,
-      password: form.password.trim() || undefined,
-      ...(isEditing ? { status: form.status } : {}),
+      email: form.email.trim(),
+      phone: form.phone.trim(),
+      password: form.password.trim(),
     };
 
-    onSubmit(payload);
+    onSubmit(createPayload);
   };
 
   return (

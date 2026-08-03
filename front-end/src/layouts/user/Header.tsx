@@ -1,108 +1,100 @@
-// src/components/home/Header.tsx
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-} from "@/components/ui/navigation-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { useNavigate } from "react-router";
-import LogOut from "@/features/auth/SignOutButton";
+import { NavLink, useNavigate } from "react-router-dom"; 
 
 const navItems = [
-  { id: "home", label: "Trang chủ" },
-  { id: "booking", label: "Đặt sân" },
-  { id: "odds", label: "Kèo đấu" },
+  { id: "home", label: "Trang chủ", path: "/user" },         
+  { id: "booking", label: "Đặt sân", path: "/user/booking" }, 
+  { id: "reviews", label: "Đánh giá", path: "/user/reviews" },
+  { id: "odds", label: "Kèo đấu", path: null },
 ];
 
 export function Header() {
-  const user = useAuthStore((s) => s.user);
+  const user = useAuthStore((state) => state.user);
+  const signOut = useAuthStore((state) => state.signOut);
   const navigate = useNavigate();
 
-  const handleLS = async () => {
+  const handleLogout = async () => {
     try {
-      navigate("/history")
+      await signOut();
+      navigate("/signin"); 
     } catch (error) {
-      console.log(error); 
+      console.error(error);
     }
-  }
+  };
 
-  const handleDX = async() => {
-    try {
-      await useAuthStore.getState().signOut();
-      navigate("/signin");
-    } catch (error) {
-      console.error(error);   
-    }
-  }
-
-  const handleTT = async () => {
-    try {
-      navigate("/account")
-    } catch (error) {
-        console.error(error);
-    }
-  }
-  
-  const handleClick = async () => {
-    try {
-      navigate("/")
-    } catch (error) {
-      console.log(error); 
-    }
-  }
-  
   return (
-    <header className="w-full border-b">
+    <header className="w-full border-b bg-background">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        {/* Logo placeholder */}
-        <div className="flex items-center gap-2 border px-3 py-1.5 text-sm font-medium">
-          Logo / Tên thương hiệu
+        {/* Logo */}
+        <div
+          className="cursor-pointer text-xl font-bold"
+          onClick={() => navigate("/user")} 
+        >
+          Football Booking
         </div>
 
-        {/* Nav menu */}
-        <NavigationMenu>
-          <NavigationMenuList className="gap-1">
-            {navItems.map((item) => (
-              <NavigationMenuItem key={item.id}>
-                <NavigationMenuLink className="border px-3 py-1.5 text-sm" href="/">
-                  {item.label}
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-            ))}
-          </NavigationMenuList>
-        </NavigationMenu>
+        {/* Menu */}
+        <nav className="flex items-center gap-2">
+          {navItems.map((item) =>
+            item.path ? (
+              <NavLink
+                key={item.id}
+                to={item.path}
+                className={({ isActive }) =>
+                  `rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-accent hover:text-accent-foreground"
+                  }`
+                }
+              >
+                {item.label}
+              </NavLink>
+            ) : (
+              <span
+                key={item.id}
+                className="cursor-not-allowed rounded-md px-4 py-2 text-sm text-muted-foreground opacity-60"
+                title="Sắp ra mắt"
+              >
+                {item.label}
+              </span>
+            )
+          )}
+        </nav>
 
-        {/* User menu */}
+        {/* User */}
         <DropdownMenu>
-          <DropdownMenuTrigger
-            className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-          >
-            <Avatar className="h-6 w-6 border">
-              <AvatarFallback>U</AvatarFallback>
+          <DropdownMenuTrigger className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm hover:bg-accent">
+            <Avatar className="h-8 w-8">
+              <AvatarFallback>
+                {user?.fullName?.charAt(0).toUpperCase() ?? "U"}
+              </AvatarFallback>
             </Avatar>
 
-            <span>{user?.fullName}</span>
+            <span>{user?.fullName ?? "Người dùng"}</span>
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleTT}>
+            <DropdownMenuItem onClick={() => navigate("/user/account")}>
               Thông tin tài khoản
             </DropdownMenuItem>
 
-            <DropdownMenuItem onClick={handleLS}>
+            <DropdownMenuItem onClick={() => navigate("/user/history")}>
               Lịch sử đặt sân
             </DropdownMenuItem>
 
-            <DropdownMenuItem >
-              <LogOut/>            
+            <DropdownMenuItem
+              onClick={handleLogout}
+              className="text-red-600 focus:text-red-600"
+            >
+              Đăng xuất
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
