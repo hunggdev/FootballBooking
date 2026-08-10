@@ -1,0 +1,1 @@
+export type BookingType = "ONE_TIME" | "LONG_TERM";

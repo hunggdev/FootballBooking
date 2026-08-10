@@ -1,6 +1,6 @@
 import express from "express";
 import {
-  searchSlots,
+  getSlots,
   holdSlot,
   createBooking,
   getBookings,
@@ -8,13 +8,17 @@ import {
   updateBooking,
   cancelBooking,
   bookingHistory,
+  deleteSlotHold,
+  getMyHolds,
 } from "../controllers/bookingController.js";
 import { protectedRoute, requireAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/slots", protectedRoute, searchSlots);
+router.get("/slots", protectedRoute, getSlots);
+router.get("/myHolds", protectedRoute, getMyHolds);
 router.post("/hold", protectedRoute, holdSlot);
+router.delete("/hold", protectedRoute, deleteSlotHold);
 router.post("/", protectedRoute, createBooking);
 router.get("/history/me", protectedRoute, bookingHistory);
 router.get("/", protectedRoute, requireAdmin, getBookings);

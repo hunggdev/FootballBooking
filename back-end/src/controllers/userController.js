@@ -108,7 +108,11 @@ export const changePassword = async (req, res) => {
 
 export const chatbot = async (req, res) => {
     try {
-        const { question } = req.body;
+        const question = req.body?.question || req.body?.message;
+
+        if (!question) {
+            return res.status(400).json({ message: "Thiếu câu hỏi" });
+        }
 
         const response = await axios.post(
             "http://localhost:8000/chat",
@@ -117,14 +121,15 @@ export const chatbot = async (req, res) => {
             }
         );
 
-        console.log(response.data)
+        console.log(response.data);
         return res.json(response.data);
 
     } catch (err) {
-        console.error(err);
+        console.error("Chatbot error details:", err.response?.data || err.message);
 
         return res.status(500).json({
             message: "Chatbot error",
+            error: err.response?.data || err.message,
         });
     }
 };

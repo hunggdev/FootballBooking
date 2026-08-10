@@ -17,15 +17,30 @@ interface Props {
   onView: (field: Field) => void;
   onEdit: (field: Field) => void;
   onDelete: (field: Field) => void;
+  currentPage?: number;
+  pageSize?: number;
 }
 
 const fieldTypeLabel: Record<FieldType, string> = {
   FIVE: "Sân 5 người",
   SEVEN: "Sân 7 người",
+  ELEVEN: "Sân 11 người",
 };
 
-export function FieldsTable({ fields, onView, onEdit, onDelete }: Props) {
-  return (
+export function FieldsTable({
+  fields,
+  onView,
+  onEdit,
+  onDelete,
+  currentPage = 1,
+  pageSize = 10,
+}: Props) {
+
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+
+  const currentFields = fields.slice(startIndex, endIndex);
+  return(
     <Card className="mt-5">
       <CardContent className="p-0">
         <Table>
@@ -39,7 +54,7 @@ export function FieldsTable({ fields, onView, onEdit, onDelete }: Props) {
           </TableHeader>
 
           <TableBody>
-            {fields.length === 0 && (
+            {currentFields.length === 0 && (
               <TableRow>
                 <TableCell
                   colSpan={4}
@@ -49,7 +64,7 @@ export function FieldsTable({ fields, onView, onEdit, onDelete }: Props) {
                 </TableCell>
               </TableRow>
             )}
-            {fields.map((field) => (
+            {currentFields.map((field) => (
               <TableRow key={field.fieldId}>
                 <TableCell>
                   {field.image ? (

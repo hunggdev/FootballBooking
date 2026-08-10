@@ -6,7 +6,7 @@ const validateField = ({ name, fieldType }) => {
     return "Tên sân không được để trống";
   }
 
-  if (!["FIVE", "SEVEN"].includes(fieldType)) {
+  if (!["FIVE", "SEVEN", "ELEVEN"].includes(fieldType)) {
     return "Loại sân không hợp lệ";
   }
 
@@ -41,18 +41,6 @@ export const getFields = async (req, res) => {
             fieldType: type,
           }
         : {},
-
-      include: {
-        fieldSlots: {
-          orderBy: {
-            starttime: "asc",
-          },
-        },
-      },
-
-      orderBy: {
-        createdAt: "desc",
-      },
     });
 
     return res.status(200).json({

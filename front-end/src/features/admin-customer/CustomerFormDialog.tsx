@@ -31,6 +31,53 @@ import type {
   UpdateCustomerPayload,
 } from "@/types/customer";
 
+import { z } from "zod";
+
+export const customerSchema = z.object({
+  fullName: z
+    .string()
+    .trim()
+    .min(1, "Họ tên không được để trống")
+    .max(100, "Họ tên tối đa 100 ký tự")
+    .regex(
+      /^[A-Za-zÀ-ỹ\s]+$/,
+      "Họ tên chỉ được chứa chữ cái và khoảng trắng"
+    ),
+
+  email: z
+    .string()
+    .trim()
+    .min(1, "Email không được để trống")
+    .email("Email không hợp lệ")
+    .max(255, "Email tối đa 255 ký tự"),
+
+  phone: z
+    .string()
+    .trim()
+    .min(1, "Số điện thoại không được để trống")
+    .regex(
+      /^(0[3|5|7|8|9])[0-9]{8}$/,
+      "Số điện thoại không hợp lệ"
+    ),
+
+  password: z
+    .string()
+    .min(1, "Mật khẩu không được để trống")
+    .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+    .max(64, "Mật khẩu tối đa 64 ký tự")
+    .regex(/[a-z]/, "Mật khẩu phải có ít nhất 1 chữ thường")
+    .regex(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ hoa")
+    .regex(/[0-9]/, "Mật khẩu phải có ít nhất 1 chữ số")
+    .regex(
+      /[!@#$%^&*(),.?":{}|<>]/,
+      "Mật khẩu phải có ít nhất 1 ký tự đặc biệt"
+    ),
+
+  status: z.enum(["ACTIVE", "BANNED", "INACTIVE"]),
+});
+
+export type CustomerForm = z.infer<typeof customerSchema>;
+
 interface CustomerFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -62,7 +109,7 @@ export function CustomerFormDialog({
         fullName: initialData.fullName,
         email: initialData.email ?? "",
         phone: initialData.phone ?? "",
-        password: initialData.password ?? "",
+        password: "",
         status: initialData.status,
       }
     : emptyForm;
@@ -82,23 +129,17 @@ const [error, setError] = useState<string | null>(null);
     }));
   };
 
-  const validate = () => {
-    if (!form.fullName.trim()) {
-      return "Tên khách hàng không được để trống";
-    }
-
-    if (form.fullName.length > 255) {
-      return "Tên khách hàng tối đa 255 ký tự";
-    }
-
-    return null;
-  };
+  
 
   const handleSubmit = () => {
-    const err = validate();
+    const schema = isEditing
+      ? customerSchema.omit({ password: true })
+      : customerSchema;
 
-    if (err) {
-      setError(err);
+    const result = schema.safeParse(form);
+
+    if (!result.success) {
+      setError(result.error.issues[0].message);
       return;
     }
 
@@ -109,10 +150,11 @@ const [error, setError] = useState<string | null>(null);
         userId: initialData.userId,
         fullName: form.fullName.trim(),
         phone: form.phone.trim(),
-        status: (form.status === "ACTIVE" ? "ACTIVE" : "INACTIVE") as "ACTIVE" | "INACTIVE",
+        status: (form.status === "ACTIVE" ? "ACTIVE" : (form.status === "BANNED" ? "BANNED" : "INACTIVE") as "BANNED" | "INACTIVE") as "ACTIVE" | "INACTIVE",
       };
 
       onSubmit(updatePayload);
+      resetForm();
       return;
     }
 
@@ -126,6 +168,11 @@ const [error, setError] = useState<string | null>(null);
 
     onSubmit(createPayload);
   };
+
+  const resetForm = () => { 
+    setForm(initialData ? defaultForm : emptyForm);
+    setError(null);
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -225,7 +272,10 @@ const [error, setError] = useState<string | null>(null);
         <DialogFooter>
           <Button
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={() => {
+              resetForm();
+              onOpenChange(false);
+            }}
           >
             Hủy
           </Button>

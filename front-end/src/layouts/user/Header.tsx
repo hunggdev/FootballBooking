@@ -8,11 +8,12 @@ import {
 import { useAuthStore } from "@/stores/useAuthStore";
 import { NavLink, useNavigate } from "react-router-dom"; 
 
+// 1. Cấu hình thêm thuộc tính `exact` để kiểm soát route nào cần Active khớp tuyệt đối
 const navItems = [
-  { id: "home", label: "Trang chủ", path: "/user" },         
-  { id: "booking", label: "Đặt sân", path: "/user/booking" }, 
-  { id: "reviews", label: "Đánh giá", path: "/user/reviews" },
-  { id: "odds", label: "Kèo đấu", path: null },
+  { id: "home", label: "Trang chủ", path: "/user", exact: true },        
+  { id: "booking", label: "Đặt sân", path: "/user/booking", exact: false }, 
+  { id: "reviews", label: "Đánh giá", path: "/user/reviews", exact: false },
+  { id: "odds", label: "Kèo đấu", path: "/user/match", exact: false },
 ];
 
 export function Header() {
@@ -47,6 +48,8 @@ export function Header() {
               <NavLink
                 key={item.id}
                 to={item.path}
+                // 2. Truyền exact vào prop end. Chỉ trang chủ mới dùng `end={true}`
+                end={item.exact}
                 className={({ isActive }) =>
                   `rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                     isActive

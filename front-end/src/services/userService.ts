@@ -10,4 +10,9 @@ export const userService = {
         const res = await api.patch("/users/change-password", {password, newPassword, confirmPassword}, {withCredentials: true});
         return res.data;
     },
+
+    chatbot: async (message: string) => {
+        const res = await api.post("/users/chatbot", {message}, {withCredentials: true});
+        return res.data;
+    },
 };

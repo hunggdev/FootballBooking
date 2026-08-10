@@ -16,7 +16,7 @@ import type {
 } from "@/types/customer";
 import { CustomerDetailDialog } from "./CustomerDetailDialog";
 import { CustomerFormDialog } from "./CustomerFormDialog";
-import { FormPagination } from "@/components/common/Pagination";
+import { Pagination } from "@/components/common/Pagination";
 
 interface ErrorResponse {
   message?: string;
@@ -135,7 +135,7 @@ export function ManageCustomer() {
             setFormError(
               getErrorMessage(
                 error,
-                "Cập nhật sân thất bại."
+                "Cập nhật thông tin thất bại."
               )
             );
           },
@@ -199,7 +199,7 @@ export function ManageCustomer() {
         currentPage={currentPage}
         pageSize={PAGE_SIZE}
       />
-      <FormPagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}  />
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}  />
       
       <CustomerDetailDialog
         customerId={detailCustomerId}

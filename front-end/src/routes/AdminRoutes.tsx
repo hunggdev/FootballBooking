@@ -13,6 +13,7 @@ import BookingHistoryPage from "@/pages/admin/BookingHistoryPage";
 import ManageReviewPage from "@/pages/admin/ManageReviewPage";
 import ManageInvoicePage from "@/pages/admin/ManageInvoicePage";
 import StatsPage from "@/pages/admin/StatsPage";
+import ManageMatchPage from "@/pages/admin/ManageMatchPage";
 
 export const adminRoutes: RouteObject = {
   path: "/admin",
@@ -33,6 +34,7 @@ export const adminRoutes: RouteObject = {
         { path: "invoices", element: <ManageInvoicePage /> },
         { path: "payments", element: <ManageInvoicePage /> },
         { path: "stats", element: <StatsPage /> },
+        { path: "matches", element: <ManageMatchPage />}
       ],
     },
   ],

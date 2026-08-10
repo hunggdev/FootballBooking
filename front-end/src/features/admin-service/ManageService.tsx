@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ServiceTable } from "./ServiceTable";
 import { ServiceFormDialog } from "./ServiceFormDialog";
 import { ServiceDetailDialog } from "./ServiceDetailDialog";
+import { Pagination } from "@/components/common/Pagination";
+
 
 import {
   useServices,
@@ -20,6 +22,8 @@ import type {
   CreateServicePayload,
   UpdateServicePayload,
 } from "@/types/service";
+
+const PAGE_SIZE = 10;
 
 interface ErrorResponse {
   message?: string;
@@ -44,12 +48,16 @@ export function ManageService() {
   const [detailServiceId, setDetailServiceId] = useState<number | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [listError, setListError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
 
   const filteredServices = useMemo(() => {
     return services.filter((service: Service) =>
       service.name.toLowerCase().includes(search.trim().toLowerCase())
     );
   }, [services, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredServices.length / PAGE_SIZE));
 
   const handleAdd = () => {
     setEditingService(null);
@@ -156,7 +164,10 @@ export function ManageService() {
         onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        currentPage={currentPage}
+        pageSize={PAGE_SIZE}
       />
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}  />
 
       <ServiceFormDialog
         key={editingService?.serviceId ?? "create"}

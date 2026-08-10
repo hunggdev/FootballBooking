@@ -11,3 +11,19 @@ npm run dev
 npx prisma generate
 
 npx prisma db seed
+
+
+// tao .sql mới
+npx prisma db pull    -> kéo dữ liệu từ supabase xuống
+
+xoa hết các history cũ trên local và supbase
+
+tạo thư mục prisma/migrations/20260803000000_init_from_supabase
+
+npx prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script > prisma/migrations/20260803000000_init_from_supabase/migration.sql -> đổ sql
+
+npx prisma migrate resolve --applied 20260803000000_init_from_supabase -> xác nhận đã run
+
+npx prisma migrate status -> check lại
+
+

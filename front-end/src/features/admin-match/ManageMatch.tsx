@@ -6,7 +6,7 @@ import { MatchesTable } from "./MatchesTable";
 import { useMatches, useCreateMatch, useUpdateMatch, useDeleteMatch, useStatsMatch } from "@/stores/useMatchStore";
 import type { AxiosError } from "axios";
 import { useMemo, useState } from "react";
-import { FormPagination } from "@/components/common/Pagination";
+import { Pagination } from "@/components/common/Pagination";
 import { MatchDetailDialog } from "./MatchDetailDialog";
 import { MatchFormDialog } from "./MatchFormDialog";
 
@@ -190,7 +190,7 @@ export function ManageMatch() {
         </p>
       )}
       <MatchesTable matches={filteredMatches} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} currentPage={currentPage} pageSize={PAGE_SIZE}/>
-      <FormPagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}  />
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}  />
       
       <MatchDetailDialog
         matchId={detailMatchId}

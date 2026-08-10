@@ -106,6 +106,12 @@ export function FieldFormDialog({
     };
 
     onSubmit(payload);
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setForm(initialData ? defaultForm : emptyForm);
+    setError(null);
   };
 
   return (
@@ -140,6 +146,7 @@ export function FieldFormDialog({
               <SelectContent>
                 <SelectItem value="FIVE">Sân 5 người</SelectItem>
                 <SelectItem value="SEVEN">Sân 7 người</SelectItem>
+                <SelectItem value="ELEVEN">Sân 11 người</SelectItem>
               </SelectContent>
             </Select>
           </FieldWrapper>
@@ -166,7 +173,10 @@ export function FieldFormDialog({
         </FieldGroup>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => {
+            resetForm();
+            onOpenChange(false);
+          }}>
             Hủy
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting}>

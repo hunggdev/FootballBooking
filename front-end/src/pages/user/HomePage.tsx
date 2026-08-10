@@ -3,6 +3,7 @@ import { QuickFeatures } from "../../features/user-homepage/QuickFeatures";
 import { FeaturedFields } from "../../features/user-homepage/FeaturedFields";
 import { PromotionSection } from "../../features/user-homepage/PromotionSection";
 import { Testimonials } from "../../features/user-homepage/Testimonials";
+import { ChatWidget} from "@/features/user-chatbot/ChatWidget"
 
 const HomePage = () => {
   return (
@@ -13,6 +14,7 @@ const HomePage = () => {
         <FeaturedFields />
         <PromotionSection />
         <Testimonials />
+        <ChatWidget/>
       </main>
     </div>
   );

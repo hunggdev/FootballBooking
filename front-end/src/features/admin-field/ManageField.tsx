@@ -7,6 +7,7 @@ import { FieldFilterBar } from "./FieldFilterBar";
 import { FieldsTable } from "./FieldTable";
 import { FieldFormDialog } from "./FieldFormDialog";
 import { FieldDetailDialog } from "./FieldDetailDialog";
+import { Pagination } from "@/components/common/Pagination";
 
 import {
   useFields,
@@ -25,6 +26,8 @@ interface ErrorResponse {
   message?: string;
 }
 
+const PAGE_SIZE = 10;
+
 function getErrorMessage(error: unknown, fallback: string): string {
   const axiosError = error as AxiosError<ErrorResponse>;
   return axiosError.response?.data?.message ?? fallback;
@@ -38,13 +41,14 @@ export function ManageField() {
   const deleteField = useDeleteField();
 
   const [search, setSearch] = useState("");
-  const [fieldType, setFieldType] = useState<"all" | "FIVE" | "SEVEN">("all");
+  const [fieldType, setFieldType] = useState<"all" | "FIVE" | "SEVEN" | "ELEVEN" >("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [editingField, setEditingField] = useState<Field | null>(null);
   const [detailFieldId, setDetailFieldId] = useState<number | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [listError, setListError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredFields = useMemo(() => {
     return fields.filter((field: Field) => {
@@ -58,6 +62,9 @@ export function ManageField() {
       return matchSearch && matchFieldType;
     });
   }, [fields, search, fieldType]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredFields.length / PAGE_SIZE));
+
 
   const handleAdd = () => {
     setEditingField(null);
@@ -155,7 +162,11 @@ export function ManageField() {
         onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        currentPage={currentPage}
+        pageSize={PAGE_SIZE}
       />
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}  />
+      
 
       <FieldFormDialog
         key={editingField?.fieldId ?? "create"}

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 // import { sendMessageToBot } from "@/services/chatBot";
 import type { ChatMessage } from "@/features/user-chatbot/chat";
 import {useUserStore} from "@/stores/useUserStore"
@@ -10,10 +10,28 @@ const WELCOME_MESSAGE: ChatMessage = {
   createdAt: new Date().toISOString(),
 };
 
+const STORAGE_KEY = "chatbot_messages";
+
 export function useChatbot() {
-  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const savedMessages = localStorage.getItem(STORAGE_KEY);
+
+    if (savedMessages) {
+      return JSON.parse(savedMessages);
+    }
+
+    return [WELCOME_MESSAGE];
+  });
   const [isLoading, setIsLoading] = useState(false);
   const chatbot = useUserStore((state) => state.chatbot);
+
+  useEffect(() => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(messages)
+    );
+  }, [messages]);
+
 
   const sendMessage = useCallback(async (content: string) => {
     const trimmed = content.trim();
@@ -50,7 +68,7 @@ export function useChatbot() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading]);
+  }, [isLoading, chatbot]);
 
   return { messages, isLoading, sendMessage };
 }

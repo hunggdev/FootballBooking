@@ -49,6 +49,7 @@ export function FieldFilterBar({
             <SelectItem value="all">Tất cả loại sân</SelectItem>
             <SelectItem value="FIVE">Sân 5 người</SelectItem>
             <SelectItem value="SEVEN">Sân 7 người</SelectItem>
+            <SelectItem value="ELEVEN">Sân 11 người</SelectItem>
           </SelectContent>
         </Select>
       </div>

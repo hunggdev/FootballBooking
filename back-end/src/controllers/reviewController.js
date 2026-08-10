@@ -147,7 +147,6 @@ export const getFieldReviews = async (req, res) => {
           select: {
             userId: true,
             fullName: true,
-            avatar: true,
           },
         },
       },

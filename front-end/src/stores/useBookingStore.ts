@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { bookingService } from "@/services/bookingService";
+import type { HoldSlot } from "@/types/field";
 import type {
   CreateBookingPayload,
   UpdateBookingPayload,
@@ -38,10 +39,49 @@ export const useMyBookings = () => {
   });
 };
 
+export const useSlots = (fieldId: number, date: string) => {
+  return useQuery({
+    queryKey: ["slots", fieldId, date.split("T")[0]],
+    queryFn: () => bookingService.getSlots(fieldId, date),
+    enabled: !!fieldId && !!date,
+    staleTime: 0,
+  });
+};
+
+export const useMyHolds = () => {
+  return useQuery<HoldSlot[]>({
+    queryKey: ["my-holds"],
+    queryFn: async () => {
+      const data = await bookingService.getMyHolds();
+      return data ?? []; 
+    },
+  });
+};
+
 // Giữ chỗ tạm thời (10 phút) trước khi xác nhận đặt sân
 export const useHoldSlot = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: HoldSlotPayload) => bookingService.holdFieldSlot(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-holds"] });
+      queryClient.invalidateQueries({ queryKey: ["slots"] });
+    },
+  });
+};
+
+// Hủy giữ chỗ
+export const useDeleteSlotHold = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: HoldSlotPayload) =>
+      bookingService.deleteSlotHold(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-holds"] });
+      queryClient.invalidateQueries({ queryKey: ["slots"] });
+      queryClient.invalidateQueries({ queryKey: ["fields"] }); 
+    },
   });
 };
 
@@ -51,6 +91,8 @@ export const useConfirmBooking = () => {
   return useMutation({
     mutationFn: (payload: ConfirmBookingPayload) => bookingService.confirmBooking(payload),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-holds"] });
+      queryClient.invalidateQueries({ queryKey: ["slots"] });
       queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
       queryClient.invalidateQueries({ queryKey: ["fields"] });
     },

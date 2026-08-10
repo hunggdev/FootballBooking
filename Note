@@ -9,3 +9,20 @@ const validate = () => {
 };
 Hậu quả: Có thể submit form với fieldType = "", costRule = "", minAge = 0 — data không hợp lệ gửi lên server.
 -> Cần fix lại
+
+merge
+
+git checkout Hung
+
+git add .
+git commit
+ git fetch origin
+ git merge origin/Lan
+
+
+git checkout --theirs . chấp nhận mọi thay đổi khi merge
+git commit 
+
+docker exec -it football-redis redis-cli FLUSHDB -> xoa
+
+docker exec -it football-redis redis-cli --scan | ForEach-Object { $k=$_; Write-Host "$k -> $(docker exec football-redis redis-cli GET $k)" } -> xem du lieu 

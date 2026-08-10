@@ -15,6 +15,11 @@ export const bookingService = {
     return res.data.bookings ?? [];
   },
 
+  getMyHolds: async () => {
+    const res = await api.get("/bookings/myHolds");
+    return res.data.holds ?? [];
+  },
+
   // Lấy chi tiết booking
   getBooking: async (bookingId: number): Promise<Booking> => {
     const res = await api.get(`/bookings/${bookingId}`);
@@ -33,6 +38,11 @@ export const bookingService = {
     return res.data.hold;
   },
 
+  deleteSlotHold: async (payload: HoldSlotPayload): Promise<number> => {
+    const res = await api.delete("/bookings/hold", { data: payload });
+    return res.data.slotId;
+  },
+
   // Xác nhận đặt sân sau khi đã giữ chỗ thành công
   confirmBooking: async (payload: ConfirmBookingPayload): Promise<Booking> => {
     const res = await api.post("/bookings", payload);
@@ -46,7 +56,7 @@ export const bookingService = {
   },
 
   // Tìm slot theo ngày
-  searchSlots: async (fieldId: number, date: string) => {
+  getSlots: async (fieldId: number, date: string) => {
     const res = await api.get("/bookings/slots", { params: { fieldId, date } });
     return res.data.slots ?? [];
   },

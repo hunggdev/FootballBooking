@@ -6,6 +6,8 @@ import ResetPasswordPage from "@/pages/common/ResetPasswordPage";
 import { Toaster } from "sonner";
 import { adminRoutes } from "./AdminRoutes";
 import { userRoutes } from "./UserRoutes";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
 
 export default function AppRoutes() {
   const routes = useRoutes([
@@ -18,10 +20,13 @@ export default function AppRoutes() {
     userRoutes,
   ]);
 
+  
   return (
     <>
       <Toaster richColors />
       {routes}
+
+      <ReactQueryDevtools initialIsOpen={false} />
     </>
   );
 }

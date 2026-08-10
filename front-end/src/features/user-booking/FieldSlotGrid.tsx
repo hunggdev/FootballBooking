@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Clock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAllFieldSlotsByDate } from "@/stores/useFieldStore";
+import { useAllFieldSlotsByDate, useFields } from "@/stores/useFieldStore";
 import { FIELD_TYPE_LABEL, FIELD_TYPE_SLUG } from "@/types/field";
 import type { FieldType, FieldSlot } from "@/types/field";
 import { formatTimeRange } from "@/lib/utils";
@@ -22,18 +22,18 @@ export default function FieldSlotGrid() {
   const pageSize = 4;
 
   const filterType = selectedType === "ALL" ? undefined : selectedType;
-  const { data: fieldsWithSlots = [], isLoading, error } = useAllFieldSlotsByDate(selectedDate, filterType);
+  const { data: fields = [], isLoading, error } = useFields(filterType);
 
   const dateObj = dayjs(selectedDate);
   const dateLabel = `${WEEKDAY_LABEL[dateObj.day()]}, ${dateObj.format("DD/MM/YYYY")}`;
 
-  const totalItems = fieldsWithSlots.length;
+  const totalItems = fields.length;
   const totalPages = Math.ceil(totalItems / pageSize);
 
-  const paginatedFields = fieldsWithSlots.slice(
+  const paginatedFields = fields.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
-  );
+);
 
   const changeDate = (days: number) => {
     setSelectedDate(dayjs(selectedDate).add(days, "day").format("YYYY-MM-DD"));
@@ -45,10 +45,10 @@ export default function FieldSlotGrid() {
     setCurrentPage(1);
   };
 
-  const handleSlotClick = (fieldType: FieldType, fieldId: number, slotId: number) => {
-    const slug = FIELD_TYPE_SLUG[fieldType] || fieldType.toLowerCase();
-    navigate(`/user/booking/${slug}/${fieldId}?slotId=${slotId}&date=${selectedDate}`);
-  };
+  // const handleSlotClick = (fieldType: FieldType, fieldId: number, slotId: number) => {
+  //   const slug = FIELD_TYPE_SLUG[fieldType] || fieldType.toLowerCase();
+  //   navigate(`/user/booking/${slug}/${fieldId}?slotId=${slotId}&date=${selectedDate}`);
+  // };
 
   return (
     <div className="space-y-6">
@@ -173,7 +173,7 @@ export default function FieldSlotGrid() {
       )}
 
       {/* Grid of Fields & Time Slots */}
-      {!isLoading && !error && fieldsWithSlots.length === 0 ? (
+      {!isLoading && !error && fields.length === 0 ? (
         <Card className="py-12 text-center">
           <CardContent className="text-muted-foreground">
             Chưa có sân bóng hoặc khung giờ nào trong hệ thống cho ngày này.
@@ -215,18 +215,24 @@ export default function FieldSlotGrid() {
                         size="sm"
                         onClick={() =>
                           navigate(
-                            `/user/booking/${FIELD_TYPE_SLUG[field.fieldType] || field.fieldType.toLowerCase()}/${field.fieldId}`
+                            `/user/booking/${FIELD_TYPE_SLUG[field.fieldType] || field.fieldType.toLowerCase()}/${field.fieldId}?date=${selectedDate}`,
+                            {
+                              state: {
+                                fieldId: field.fieldId,
+                                bookingDate: selectedDate,
+                              },
+                            }
                           )
                         }
                         className="text-xs"
                       >
-                        Chi tiết sân →
+                        Chi tiết sân
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
 
-                <CardContent className="p-4">
+                {/* <CardContent className="p-4">
                   {!field.slots || field.slots.length === 0 ? (
                     <p className="py-4 text-center text-xs text-muted-foreground">
                       Sân chưa được thiết lập khung giờ.
@@ -285,7 +291,7 @@ export default function FieldSlotGrid() {
                       })}
                     </div>
                   )}
-                </CardContent>
+                </CardContent> */}
               </Card>
             ))}
           </div>

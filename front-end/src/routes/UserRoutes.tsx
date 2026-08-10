@@ -5,9 +5,11 @@ import HomePage from "@/pages/user/HomePage";
 import ProfilePage from "@/pages/user/ProfilePage";
 import FieldTypePage from "@/pages/user/FieldTypePage";
 import FieldListPage from "@/pages/user/FieldListPage";
-import FieldDetailPage from "@/pages/user/FieldDetailPage";
 import UserHistoryPage from "@/pages/user/UserHistoryPage";
 import ReviewPage from "@/pages/user/ReviewPage";
+import MatchPage from "@/pages/user/MatchPage";
+
+import FieldDetailPage from "@/pages/user/FieldDetailPage";
 
 export const userRoutes: RouteObject = {
   path: "/user",
@@ -22,7 +24,9 @@ export const userRoutes: RouteObject = {
         { path: "reviews", element: <ReviewPage /> },
         { path: "booking", element: <FieldTypePage /> },
         { path: "booking/:typeSlug", element: <FieldListPage /> },
-        { path: "booking/:typeSlug/:fieldId", element: <FieldDetailPage /> },
+        // { path: "booking/:typeSlug/:fieldId", element: <FieldDetailPage /> },
+        { path: "booking/:typeSlug/:fieldId", element: <FieldDetailPage /> }, 
+        { path: "match", element: <MatchPage /> },
       ],
     },
   ],

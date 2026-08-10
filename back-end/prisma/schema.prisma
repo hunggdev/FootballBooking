@@ -135,44 +135,65 @@ model BookingServices {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Booking {
-  bookingId       Int               @id @default(autoincrement()) @map("booking_id")
-  userId          Int               @map("user_id")
-  status          BookingStatus     @default(HOLD)
-  type            BookingType       @default(ONE_TIME)
-  depositAmount   Decimal           @default(0) @map("deposit_amount") @db.Decimal(10, 2)
-  totalPrice      Decimal           @map("total_price") @db.Decimal(10, 2)
-  createdAt       DateTime          @default(now()) @map("created_at")
-  slotId          Int               @map("slot_id")
-  bookingDate     DateTime          @map("booking_date") @db.Date
-  paidAmount      Decimal           @default(0) @map("paid_amount") @db.Decimal(10, 2)
-  holdExpiredAt   DateTime?         @map("hold_expired_at") @db.Timestamp(6)
-  cancelledAt     DateTime?         @map("cancelled_at") @db.Timestamp(6)
-  cancelReason    String?           @map("cancel_reason")
-  note            String?
-  updatedAt       DateTime?         @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  bookingId Int @id @default(autoincrement()) @map("booking_id")
+  userId    Int @map("user_id")
+
+  status        BookingStatus @default(HOLD)
+  type          BookingType   @default(ONE_TIME)
+  depositAmount Decimal       @default(0) @map("deposit_amount") @db.Decimal(10, 2)
+  totalPrice    Decimal       @map("total_price") @db.Decimal(10, 2)
+  paidAmount    Decimal       @default(0) @map("paid_amount") @db.Decimal(10, 2)
+
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  cancelledAt  DateTime? @map("cancelled_at") @db.Timestamp(6)
+  cancelReason String?   @map("cancel_reason")
+  note         String?
+  invoiceId    Int?      @map("invoice_id")
+
+  bookingSlots    BookingSlot[]
   bookingServices BookingServices[]
   user            User              @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "bookings_user_fk")
-  fieldSlot       FieldSlot         @relation(fields: [slotId], references: [slotId], onDelete: Cascade, onUpdate: NoAction, map: "fk_booking_slot")
-  invoice         Invoice?
+  invoice         Invoice?          @relation(fields: [invoiceId], references: [invoiceId])
   review          Review?
+  fieldSlot       FieldSlot?        @relation(fields: [fieldSlotSlotId], references: [slotId])
+  fieldSlotSlotId Int?
 
-  @@index([bookingDate], map: "idx_booking_date")
-  @@index([slotId], map: "idx_booking_slot")
   @@index([userId], map: "idx_booking_user")
   @@map("bookings")
 }
 
+model BookingSlot {
+  bookingSlotId Int      @id @default(autoincrement()) @map("booking_slot_id")
+  bookingId     Int      @map("booking_id")
+  slotId        Int      @map("slot_id")
+  bookingDate   DateTime @map("booking_date") @db.Date
+
+  // Snapshot giá tại thời điểm đặt — KHÔNG lấy giá hiện tại của FieldSlot khi hiển thị lịch sử,
+  // vì giá sân có thể đổi sau này, đơn cũ phải giữ nguyên giá đã tính.
+  price Decimal @db.Decimal(10, 2)
+
+  booking   Booking   @relation(fields: [bookingId], references: [bookingId], onDelete: Cascade, map: "booking_slots_booking_fk")
+  fieldSlot FieldSlot @relation(fields: [slotId], references: [slotId], onDelete: Cascade, onUpdate: NoAction, map: "booking_slots_slot_fk")
+
+  @@index([bookingId], map: "idx_booking_slot_booking")
+  @@index([bookingDate], map: "idx_booking_slot_date")
+  @@index([slotId, bookingDate], map: "idx_booking_slot_slot_date")
+  @@map("booking_slots")
+}
+
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model FieldSlot {
-  slotId     Int        @id @default(autoincrement()) @map("slot_id")
-  fieldId    Int        @map("field_id")
-  starttime  DateTime   @db.Time(6)
-  endtime    DateTime   @db.Time(6)
-  price      Decimal    @db.Decimal(10, 2)
-  status     SlotStatus @default(AVAILABLE) @map("SlotStatus")
-  bookings   Booking[]
-  field      Field      @relation(fields: [fieldId], references: [fieldId], onDelete: Cascade, onUpdate: NoAction, map: "fk_field")
-  slotHolds  SlotHold[]
+  slotId       Int           @id @default(autoincrement()) @map("slot_id")
+  fieldId      Int           @map("field_id")
+  starttime    DateTime      @db.Time(6)
+  endtime      DateTime      @db.Time(6)
+  price        Decimal       @db.Decimal(10, 2)
+  bookings     Booking[]
+  field        Field         @relation(fields: [fieldId], references: [fieldId], onDelete: Cascade, onUpdate: NoAction, map: "fk_field")
+  slotHolds    SlotHold[]
+  slotBlocks   BlockedSlot[]
+  bookingSlots BookingSlot[]
 
   @@index([fieldId], map: "idx_field_slots_field")
   @@index([fieldId], map: "idx_field_slots_field_id")
@@ -182,7 +203,6 @@ model FieldSlot {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Invoice {
   invoiceId     Int           @id @default(autoincrement()) @map("invoice_id")
-  bookingId     Int           @unique(map: "idx_invoice_booking") @map("booking_id")
   userId        Int           @map("user_id")
   totalAmount   Decimal       @map("total_amount") @db.Decimal(10, 2)
   status        InvoiceStatus @default(PENDING)
@@ -193,7 +213,7 @@ model Invoice {
   remainAmount  Decimal       @default(0) @map("remain_amount") @db.Decimal(10, 2)
   paymentMethod String?       @map("payment_method")
   paidAt        DateTime?     @map("paid_at") @db.Timestamp(6)
-  booking       Booking       @relation(fields: [bookingId], references: [bookingId], onDelete: NoAction, onUpdate: NoAction, map: "invoice_booking_fk")
+  bookings      Booking[]
   user          User          @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "invoice_user_fk")
 
   @@map("invoices")
@@ -221,8 +241,8 @@ model Review {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model SlotHold {
   holdId      Int       @id @default(autoincrement()) @map("hold_id")
-  slotId      Int       @map("slot_id")
   userId      Int       @map("user_id")
+  slotId      Int       @map("slot_id")
   bookingDate DateTime  @map("booking_date") @db.Date
   expiresAt   DateTime  @map("expires_at") @db.Timestamp(6)
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
@@ -230,10 +250,24 @@ model SlotHold {
   user        User      @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: NoAction, map: "fk_hold_user")
 
   @@unique([slotId, bookingDate], map: "uq_slot_hold_slot_date")
-  @@index([slotId, bookingDate], map: "idx_slot_hold")
   @@index([expiresAt], map: "idx_slot_hold_expire")
   @@index([slotId], map: "idx_slot_hold_slot")
   @@map("slot_holds")
+}
+
+model BlockedSlot {
+  blockId     Int       @id @default(autoincrement()) @map("block_id")
+  slotId      Int       @map("slot_id")
+  bookingDate DateTime  @map("booking_date") @db.Date
+  reason      String?   @db.VarChar(255)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+  fieldSlot   FieldSlot @relation(fields: [slotId], references: [slotId], onDelete: Cascade)
+
+  @@unique([slotId, bookingDate])
+  @@index([bookingDate])
+  @@index([slotId])
+  @@map("blocked_slots")
 }
 
 enum FieldStatus {
@@ -288,5 +322,4 @@ enum SlotStatus {
   HOLD
   BOOKED
   CLOSED
-  MAINTENANCE
 }

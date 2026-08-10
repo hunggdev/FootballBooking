@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { PageIntro } from "./PageIntro";
 import { MatchToolbar } from "./MatchToolbar";
 import { MatchesTable} from "./MatchTable";
-import { FormPagination } from "@/components/common/Pagination";
+import { Pagination } from "@/components/common/Pagination";
 import { useMatches, useCreateMatch, useUpdateMatch, useDeleteMatch, useJoinMatch, useCancelJoinMatch } from "@/stores/useMatchStore";
 import { JoinMatchDialog } from "./JoinMatchDialog";
 import { MatchFormDialog } from "./MatchFormDialog";
@@ -258,7 +258,7 @@ export default function ManageMatch() {
             matchId={detailMatchId}
           />
 
-          <FormPagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}/>
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}/>
           <JoinMatchDialog
             open={dialogJoinOpen}
             onOpenChange={setDialogJoinOpen}

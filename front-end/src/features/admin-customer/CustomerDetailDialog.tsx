@@ -143,7 +143,7 @@ export function CustomerDetailDialog({ customerId, open, onOpenChange, }: Custom
             </div>
           </div>
 
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 mt-2">
             {/* <Button variant="outline" className="border">
               {customer.status === "banned" ? "Mở khóa tài khoản" : "Khóa tài khoản"}
             </Button> */}

@@ -3,6 +3,7 @@ import { useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -25,6 +26,12 @@ import type {
   UpdateServicePayload,
 } from "@/types/service";
 
+import {
+  Field as FieldWrapper,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -34,14 +41,14 @@ interface Props {
   serverError?: string | null;
 }
 
-const getInitialFormState = (service?: Service | null) => ({
-  name: service?.name ?? "",
-  description: service?.description ?? "",
-  image: service?.image ?? "",
-  price: service?.price ?? 0,
-  quantity: service?.quantity ?? 0,
-  status: service?.status ?? "ACTIVE" as "ACTIVE" | "INACTIVE",
-});
+const emptyForm = {
+  name: "",
+  description: "",
+  image: "",
+  price: 0,
+  quantity: 0,
+  status: "ACTIVE",
+};
 
 export function ServiceFormDialog({
   open,
@@ -51,149 +58,169 @@ export function ServiceFormDialog({
   isSubmitting,
   serverError,
 }: Props) {
-  const [formState, setFormState] = useState(() =>
-    getInitialFormState(initialData)
-  );
+  const isEditing = !!initialData;
 
-  const handleOpenChange = (value: boolean) => {
-    if (value) {
-      setFormState(getInitialFormState(initialData));
-    }
+  const defaultForm = initialData
+    ? {
+        name: initialData.name,
+        description: initialData.description ?? "",
+        image: initialData.image ?? "",
+        price: initialData.price,
+        quantity: initialData.quantity,
+        status: initialData.status ?? "ACTIVE" as "ACTIVE" | "INACTIVE",
+      }
+    : emptyForm;
 
-    onOpenChange(value);
-  };
+const [form, setForm] = useState(defaultForm);
 
-const handleSubmit = () => {
-  if (initialData) {
-    onSubmit(formState as UpdateServicePayload);
-  } else {
-    onSubmit(formState as CreateServicePayload);
-  }
+const [error, setError] = useState<string | null>(null);
+
+const updateService = <K extends keyof typeof form>(
+  key: K,
+  value: (typeof form)[K]
+) => {
+  setForm((prev) => ({
+    ...prev,
+    [key]: value,
+  }));
 };
 
+const validate = () => {
+  if (!form.name.trim()) {
+    return "Tên dịch vụ không được để trống";
+  }
+  if (form.name.length > 255) {
+    return "Tên dịch vụ tối đa 255 ký tự";
+  }
+  if (form.price < 0) {
+    return "Giá không hợp lệ";
+  }
+  if (form.quantity < 0) {
+    return "Số lượng không hợp lệ";
+  }
+  return null;
+};
+
+  const handleSubmit = () => {
+  const err = validate();
+
+  if (err) {
+    setError(err);
+    return;
+  }
+
+  setError(null);
+
+  const payload: CreateServicePayload | UpdateServicePayload = {
+      name: form.name.trim(),
+      description: form.description.trim() || undefined,
+      image: form.image.trim() || undefined,
+      price: form.price,
+      quantity: form.quantity,
+      status: form.status as "ACTIVE" | "INACTIVE",
+    };
+
+    onSubmit(payload);
+
+    resetForm();
+  };
+
+  const resetForm = () => { 
+    setForm(initialData ? defaultForm : emptyForm);
+    setError(null);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {initialData ? "Chỉnh sửa dịch vụ" : "Thêm dịch vụ mới"}
+            {isEditing ? "Chỉnh sửa dịch vụ" : "Thêm dịch vụ mới"}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="name">Tên dịch vụ</Label>
+        <FieldGroup className="space-y-4">
+          <FieldWrapper>
+            <FieldLabel htmlFor="name">Tên dịch vụ</FieldLabel>
             <Input
               id="name"
-              value={formState.name}
-              onChange={(e) =>
-                setFormState((prev) => ({
-                  ...prev,
-                  name: e.target.value,
-                }))
-              }
+              value={form.name}
+              onChange={(e) => updateService("name", e.target.value)}
             />
-          </div>
+          </FieldWrapper>
 
-          <div>
-            <Label htmlFor="description">Mô tả</Label>
+          <FieldWrapper>
+            <FieldLabel htmlFor="description">Mô tả</FieldLabel>
             <Textarea
               id="description"
-              value={formState.description}
-              onChange={(e) =>
-                setFormState((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
+              value={form.description}
+              onChange={(e) => updateService("description", e.target.value)}
             />
-          </div>
+          </FieldWrapper>
 
-          <div>
-            <Label htmlFor="image">Ảnh (URL)</Label>
+          <FieldWrapper>
+            <FieldLabel htmlFor="image">Ảnh (URL)</FieldLabel>
             <Input
               id="image"
-              value={formState.image}
-              onChange={(e) =>
-                setFormState((prev) => ({
-                  ...prev,
-                  image: e.target.value,
-                }))
-              }
+              value={form.image}
+              onChange={(e) => updateService("image", e.target.value)}
             />
-          </div>
+          </FieldWrapper>
 
-          <div>
-            <Label htmlFor="price">Giá</Label>
+          <FieldWrapper>
+            <FieldLabel htmlFor="price">Giá</FieldLabel>
             <Input
               id="price"
               type="number"
               min={0}
-              value={formState.price}
-              onChange={(e) =>
-                setFormState((prev) => ({
-                  ...prev,
-                  price: Number(e.target.value),
-                }))
-              }
+              value={form.price}
+              onChange={(e) => updateService("price", Number(e.target.value))}
             />
-          </div>
+          </FieldWrapper>
 
-          <div>
-            <Label htmlFor="quantity">Số lượng</Label>
+          <FieldWrapper>
+            <FieldLabel htmlFor="quantity">Số lượng</FieldLabel>
             <Input
               id="quantity"
               type="number"
               min={0}
-              value={formState.quantity}
-              onChange={(e) =>
-                setFormState((prev) => ({
-                  ...prev,
-                  quantity: Number(e.target.value),
-                }))
-              }
+              value={form.quantity}
+              onChange={(e) => updateService("quantity", Number(e.target.value))}
             />
-          </div>
+          </FieldWrapper>
 
-          {initialData && (
-            <div>
-              <Label>Trạng thái</Label>
 
-              <Select
-                value={formState.status}
-                onValueChange={(value) =>
-                  setFormState((prev) => ({
-                    ...prev,
-                    status: value as "ACTIVE" | "INACTIVE",
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn trạng thái" />
-                </SelectTrigger>
+          {isEditing &&
+          <FieldWrapper>
+            <FieldLabel>Trạng thái</FieldLabel>
+            <Select
+              value={form.status || undefined}
+              onValueChange={(value) => updateService("status", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Trạng thái" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ACTIVE">Đang hoạt động</SelectItem>
+                <SelectItem value="INACTIVE">Ngừng hoạt động</SelectItem>
+              </SelectContent>
+            </Select>
+          </FieldWrapper>}
 
-                <SelectContent>
-                  <SelectItem value="ACTIVE">
-                    Đang hoạt động
-                  </SelectItem>
-
-                  <SelectItem value="INACTIVE">
-                    Ngừng hoạt động
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {(error || serverError) && (
+              <p className="text-sm text-red-500">
+                  {error ?? serverError}
+              </p>
           )}
+        </FieldGroup>
 
-          {serverError && (
-            <p className="text-sm text-red-500">{serverError}</p>
-          )}
-
-          <div className="flex justify-end gap-2">
+        <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => handleOpenChange(false)}
+              onClick={() => {
+                  resetForm();
+                  onOpenChange(false);
+              }}
             >
               Hủy
             </Button>
@@ -208,8 +235,8 @@ const handleSubmit = () => {
                 ? "Cập nhật"
                 : "Tạo mới"}
             </Button>
-          </div>
-        </div>
+        </DialogFooter>
+
       </DialogContent>
     </Dialog>
   );

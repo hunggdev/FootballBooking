@@ -39,11 +39,11 @@ export const useUserStore = create<UserState>((set) => ({
     } 
   },
 
-  chatbot: async (question) => {
+  chatbot: async (message) => {
     try {
         set({ loading: true });
 
-        return await userService.chatbot(question);
+        return await userService.chatbot(message);
 
     } catch (error) {
         console.error(error);
