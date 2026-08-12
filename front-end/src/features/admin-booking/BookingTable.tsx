@@ -25,8 +25,8 @@ export function BookingTable({
             <th className="border p-2">ID</th>
             <th className="border p-2">Khách hàng</th>
             <th className="border p-2">Sân</th>
-            <th className="border p-2">Ngày</th>
-            <th className="border p-2">Khung giờ</th>
+            <th className="border p-2">Tổng tiền</th>
+            <th className="border p-2">Đã cọc</th>
             <th className="border p-2">Trạng thái</th>
             <th className="border p-2">Thao tác</th>
           </tr>
@@ -54,15 +54,15 @@ export function BookingTable({
                 </td>
 
                 <td className="border p-2">
-                  {booking.fieldSlot?.field?.name ?? "-"}
+                  {booking.bookingSlots[0].fieldSlot.field.name}
                 </td>
 
                 <td className="border p-2">
-                  {booking.bookingDate ? formatDate(booking.bookingDate) : "-"}
+                  {booking.totalPrice}
                 </td>
 
                 <td className="border p-2">
-                  {formatTimeRange(booking.fieldSlot?.starttime, booking.fieldSlot?.endtime)}
+                  {booking.depositAmount}
                 </td>
 
                 <td className="border p-2">

@@ -17,7 +17,7 @@ export function CartHoldItem({ hold, onRemove }: CartHoldItemProps) {
           {hold.bookingDate} · {formatTimeRange(hold.starttime, hold.endtime)}
         </p>
       </div>
-      <span className="ml-2">{formatCountdown(hold.ttl)}</span>
+      <span className="ml-2 text-sm">{formatCountdown(hold.ttl)}</span>
       <button
         type="button"
         onClick={() => onRemove(hold.holdId)}

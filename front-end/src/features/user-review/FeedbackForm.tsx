@@ -1,18 +1,18 @@
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { submitUserReview } from "@/features/user-review/userFeedbackApi";
 
 interface ReviewFormProps {
   bookingId: number;
   onSuccess?: () => void;
 }
 
+import {useCreateReview} from "@/stores/useReviewStore";
+
 export default function ReviewForm({
   bookingId,
   onSuccess,
 }: ReviewFormProps) {
-  const queryClient = useQueryClient();
+  const {mutateAsync: createReview} = useCreateReview();
   const [comment, setComment] = useState("");
   const [rating, setRating] = useState(5);
   const [loading, setLoading] = useState(false);
@@ -23,17 +23,15 @@ export default function ReviewForm({
     try {
       setLoading(true);
 
-      await submitUserReview({
+      try {
+        await createReview({
         bookingId,
         rating,
         comment,
       });
-
-      // Synchronize data immediately for admin and user views
-      queryClient.invalidateQueries({ queryKey: ["reviews"] });
-      queryClient.invalidateQueries({ queryKey: ["user-reviews"] });
-      queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      } catch (error) {
+        throw error
+      }
 
       setComment("");
       setRating(5);

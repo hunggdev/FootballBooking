@@ -18,6 +18,7 @@ import cron from "node-cron";
 import matchRoute from "./routes/matchRoute.js";
 import http from "http";
 import { Server } from "socket.io";
+import paymentRoute from "./routes/paymentRoute.js";
 
 // 1. Import hàm initSocket từ file socket.js vừa tạo
 import { initializeSockets } from "./sockets/socketManager.js"
@@ -59,12 +60,24 @@ app.use("/api/invoices", invoiceRoute);
 app.use("/api/reviews", reviewRoute);
 app.use("/api/dashboard", dashboardRoute);
 app.use("/api/matches", matchRoute);
+app.use("/api/payments", paymentRoute);
 
 // ------------------------------------------------
 
 connectDB().then(() => {
   server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+  });
+
+  server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      console.error(
+        `❌ Port ${PORT} is already in use. Run: netstat -ano | findstr :${PORT}  then taskkill /PID <PID> /F`
+      );
+      process.exit(1);
+    } else {
+      throw err;
+    }
   });
 });
 

@@ -26,4 +26,6 @@ npx prisma migrate resolve --applied 20260803000000_init_from_supabase -> xác n
 
 npx prisma migrate status -> check lại
 
+npx prisma db push
+
 

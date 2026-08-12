@@ -6,6 +6,8 @@ import { formatTimeRange } from "@/lib/utils";
 import type { HoldSlot } from "@/types/field";
 import type { Service } from "@/types/service";
 import type { BookingType } from "./booking";
+import type { Socket } from "socket.io-client";
+
 
 interface BookingCartPanelProps {
   fieldName: string;

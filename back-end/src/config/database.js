@@ -12,12 +12,21 @@ if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL is missing!");
 }
 
-// Tạo Pool PostgreSQL
+// Tạo Pool PostgreSQL (tối ưu cho Supabase PgBouncer transaction-mode)
 const pool = new pg.Pool({
     connectionString: process.env.DATABASE_URL,
-    max: 50, // Cho phép tối đa 50 kết nối đồng thời trong 1 instance Node.js
-    idleTimeoutMillis: 30000, // Tự động đóng kết nối nếu sau 30s không dùng
-    connectionTimeoutMillis: 2000, // Nếu sau 2s không lấy được kết nối thì báo lỗi ngay (tránh treo app)
+    max: 20,                        // Tăng lên 20 để đủ client riêng biệt cho các query đồng thời
+    min: 2,                         // Giữ sẵn ít nhất 2 connection để giảm latency lần đầu
+    idleTimeoutMillis: 10000,       // Đóng connection idle sau 10s để tránh bị Supabase kill phía ngoài
+    connectionTimeoutMillis: 10000, // Tăng lên 10s để chịu được latency cao VN → Singapore
+    allowExitOnIdle: false,         // Giữ pool sống khi không có request
+    keepAlive: true,                // Giữ TCP connection sống, tránh bị kill bởi firewall/Supabase
+    ssl: { rejectUnauthorized: false }, // Bắt buộc với Supabase
+});
+
+// Bắt lỗi pool-level để tránh crash app khi connection bị terminated bất ngờ
+pool.on("error", (err) => {
+    console.error("⚠️ PostgreSQL pool error (connection terminated):", err.message);
 });
 
 // Adapter Prisma

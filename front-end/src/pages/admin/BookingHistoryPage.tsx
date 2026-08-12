@@ -10,14 +10,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useBookings } from "@/stores/useBookingStore";
-import { BookingTable } from "@/features/user-booking/BookingTable";
-import { BookingDetailDialog } from "@/features/user-booking/BookingDetaiDialog";
+import { BookingTable } from "@/features/admin-booking/BookingTable";
+import { BookingDetailDialog } from "@/features/admin-booking/BookingDetaiDialog";
 import type { Booking } from "@/types/booking";
 
 type StatusFilter = "all" | "HOLD" | "CONFIRMED" | "CANCELLED";
 
 export default function BookingHistoryPage() {
   const { data: bookings = [], isLoading, error } = useBookings();
+  console.log(bookings);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<StatusFilter>("all");
   const [detailOpen, setDetailOpen] = useState(false);
@@ -27,14 +28,14 @@ export default function BookingHistoryPage() {
     return bookings
       .filter((booking) => {
         const matchStatus = status === "all" || booking.status === status;
-        const matchSearch = booking.user.fullName
+        const matchSearch = booking?.user?.fullName
           .toLowerCase()
           .includes(search.trim().toLowerCase());
         return matchStatus && matchSearch;
       })
       .sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
   }, [bookings, search, status]);
 
@@ -44,7 +45,8 @@ export default function BookingHistoryPage() {
   };
 
   if (isLoading) return <div className="p-6">Đang tải lịch sử đặt sân...</div>;
-  if (error) return <div className="p-6 text-red-600">Không thể tải dữ liệu.</div>;
+  if (error)
+    return <div className="p-6 text-red-600">Không thể tải dữ liệu.</div>;
 
   return (
     <div className="space-y-4">
@@ -60,7 +62,10 @@ export default function BookingHistoryPage() {
           onChange={(e) => setSearch(e.target.value)}
           className="sm:max-w-xs"
         />
-        <Select value={status} onValueChange={(v) => setStatus(v as StatusFilter)}>
+        <Select
+          value={status}
+          onValueChange={(v) => setStatus(v as StatusFilter)}
+        >
           <SelectTrigger className="sm:w-48">
             <SelectValue placeholder="Trạng thái" />
           </SelectTrigger>

@@ -1,4 +1,4 @@
-import FieldList from "@/features/user-booking/FieldList";
+import FieldList from "@/features/admin-booking/FieldList";
 
 export default function FieldListPage() {
   return (

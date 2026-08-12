@@ -1,5 +1,5 @@
 // src/pages/user/FieldTypePage.tsx
-import FieldSlotGrid from "@/features/user-booking/FieldSlotGrid";
+import FieldSlotGrid from "@/features/admin-booking/FieldSlotGrid";
 
 export default function FieldTypePage() {
   return (

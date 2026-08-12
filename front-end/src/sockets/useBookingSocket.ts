@@ -94,35 +94,74 @@ export const useBookingSocket = (
       joinRoom();
     }
 
-    // Cập nhật cache TanStack Query khi có người Hold / Unhold
+    // Cập nhật cache TanStack Query khi có người Hold / Unhold / Booked
     const onScheduleUpdated = (data: any) => {
       const eventDate = data.bookingDate?.split("T")[0];
       queryClient.setQueryData(
         ["slots", data.fieldId, eventDate],
         (oldData: any[]) => {
           if (!oldData) return oldData;
-          return oldData.map((slot) =>
-            slot.holdId === data.holdId
-              ? {
-                  ...slot,
-                  status: data.status,
-                  isMyHold: Number(data.userId) === Number(userId), 
-                  expiresAt: data.expiresAt,
-                  ttl: Number(data.ttl),
-                }
-              : slot
-          );
+          return oldData.map((slot) => {
+            // Backend emit BOOKED không kèm holdId → match bằng slotId + bookingDate
+            const isMatch = data.holdId
+              ? slot.holdId === data.holdId
+              : slot.slotId === data.slotId && slot.bookingDate === eventDate;
+
+            if (!isMatch) return slot;
+
+            // Nếu slot chuyển sang BOOKED thì xóa hold metadata
+            if (data.status === "BOOKED") {
+              return {
+                ...slot,
+                status: "BOOKED",
+                isMyHold: false,
+                expiresAt: null,
+                ttl: null,
+              };
+            }
+
+            return {
+              ...slot,
+              status: data.status,
+              isMyHold: Number(data.userId) === Number(userId),
+              expiresAt: data.expiresAt,
+              ttl: Number(data.ttl),
+            };
+          });
         }
       );
 
       if (Number(data.userId) === Number(userId)) {
         queryClient.invalidateQueries({ queryKey: ["my-holds"] });
       }
-    };
+    }; 
+
+    const onCartUpdated = (data:any) =>{
+      const eventDate = data.bookingDate?.split("T")[0];
+        queryClient.setQueryData(
+        ["statusRange", data.fieldId, data.slotId],
+        (oldData: any[]) => {
+          if (!oldData) return oldData;
+          return oldData.map((slot) => {
+            if(eventDate === slot.bookingDate){
+            return {
+              ...slot,
+              status: data.status,
+              isMyHold: Number(data.userId) === Number(userId),
+              expiresAt: data.expiresAt,
+              ttl: Number(data.ttl),
+            };
+          }
+          else return slot;
+          });
+        }
+      );
+    }
 
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("schedule:updated", onScheduleUpdated);
+    socket.on("user:cart_updated", onCartUpdated);
 
     // 🧹 CLEANUP: Chuyển ngày hoặc unmount component thì leave room cũ
     return () => {
@@ -130,8 +169,9 @@ export const useBookingSocket = (
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("schedule:updated", onScheduleUpdated);
+      socket.off("user:cart_updated", onCartUpdated);
     };
   }, [userId, fieldId, formattedDate, queryClient]);
 
-  return { isConnected };
+  return { isConnected, socket };
 };
