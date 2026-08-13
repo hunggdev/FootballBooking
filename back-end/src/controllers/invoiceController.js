@@ -2,7 +2,6 @@ import { prisma } from "../config/database.js";
 
 /**
  * Xuất hóa đơn
- * POST /api/invoices/generate/:bookingId
  */
 export const generateInvoice = async (req, res) => {
   try {
@@ -45,9 +44,6 @@ export const generateInvoice = async (req, res) => {
       data: {
         bookingId: booking.bookingId,
         userId: booking.userId,
-        // Model Invoice trong schema.prisma đặt tên field là "deposit",
-        // không phải "depositAmount" -> trước đây Prisma báo lỗi
-        // "Unknown argument depositAmount" và toàn bộ API xuất hóa đơn bị lỗi 500.
         deposit: depositAmount,
         fieldAmount,
         serviceAmount,
@@ -72,7 +68,6 @@ export const generateInvoice = async (req, res) => {
 
 /**
  * Lấy danh sách hóa đơn
- * GET /api/invoices
  */
 export const getInvoices = async (req, res) => {
   try {
@@ -107,7 +102,6 @@ export const getInvoices = async (req, res) => {
 
 /**
  * Lấy chi tiết hóa đơn
- * GET /api/invoices/:invoiceId
  */
 export const getInvoiceById = async (req, res) => {
   try {

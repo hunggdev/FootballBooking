@@ -1,4 +1,3 @@
-// FieldFormDialog.tsx
 import { useState } from "react";
 import {
   Dialog,
@@ -116,70 +115,96 @@ export function FieldFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-xl border-border bg-elevated text-text-primary ring-border">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-text-primary">
             {isEditing ? "Sửa sân bóng" : "Thêm sân bóng"}
           </DialogTitle>
         </DialogHeader>
 
         <FieldGroup className="space-y-4">
           <FieldWrapper>
-            <FieldLabel>Tên sân</FieldLabel>
+            <FieldLabel className="text-text-secondary">Tên sân</FieldLabel>
             <Input
               value={form.name}
               onChange={(e) => updateField("name", e.target.value)}
+              className="border-border bg-surface text-text-primary placeholder:text-text-muted focus-visible:border-brand-accent focus-visible:ring-brand-accent/30"
             />
           </FieldWrapper>
 
           <FieldWrapper>
-            <FieldLabel>Loại sân</FieldLabel>
+            <FieldLabel className="text-text-secondary">Loại sân</FieldLabel>
             <Select
               value={form.fieldType || undefined}
               onValueChange={(value) =>
                 updateField("fieldType", (value ?? "") as "" | FieldType)
               }
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full border-border bg-surface text-text-primary data-placeholder:text-text-muted">
                 <SelectValue placeholder="Chọn loại sân" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="FIVE">Sân 5 người</SelectItem>
-                <SelectItem value="SEVEN">Sân 7 người</SelectItem>
-                <SelectItem value="ELEVEN">Sân 11 người</SelectItem>
+              <SelectContent className="border-border bg-elevated text-text-primary">
+                <SelectItem
+                  value="FIVE"
+                  className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+                >
+                  Sân 5 người
+                </SelectItem>
+                <SelectItem
+                  value="SEVEN"
+                  className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+                >
+                  Sân 7 người
+                </SelectItem>
+                <SelectItem
+                  value="ELEVEN"
+                  className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+                >
+                  Sân 11 người
+                </SelectItem>
               </SelectContent>
             </Select>
           </FieldWrapper>
 
           <FieldWrapper>
-            <FieldLabel>Ảnh (URL)</FieldLabel>
+            <FieldLabel className="text-text-secondary">Ảnh (URL)</FieldLabel>
             <Input
               value={form.image}
               onChange={(e) => updateField("image", e.target.value)}
+              className="border-border bg-surface text-text-primary placeholder:text-text-muted focus-visible:border-brand-accent focus-visible:ring-brand-accent/30"
             />
           </FieldWrapper>
 
           <FieldWrapper>
-            <FieldLabel>Mô tả</FieldLabel>
+            <FieldLabel className="text-text-secondary">Mô tả</FieldLabel>
             <Textarea
               value={form.description}
               onChange={(e) => updateField("description", e.target.value)}
+              className="border-border bg-surface text-text-primary placeholder:text-text-muted focus-visible:border-brand-accent focus-visible:ring-brand-accent/30"
             />
           </FieldWrapper>
 
           {(error || serverError) && (
-            <p className="text-sm text-red-500">{error ?? serverError}</p>
+            <p className="text-sm text-status-danger">{error ?? serverError}</p>
           )}
         </FieldGroup>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => {
-            resetForm();
-            onOpenChange(false);
-          }}>
+        <DialogFooter className="border-border bg-elevated">
+          <Button
+            variant="outline"
+            className="border-border bg-transparent text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+            onClick={() => {
+              resetForm();
+              onOpenChange(false);
+            }}
+          >
             Hủy
           </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="border-transparent bg-brand-accent font-semibold text-accent-foreground hover:bg-brand-accent-hover"
+          >
             {isSubmitting
               ? "Đang lưu..."
               : isEditing

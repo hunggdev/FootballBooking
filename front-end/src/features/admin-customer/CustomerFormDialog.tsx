@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 import {
   Dialog,
@@ -31,69 +32,52 @@ import type {
   UpdateCustomerPayload,
 } from "@/types/customer";
 
-import { z } from "zod";
+import { customerSchema } from "./customerSchema";
 
-export const customerSchema = z.object({
-  fullName: z
-    .string()
-    .trim()
-    .min(1, "Họ tên không được để trống")
-    .max(100, "Họ tên tối đa 100 ký tự")
-    .regex(
-      /^[A-Za-zÀ-ỹ\s]+$/,
-      "Họ tên chỉ được chứa chữ cái và khoảng trắng"
-    ),
+type CustomerStatus = "ACTIVE" | "BANNED" | "INACTIVE";
 
-  email: z
-    .string()
-    .trim()
-    .min(1, "Email không được để trống")
-    .email("Email không hợp lệ")
-    .max(255, "Email tối đa 255 ký tự"),
-
-  phone: z
-    .string()
-    .trim()
-    .min(1, "Số điện thoại không được để trống")
-    .regex(
-      /^(0[3|5|7|8|9])[0-9]{8}$/,
-      "Số điện thoại không hợp lệ"
-    ),
-
-  password: z
-    .string()
-    .min(1, "Mật khẩu không được để trống")
-    .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-    .max(64, "Mật khẩu tối đa 64 ký tự")
-    .regex(/[a-z]/, "Mật khẩu phải có ít nhất 1 chữ thường")
-    .regex(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ hoa")
-    .regex(/[0-9]/, "Mật khẩu phải có ít nhất 1 chữ số")
-    .regex(
-      /[!@#$%^&*(),.?":{}|<>]/,
-      "Mật khẩu phải có ít nhất 1 ký tự đặc biệt"
-    ),
-
-  status: z.enum(["ACTIVE", "BANNED", "INACTIVE"]),
-});
-
-export type CustomerForm = z.infer<typeof customerSchema>;
+interface FormState {
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+  status: CustomerStatus;
+}
 
 interface CustomerFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialData?: Customer | null;
-  onSubmit: (data: CreateCustomerPayload | UpdateCustomerPayload) => void;
+  onSubmit: (
+    data: CreateCustomerPayload | UpdateCustomerPayload
+  ) => void;
   isSubmitting?: boolean;
   serverError?: string | null;
 }
 
-const emptyForm = {
+const emptyForm: FormState = {
   fullName: "",
   email: "",
   phone: "",
   password: "",
-  status: "ACTIVE" as "ACTIVE" | "BANNED" | "INACTIVE",
+  status: "ACTIVE",
 };
+
+function getFormFromCustomer(
+  customer?: Customer | null
+): FormState {
+  if (!customer) {
+    return emptyForm;
+  }
+
+  return {
+    fullName: customer.fullName,
+    email: customer.email ?? "",
+    phone: customer.phone ?? "",
+    password: "",
+    status: customer.status as CustomerStatus,
+  };
+}
 
 export function CustomerFormDialog({
   open,
@@ -102,34 +86,33 @@ export function CustomerFormDialog({
   onSubmit,
   isSubmitting = false,
   serverError,
-}: CustomerFormDialogProps) { 
+}: CustomerFormDialogProps) {
   const isEditing = !!initialData;
-  const defaultForm = initialData
-    ? {
-        fullName: initialData.fullName,
-        email: initialData.email ?? "",
-        phone: initialData.phone ?? "",
-        password: "",
-        status: initialData.status,
-      }
-    : emptyForm;
 
-const [form, setForm] = useState(defaultForm);
+  const [form, setForm] = useState<FormState>(() =>
+    getFormFromCustomer(initialData)
+  );
 
-const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
-  
-  const updateCustomer = <K extends keyof typeof form>(
+  const updateCustomer = <K extends keyof FormState>(
     key: K,
-    value: (typeof form)[K]
+    value: FormState[K]
   ) => {
     setForm((prev) => ({
       ...prev,
       [key]: value,
     }));
+
+    setError(null);
   };
 
-  
+  const resetForm = () => {
+    setForm(getFormFromCustomer(initialData));
+    setError(null);
+    setShowPassword(false);
+  };
 
   const handleSubmit = () => {
     const schema = isEditing
@@ -139,25 +122,33 @@ const [error, setError] = useState<string | null>(null);
     const result = schema.safeParse(form);
 
     if (!result.success) {
-      setError(result.error.issues[0].message);
+      setError(
+        result.error.issues[0]?.message ??
+          "Dữ liệu không hợp lệ."
+      );
       return;
     }
 
     setError(null);
 
+    // =========================
+    // UPDATE CUSTOMER
+    // =========================
     if (isEditing && initialData) {
       const updatePayload: UpdateCustomerPayload = {
         userId: initialData.userId,
         fullName: form.fullName.trim(),
         phone: form.phone.trim(),
-        status: (form.status === "ACTIVE" ? "ACTIVE" : (form.status === "BANNED" ? "BANNED" : "INACTIVE") as "BANNED" | "INACTIVE") as "ACTIVE" | "INACTIVE",
+        status: form.status,
       };
 
       onSubmit(updatePayload);
-      resetForm();
       return;
     }
 
+    // =========================
+    // CREATE CUSTOMER
+    // =========================
     const createPayload: CreateCustomerPayload = {
       userId: 0,
       fullName: form.fullName.trim(),
@@ -169,91 +160,261 @@ const [error, setError] = useState<string | null>(null);
     onSubmit(createPayload);
   };
 
-  const resetForm = () => { 
-    setForm(initialData ? defaultForm : emptyForm);
-    setError(null);
-  }
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      resetForm();
+    }
+
+    onOpenChange(nextOpen);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+    <Dialog
+      open={open}
+      onOpenChange={handleOpenChange}
+    >
+      <DialogContent
+        className="
+          max-h-[85vh]
+          max-w-xl
+          overflow-y-auto
+          border-border
+          bg-elevated
+          text-text-primary
+          ring-border
+        "
+      >
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? "Sửa thông tin khách hàng" : "Thêm khách hàng"}
+          <DialogTitle className="text-xl font-bold text-text-primary">
+            {isEditing
+              ? "Sửa thông tin khách hàng"
+              : "Thêm khách hàng"}
           </DialogTitle>
         </DialogHeader>
 
-        <FieldGroup className="space-y-4">
-
+        <FieldGroup className="space-y-4 pt-2">
+          {/* =========================
+              HỌ TÊN
+          ========================== */}
           <FieldWrapper>
-            <FieldLabel>Họ tên khách hàng</FieldLabel>
+            <FieldLabel className="text-sm font-medium text-text-secondary">
+              Họ tên khách hàng
+            </FieldLabel>
 
             <Input
               value={form.fullName}
-              onChange={(e) => updateCustomer("fullName", e.target.value)}
+              onChange={(e) =>
+                updateCustomer(
+                  "fullName",
+                  e.target.value
+                )
+              }
+              placeholder="Nhập họ tên khách hàng"
+              className="
+                border-border
+                bg-surface
+                text-text-primary
+                placeholder:text-text-muted
+                focus-visible:border-brand-primary
+                focus-visible:ring-brand-primary/20
+              "
             />
           </FieldWrapper>
 
+          {/* =========================
+              EMAIL
+          ========================== */}
           <FieldWrapper>
-            <FieldLabel>Email</FieldLabel>
+            <FieldLabel className="text-sm font-medium text-text-secondary">
+              Email
+            </FieldLabel>
 
             <Input
+              type="email"
               value={form.email}
-              onChange={(e) => updateCustomer("email", e.target.value)}
-              disabled={isEditing?true: false}
+              onChange={(e) =>
+                updateCustomer(
+                  "email",
+                  e.target.value
+                )
+              }
+              disabled={isEditing}
+              placeholder="example@gmail.com"
+              className="
+                border-border
+                bg-surface
+                text-text-primary
+                placeholder:text-text-muted
+                focus-visible:border-brand-primary
+                focus-visible:ring-brand-primary/20
+                disabled:cursor-not-allowed
+                disabled:opacity-50
+              "
             />
           </FieldWrapper>
 
+          {/* =========================
+              SỐ ĐIỆN THOẠI
+          ========================== */}
           <FieldWrapper>
-            <FieldLabel>Số điện thoại</FieldLabel>
+            <FieldLabel className="text-sm font-medium text-text-secondary">
+              Số điện thoại
+            </FieldLabel>
 
             <Input
+              type="tel"
               value={form.phone}
-              onChange={(e) => updateCustomer("phone", e.target.value)}
+              onChange={(e) =>
+                updateCustomer(
+                  "phone",
+                  e.target.value
+                )
+              }
+              placeholder="Nhập số điện thoại"
+              className="
+                border-border
+                bg-surface
+                text-text-primary
+                placeholder:text-text-muted
+                focus-visible:border-brand-primary
+                focus-visible:ring-brand-primary/20
+              "
             />
           </FieldWrapper>
 
+          {/* =========================
+              MẬT KHẨU
+          ========================== */}
           {!isEditing && (
             <FieldWrapper>
-              <FieldLabel>Mật khẩu</FieldLabel>
+              <FieldLabel className="text-sm font-medium text-text-secondary">
+                Mật khẩu
+              </FieldLabel>
 
-              <Input
-                value={form.password}
-                onChange={(e) => updateCustomer("password", e.target.value)}
-              />
+              <div className="relative">
+                <Input
+                  type={
+                    showPassword
+                      ? "text"
+                      : "password"
+                  }
+                  value={form.password}
+                  onChange={(e) =>
+                    updateCustomer(
+                      "password",
+                      e.target.value
+                    )
+                  }
+                  placeholder="Nhập mật khẩu"
+                  className="
+                    border-border
+                    bg-surface
+                    pr-10
+                    text-text-primary
+                    placeholder:text-text-muted
+                    focus-visible:border-brand-primary
+                    focus-visible:ring-brand-primary/20
+                  "
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowPassword(
+                      (prev) => !prev
+                    )
+                  }
+                  className="
+                    absolute
+                    right-2.5
+                    top-1/2
+                    -translate-y-1/2
+                    text-text-muted
+                    transition-colors
+                    hover:text-text-primary
+                  "
+                  aria-label={
+                    showPassword
+                      ? "Ẩn mật khẩu"
+                      : "Hiện mật khẩu"
+                  }
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </FieldWrapper>
           )}
 
+          {/* =========================
+              TRẠNG THÁI
+          ========================== */}
           {isEditing && (
             <FieldWrapper>
-              <FieldLabel>Trạng thái</FieldLabel>
+              <FieldLabel className="text-sm font-medium text-text-secondary">
+                Trạng thái
+              </FieldLabel>
 
-              <Select   
+              <Select
                 value={form.status}
                 onValueChange={(value) =>
                   updateCustomer(
                     "status",
-                    (value ?? "ACTIVE") as
-                      | "ACTIVE"
-                      | "BANNED"
-                      | "INACTIVE"
+                    (value ??
+                      "ACTIVE") as CustomerStatus
                   )
                 }
               >
-                <SelectTrigger>
-                  <SelectValue />
+                <SelectTrigger
+                  className="
+                    border-border
+                    bg-surface
+                    text-text-primary
+                  "
+                >
+                  <SelectValue placeholder="Chọn trạng thái" />
                 </SelectTrigger>
 
-                <SelectContent>
-                  <SelectItem value="ACTIVE">
+                <SelectContent
+                  className="
+                    border-border
+                    bg-elevated
+                    text-text-primary
+                  "
+                >
+                  <SelectItem
+                    value="ACTIVE"
+                    className="
+                      text-text-secondary
+                      focus:bg-status-success-bg
+                      focus:text-status-success
+                    "
+                  >
                     Đang hoạt động
                   </SelectItem>
 
-                  <SelectItem value="BANNED">
-                    Khóa
+                  <SelectItem
+                    value="BANNED"
+                    className="
+                      text-text-secondary
+                      focus:bg-status-danger-bg
+                      focus:text-status-danger
+                    "
+                  >
+                    Đã khóa
                   </SelectItem>
 
-                  <SelectItem value="INACTIVE">
+                  <SelectItem
+                    value="INACTIVE"
+                    className="
+                      text-text-secondary
+                      focus:bg-status-warning-bg
+                      focus:text-status-warning
+                    "
+                  >
                     Ngừng hoạt động
                   </SelectItem>
                 </SelectContent>
@@ -261,34 +422,67 @@ const [error, setError] = useState<string | null>(null);
             </FieldWrapper>
           )}
 
+          {/* =========================
+              ERROR
+          ========================== */}
           {(error || serverError) && (
-            <p className="text-sm text-red-500">
-              {error ?? serverError}
-            </p>
+            <div
+              className="
+                rounded-lg
+                border
+                border-status-danger/30
+                bg-status-danger-bg
+                px-3
+                py-2
+              "
+            >
+              <p className="text-sm text-status-danger">
+                {error ?? serverError}
+              </p>
+            </div>
           )}
-
         </FieldGroup>
 
-        <DialogFooter>
+        {/* =========================
+            FOOTER
+        ========================== */}
+        <DialogFooter className="gap-2">
           <Button
+            type="button"
             variant="outline"
             onClick={() => {
               resetForm();
               onOpenChange(false);
             }}
+            disabled={isSubmitting}
+            className="
+              border-border
+              bg-surface
+              text-text-secondary
+              hover:bg-surface-hover
+              hover:text-text-primary
+            "
           >
             Hủy
           </Button>
 
           <Button
+            type="button"
             onClick={handleSubmit}
             disabled={isSubmitting}
+            className="
+              border-transparent
+              bg-brand-accent
+              font-semibold
+              text-brand-accent-foreground
+              hover:bg-brand-accent-hover
+            "
           >
             {isSubmitting
               ? "Đang lưu..."
               : isEditing
-              ? "Lưu thay đổi"
-              : "Thêm khách hàng"}
+                ? "Lưu thay đổi"
+                : "Thêm khách hàng"}
           </Button>
         </DialogFooter>
       </DialogContent>

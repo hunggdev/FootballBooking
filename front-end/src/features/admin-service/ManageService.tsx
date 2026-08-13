@@ -2,13 +2,12 @@ import type { AxiosError } from "axios";
 import { useMemo, useState } from "react";
 
 import { PageHeader } from "@/layouts/admin/PageHeader";
-import { Button } from "@/components/ui/button";
 
+import { ServiceFilterBar, type StatusFilter } from "./ServiceFilterBar";
 import { ServiceTable } from "./ServiceTable";
 import { ServiceFormDialog } from "./ServiceFormDialog";
 import { ServiceDetailDialog } from "./ServiceDetailDialog";
 import { Pagination } from "@/components/common/Pagination";
-
 
 import {
   useServices,
@@ -23,11 +22,11 @@ import type {
   UpdateServicePayload,
 } from "@/types/service";
 
-const PAGE_SIZE = 10;
-
 interface ErrorResponse {
   message?: string;
 }
+
+const PAGE_SIZE = 10;
 
 function getErrorMessage(error: unknown, fallback: string): string {
   const axiosError = error as AxiosError<ErrorResponse>;
@@ -42,6 +41,7 @@ export function ManageService() {
   const deleteService = useDeleteService();
 
   const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<StatusFilter>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
@@ -50,12 +50,28 @@ export function ManageService() {
   const [listError, setListError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Reset về trang 1 khi thay đổi điều kiện lọc
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setCurrentPage(1);
+  };
+
+  const handleStatusChange = (value: StatusFilter) => {
+    setStatus(value);
+    setCurrentPage(1);
+  };
 
   const filteredServices = useMemo(() => {
-    return services.filter((service: Service) =>
-      service.name.toLowerCase().includes(search.trim().toLowerCase())
-    );
-  }, [services, search]);
+    return services.filter((service: Service) => {
+      const matchSearch = service.name
+        .toLowerCase()
+        .includes(search.trim().toLowerCase());
+
+      const matchStatus = status === "all" || service.status === status;
+
+      return matchSearch && matchStatus;
+    });
+  }, [services, search, status]);
 
   const totalPages = Math.max(1, Math.ceil(filteredServices.length / PAGE_SIZE));
 
@@ -122,12 +138,14 @@ export function ManageService() {
   };
 
   if (isLoading) {
-    return <div className="p-8">Đang tải...</div>;
+    return <div className="p-8 text-text-secondary">Đang tải...</div>;
   }
 
   if (error) {
     return (
-      <div className="p-8 text-red-500">Không thể tải danh sách dịch vụ.</div>
+      <div className="p-8 text-status-danger">
+        Không thể tải danh sách dịch vụ.
+      </div>
     );
   }
 
@@ -138,25 +156,16 @@ export function ManageService() {
         subtitle="Quản lý thông tin dịch vụ của hệ thống"
       />
 
-      <div className="flex items-center justify-between mt-4">
-        <input
-          type="text"
-          placeholder="Tìm kiếm dịch vụ..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border rounded px-3 py-2 w-1/3"
-        />
-        <Button
-          variant="outline"
-          onClick={handleAdd}
-          className="border"
-        >
-          Thêm dịch vụ
-        </Button>
-      </div>
+      <ServiceFilterBar
+        search={search}
+        onSearchChange={handleSearchChange}
+        status={status}
+        onStatusChange={handleStatusChange}
+        onClick={handleAdd}
+      />
 
       {listError && (
-        <p className="mt-4 text-sm text-red-500">{listError}</p>
+        <p className="mt-4 text-sm text-status-danger">{listError}</p>
       )}
 
       <ServiceTable
@@ -167,7 +176,12 @@ export function ManageService() {
         currentPage={currentPage}
         pageSize={PAGE_SIZE}
       />
-      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}  />
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       <ServiceFormDialog
         key={editingService?.serviceId ?? "create"}

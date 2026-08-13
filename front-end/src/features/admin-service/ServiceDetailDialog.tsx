@@ -4,84 +4,137 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 
-import { Label } from "@/components/ui/label";
-// import type { Service } from "@/types/service";
 import { useService } from "@/stores/useServiceStore";
+import { formatDateTime } from "@/lib/utils";
 
-interface Props {
+interface ServiceDetailDialogProps {
   serviceId: number | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function ServiceDetailDialog({ serviceId, open, onOpenChange }: Props) {
-  const { data: service, isLoading, error } = useService(serviceId ?? 0);
+export function ServiceDetailDialog({
+  serviceId,
+  open,
+  onOpenChange,
+}: ServiceDetailDialogProps) {
+  const numericServiceId = serviceId ?? 0;
+  const { data: service, isLoading, error } = useService(numericServiceId);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto border-border bg-elevated text-text-primary ring-border">
         <DialogHeader>
-          <DialogTitle>Chi tiết dịch vụ</DialogTitle>
+          <DialogTitle className="text-xl font-bold text-text-primary">
+            Chi tiết dịch vụ
+          </DialogTitle>
         </DialogHeader>
 
-        {isLoading && <p>Đang tải...</p>}
-        {error && <p className="text-red-500">Không thể tải dịch vụ.</p>}
+        {isLoading && (
+          <p className="py-4 text-center text-sm text-text-muted">
+            Đang tải dữ liệu...
+          </p>
+        )}
+
+        {error && (
+          <p className="py-4 text-center text-sm text-status-danger">
+            Không thể tải thông tin dịch vụ.
+          </p>
+        )}
+
         {!service && !isLoading && !error && (
-          <p className="text-muted-foreground">Không có dữ liệu.</p>
+          <p className="py-4 text-center text-sm text-text-muted">
+            Không có dữ liệu dịch vụ.
+          </p>
         )}
 
         {service && (
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4">
+          <div className="space-y-5 pt-2">
+            {/* Ảnh đại diện & Thông tin chính */}
+            <div className="flex gap-4">
               {service.image ? (
                 <img
                   src={service.image}
                   alt={service.name}
-                  className="h-24 w-32 rounded-md object-cover border"
+                  className="h-28 w-36 shrink-0 rounded-lg border border-border object-cover"
                 />
               ) : (
-                <div className="flex h-24 w-32 items-center justify-center rounded-md border text-xs text-muted-foreground">
-                  No Image
+                <div className="flex h-28 w-36 shrink-0 items-center justify-center rounded-lg border border-dashed border-border bg-surface text-xs font-medium text-text-muted">
+                  Không có ảnh
                 </div>
               )}
+
+              <div className="flex flex-1 flex-col justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-text-primary">
+                    {service.name}
+                  </h2>
+                  <p className="mt-1 line-clamp-2 text-xs text-text-secondary">
+                    {service.description || "Chưa có mô tả cho dịch vụ này."}
+                  </p>
+                </div>
+
+                <div className="mt-2 flex items-center justify-between">
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                      service.status === "ACTIVE"
+                        ? "bg-emerald-500/10 text-emerald-500"
+                        : "bg-status-danger/10 text-status-danger"
+                    }`}
+                  >
+                    {service.status === "ACTIVE"
+                      ? "Đang kinh doanh"
+                      : "Ngừng kinh doanh"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <Separator className="bg-border" />
+
+            {/* Chi tiết Giá & Số lượng */}
+            <div className="grid grid-cols-2 gap-3 rounded-lg border border-border bg-surface p-3.5">
               <div>
-                <h2 className="text-lg font-semibold">{service.name}</h2>
-                <p className="text-sm text-muted-foreground">
-                  {service.description ?? "Không có mô tả"}
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+                  Đơn giá
+                </p>
+                <p className="mt-0.5 text-base font-bold text-brand-primary">
+                  {Number(service.price).toLocaleString("vi-VN")} đ
+                </p>
+              </div>
+
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+                  Số lượng tồn / phục vụ
+                </p>
+                <p className="mt-0.5 text-base font-bold text-text-primary">
+                  {service.quantity}
                 </p>
               </div>
             </div>
 
-            <div>
-              <Label>Giá</Label>
-              <p>{service.price.toLocaleString("vi-VN")} đ</p>
-            </div>
+            <Separator className="bg-border" />
 
-            <div>
-              <Label>Số lượng</Label>
-              <p>{service.quantity}</p>
-            </div>
-
-            <div>
-              <Label>Trạng thái</Label>
-              <p>
-                {service.status === "ACTIVE" ? (
-                  <span className="text-green-600 font-semibold">Đang hoạt động</span>
-                ) : (
-                  <span className="text-red-600 font-semibold">Ngừng hoạt động</span>
-                )}
-              </p>
-            </div>
-
-            <div>
-              <Label>Ngày tạo</Label>
-              <p>{new Date(service.createdAt).toLocaleString("vi-VN")}</p>
-            </div>
-
-            <div>
-              <Label>Ngày cập nhật</Label>
-              <p>{new Date(service.updatedAt).toLocaleString("vi-VN")}</p>
+            {/* Thời gian tạo & Cập nhật */}
+            <div className="grid grid-cols-2 gap-2 text-xs text-text-muted">
+              <div>
+                <span className="block font-medium">Ngày tạo:</span>
+                <span className="text-text-secondary">
+                  {service.createdAt
+                    ? formatDateTime(service.createdAt)
+                    : "Chưa rõ"}
+                </span>
+              </div>
+              <div>
+                <span className="block font-medium">Cập nhật lần cuối:</span>
+                <span className="text-text-secondary">
+                  {service.updatedAt
+                    ? formatDateTime(service.updatedAt)
+                    : "Chưa rõ"}
+                </span>
+              </div>
             </div>
           </div>
         )}

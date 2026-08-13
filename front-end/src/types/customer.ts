@@ -24,7 +24,7 @@ export interface UpdateCustomerPayload {
     userId: number,
     fullName: string,
     phone: string,  
-    status: "ACTIVE" | "INACTIVE",      
+    status: "ACTIVE" | "INACTIVE" | "BANNED",      
 }
 
 export interface Stats {

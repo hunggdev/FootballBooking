@@ -14,7 +14,6 @@ import ManageReviewPage from "@/pages/admin/ManageReviewPage";
 import ManageInvoicePage from "@/pages/admin/ManageInvoicePage";
 import StatsPage from "@/pages/admin/StatsPage";
 import ManageMatchPage from "@/pages/admin/ManageMatchPage";
-
 export const adminRoutes: RouteObject = {
   path: "/admin",
   element: <ProtectedRoute />,

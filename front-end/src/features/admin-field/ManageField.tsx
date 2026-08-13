@@ -129,12 +129,12 @@ export function ManageField() {
   };
 
   if (isLoading) {
-    return <div className="p-8">Đang tải...</div>;
+    return <div className="p-8 text-text-secondary">Đang tải...</div>;
   }
 
   if (error) {
     return (
-      <div className="p-8 text-red-500">Không thể tải danh sách sân.</div>
+      <div className="p-8 text-status-danger">Không thể tải danh sách sân.</div>
     );
   }
 
@@ -154,7 +154,7 @@ export function ManageField() {
       />
 
       {listError && (
-        <p className="mt-4 text-sm text-red-500">{listError}</p>
+        <p className="mt-4 text-sm text-status-danger">{listError}</p>
       )}
 
       <FieldsTable

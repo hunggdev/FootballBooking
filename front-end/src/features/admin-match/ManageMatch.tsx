@@ -1,4 +1,3 @@
-// src/components/admin/customers/CustomersPage.tsx
 import { PageHeader } from "@/layouts/admin/PageHeader";
 import { MatchStatsCards } from "./MatchStatsCards";
 import { MatchFilterBar } from "./MatchFilterBar";
@@ -35,40 +34,39 @@ function getErrorMessage(
 const PAGE_SIZE = 5;
 
 export function ManageMatch() {
-  const {data, isLoading, error} = useMatches();
+  const { data, isLoading, error } = useMatches();
   const createMatch = useCreateMatch();
   const updateMatch = useUpdateMatch();
   const deleteMatch = useDeleteMatch();
-  const {data:statsData} = useStatsMatch();  
-  
-  const matches: Match[] = data?.matches ?? [];
-  const stats: Stats = statsData?? {};
-  console.log(stats);
-  
-    const [search, setSearch] = useState("");
-    const [status, setStatus] = useState("all");
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [detailOpen, setDetailOpen] = useState(false);
-    const [editingMatch, setEditingMatch] = useState<Match | null>(null);
-    const [detailMatchId, setDetailMatchId] = useState<number | null>(null);
-    const [formError, setFormError] = useState<string | null>(null);
-    const [listError, setListError] = useState<string | null>(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    
-    const filteredMatches = useMemo(() => {
-      return matches.filter((match) => {
-        
-          const matchSearch =
-            match.user.fullName.toLowerCase().includes(search.toLowerCase())
-    
-            const matchStatus =
-            status === "all" ||
-            match.status.toLowerCase() === status.toLowerCase();
-            
-            return matchSearch && matchStatus;
-            
-          });
-        }, [matches, search, status]);
+  const { data: statsData } = useStatsMatch();
+
+  const stats: Stats = statsData ?? {};
+
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("all");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [editingMatch, setEditingMatch] = useState<Match | null>(null);
+  const [detailMatchId, setDetailMatchId] = useState<number | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [listError, setListError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const filteredMatches = useMemo(() => {
+    const matchesList: Match[] = data?.matches ?? [];
+
+    return matchesList.filter((match) => {
+      const matchSearch =
+        match.user?.fullName
+          ?.toLowerCase()
+          .includes(search.trim().toLowerCase()) ?? false;
+
+      const matchStatus =
+        status === "all" ||
+        match.status?.toLowerCase() === status.toLowerCase();
+
+      return matchSearch && matchStatus;
+    });
+  }, [data, search, status]);
         
     const totalPages = Math.max(1, Math.ceil(filteredMatches.length / PAGE_SIZE));
 

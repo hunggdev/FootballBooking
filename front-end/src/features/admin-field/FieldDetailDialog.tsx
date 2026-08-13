@@ -25,6 +25,7 @@ interface FieldDetailDialogProps {
 const fieldTypeLabel: Record<FieldType, string> = {
   FIVE: "Sân 5 người",
   SEVEN: "Sân 7 người",
+  ELEVEN: "Sân 11 người",
 };
 
 export function FieldDetailDialog({
@@ -107,17 +108,17 @@ export function FieldDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-h-[85vh] max-w-xl overflow-y-auto border-border bg-elevated text-text-primary ring-border">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Chi tiết & Quản lý khung giờ sân</DialogTitle>
+          <DialogTitle className="text-xl font-bold text-text-primary">Chi tiết & Quản lý khung giờ sân</DialogTitle>
         </DialogHeader>
 
         {isLoading && (
-          <p className="py-4 text-center text-sm text-muted-foreground">Đang tải dữ liệu...</p>
+          <p className="py-4 text-center text-sm text-text-muted">Đang tải dữ liệu...</p>
         )}
 
         {error && (
-          <p className="py-4 text-center text-sm text-red-500">Không thể tải thông tin sân.</p>
+          <p className="py-4 text-center text-sm text-status-danger">Không thể tải thông tin sân.</p>
         )}
 
         {field && (
@@ -126,48 +127,51 @@ export function FieldDetailDialog({
               <img
                 src={field.image}
                 alt={field.name}
-                className="h-48 w-full rounded-lg object-cover border"
+                className="h-48 w-full rounded-lg border border-border object-cover"
               />
             )}
 
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold">{field.name}</h2>
-                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                <h2 className="text-xl font-bold text-text-primary">{field.name}</h2>
+                <p className="text-sm font-medium text-brand-primary">
                   {fieldTypeLabel[field.fieldType as FieldType] || field.fieldType}
                 </p>
               </div>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-text-muted">
                 Tạo ngày: {formatDateTime(field.createdAt)}
               </span>
             </div>
 
-            <Separator />
+            <Separator className="bg-border" />
 
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-text-muted">
                 Mô tả sân
               </p>
-              <p className="text-sm">{field.description || "Chưa có mô tả."}</p>
+              <p className="text-sm text-text-secondary">{field.description || "Chưa có mô tả."}</p>
             </div>
 
-            <Separator />
+            <Separator className="bg-border" />
 
             {/* Manage Time Slots Section */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold flex items-center gap-1.5">
-                  <Clock className="h-4 w-4 text-emerald-500" />
+                <h3 className="flex items-center gap-1.5 text-base font-bold text-text-primary">
+                  <Clock className="h-4 w-4 text-brand-primary" />
                   Danh sách khung giờ của sân
                 </h3>
                 <Button
                   size="sm"
-                  variant={showAddForm ? "secondary" : "default"}
                   onClick={() => {
                     setShowAddForm(!showAddForm);
                     setFormError(null);
                   }}
-                  className="h-8 text-xs font-bold gap-1"
+                  className={
+                    showAddForm
+                      ? "h-8 gap-1 border-border bg-surface text-xs font-bold text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+                      : "h-8 gap-1 border-transparent bg-brand-accent text-xs font-bold text-accent-foreground hover:bg-brand-accent-hover"
+                  }
                 >
                   <Plus className="h-3.5 w-3.5" />
                   {showAddForm ? "Đóng form" : "Thêm khung giờ"}
@@ -178,12 +182,12 @@ export function FieldDetailDialog({
               {showAddForm && (
                 <form
                   onSubmit={handleCreateSlot}
-                  className="rounded-lg border bg-muted/30 p-4 space-y-3"
+                  className="space-y-3 rounded-lg border border-border bg-surface p-4"
                 >
-                  <p className="text-xs font-bold text-foreground">Tạo khung giờ mới cho sân này:</p>
+                  <p className="text-xs font-bold text-text-primary">Tạo khung giờ mới cho sân này:</p>
                   
                   {formError && (
-                    <div className="flex items-center gap-2 rounded-md bg-red-500/10 border border-red-500/30 p-2.5 text-xs text-red-600 dark:text-red-400 font-medium">
+                    <div className="flex items-center gap-2 rounded-md border border-status-danger/30 bg-status-danger-bg p-2.5 text-xs font-medium text-status-danger">
                       <AlertCircle className="h-4 w-4 shrink-0" />
                       <span>{formError}</span>
                     </div>
@@ -191,7 +195,7 @@ export function FieldDetailDialog({
 
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                      <label className="mb-1 block text-[11px] font-medium text-text-muted">
                         Bắt đầu
                       </label>
                       <Input
@@ -201,12 +205,12 @@ export function FieldDetailDialog({
                           setStarttime(e.target.value);
                           setFormError(null);
                         }}
-                        className="h-8 text-xs"
+                        className="h-8 border-border bg-elevated text-xs text-text-primary focus-visible:border-brand-accent focus-visible:ring-brand-accent/30"
                         required
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                      <label className="mb-1 block text-[11px] font-medium text-text-muted">
                         Kết thúc
                       </label>
                       <Input
@@ -216,12 +220,12 @@ export function FieldDetailDialog({
                           setEndtime(e.target.value);
                           setFormError(null);
                         }}
-                        className="h-8 text-xs"
+                        className="h-8 border-border bg-elevated text-xs text-text-primary focus-visible:border-brand-accent focus-visible:ring-brand-accent/30"
                         required
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                      <label className="mb-1 block text-[11px] font-medium text-text-muted">
                         Giá (VNĐ)
                       </label>
                       <Input
@@ -232,7 +236,7 @@ export function FieldDetailDialog({
                           setPrice(e.target.value);
                           setFormError(null);
                         }}
-                        className="h-8 text-xs"
+                        className="h-8 border-border bg-elevated text-xs text-text-primary focus-visible:border-brand-accent focus-visible:ring-brand-accent/30"
                         required
                       />
                     </div>
@@ -241,7 +245,7 @@ export function FieldDetailDialog({
                     type="submit"
                     size="sm"
                     disabled={createSlotMutation.isPending}
-                    className="w-full h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer"
+                    className="h-8 w-full cursor-pointer border-transparent bg-brand-primary text-xs font-bold text-white hover:bg-brand-primary-hover"
                   >
                     {createSlotMutation.isPending ? "Đang lưu..." : "Lưu khung giờ này →"}
                   </Button>
@@ -250,21 +254,21 @@ export function FieldDetailDialog({
 
               {/* List of slots */}
               {!field.fieldSlots || field.fieldSlots.length === 0 ? (
-                <p className="py-4 text-center text-xs text-muted-foreground border border-dashed rounded-lg">
+                <p className="rounded-lg border border-dashed border-border py-4 text-center text-xs text-text-muted">
                   Sân này chưa có khung giờ nào. Vui lòng bấm "Thêm khung giờ" để tạo.
                 </p>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {field.fieldSlots.map((slot: FieldSlot) => (
                     <div
                       key={slot.slotId}
-                      className="flex items-center justify-between rounded-lg border p-2.5 bg-card text-xs shadow-xs"
+                      className="flex items-center justify-between rounded-lg border border-border bg-surface p-2.5 text-xs"
                     >
                       <div className="space-y-0.5">
-                        <span className="font-semibold text-foreground block">
+                        <span className="block font-semibold text-text-primary">
                           {formatTimeRange(slot.starttime, slot.endtime)}
                         </span>
-                        <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-0.5">
+                        <span className="flex items-center gap-0.5 font-bold text-brand-primary">
                           <DollarSign className="h-3 w-3" />
                           {Number(slot.price).toLocaleString("vi-VN")} đ
                         </span>
@@ -275,7 +279,7 @@ export function FieldDetailDialog({
                         variant="ghost"
                         onClick={() => handleDeleteSlot(slot.slotId)}
                         disabled={deleteSlotMutation.isPending}
-                        className="h-7 w-7 text-red-500 hover:bg-red-500/10 hover:text-red-600 cursor-pointer"
+                        className="h-7 w-7 cursor-pointer text-status-danger hover:bg-status-danger-bg hover:text-status-danger"
                         title="Xóa khung giờ"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
