@@ -19,6 +19,17 @@ export const useBookings = () => {
   });
 };
 
+export const useStatusRange = (field: number, slot: number, star: string, end: string) => {
+  return useQuery({
+    queryKey: ["statusRange", field, slot],
+    queryFn: async () => {
+      const data = await bookingService.getStatusRange(field, slot, star, end);
+      return data ?? []; 
+    },
+    enabled: false, 
+  });
+};
+
 // Lấy chi tiết booking
 export const useBooking = (bookingId: number) => {
   return useQuery({

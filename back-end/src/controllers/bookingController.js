@@ -11,6 +11,8 @@ import {
   addUserHoldIndex,
   removeUserHoldIndex
 } from "../libs/redisHold.js";
+import { redis } from "../config/redis.js";
+
 
 export const getSlots = async (req, res) => {
   try {
@@ -316,8 +318,8 @@ export const holdSlot = async (req, res) => {
       expiresAt,
       ttl,
     });
-
-    io.to(`user:${userId}`).emit("user:cart_updated", { action: "ADD", slotId });
+// .to(`user:${userId}`)
+    io.emit("user:cart_updated", {fieldId, slotId, bookingDate: dateKey, status: "HOLD", expiresAt, ttl });
 
     return res.status(201).json({
       message: "Giữ chỗ thành công.",
@@ -378,8 +380,8 @@ export const deleteSlotHold = async (req, res) => {
       expiresAt: null,
       ttl: null,
     });
-
-    io.to(`user:${userId}`).emit("user:cart_updated", { action: "DELETE", slotId });
+// .to(`user:${userId}`)
+    io.emit("user:cart_updated", {fieldId, slotId, bookingDate: dateKey, status: "AVAILABLE", expiresAt: null, ttl: null });
 
     return res.status(200).json({
       message: "Hủy giữ chỗ thành công.",
@@ -396,7 +398,7 @@ export const createBooking = async (req, res) => {
     const userId = req.user.userId;
     const {
       slots, // [{ fieldId, slotId, bookingDate }] — thay cho 1 slotId đơn lẻ
-      type = "ONE_TIME",
+      type = "ONE_TIME" || "LONG_TERM",
       depositAmount = 0,
       note,
       services = [],
@@ -539,18 +541,27 @@ export const createBooking = async (req, res) => {
     const io = req.app.get("io");
     await Promise.all(
       normalizedSlots.map(async (s) => {
-        await deleteHold(s.fieldId, s.slotId, s.dateKey);
+        await deleteHold(s.fieldId, s.slotId, s.dateKey, userId);
         await removeUserHoldIndex(userId, makeKey(s.fieldId, s.slotId, s.dateKey));
 
+        console.log("Xoa thanh cong");
+
         io.to(`schedule:${s.fieldId}:${s.dateKey}`).emit("schedule:updated", {
+          holdId: makeKey(s.fieldId, s.slotId, s.dateKey),
           fieldId: s.fieldId,
           slotId: s.slotId,
           bookingDate: s.dateKey,
           status: "BOOKED",
+          userId: null,
+          expiresAt: null,
+          ttl: null,
         });
+
+        io.emit("user:cart_updated", {fieldId: s.fieldId, slotId: s.slotId, bookingDate: s.dateKey, status: "BOOKED", expiresAt: null, ttl: null });
+
       })
     );
-    io.to(`user:${userId}`).emit("user:cart_updated", { action: "CLEAR" });
+    // io.to(`user:${userId}`).emit("user:cart_updated", { action: "CLEAR" });
 
     return res.status(201).json({ message: "Đặt sân thành công.", booking });
   } catch (error) {
@@ -570,7 +581,7 @@ export const getBookings = async (req, res) => {
       },
       orderBy: { createdAt: "desc" },
     });
-
+    console.log("getBooking ok");
     return res.status(200).json({ bookings });
   } catch (error) {
     console.error(error);
@@ -605,7 +616,7 @@ export const getBookingById = async (req, res) => {
 
 export const bookingHistory = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user.userId; 
 
     const bookings = await prisma.booking.findMany({
       where: { userId },
@@ -613,6 +624,7 @@ export const bookingHistory = async (req, res) => {
         bookingSlots: { include: { fieldSlot: { include: { field: true } } } },
         invoice: true,
         review: true,
+        bookingServices: { include: { service: true } },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -694,6 +706,145 @@ export const updateBooking = async (req, res) => {
     return res.status(200).json({ message: "Cập nhật booking thành công.", booking: updated });
   } catch (error) {
     console.error(error);
+    return res.status(500).json({ message: "Lỗi hệ thống." });
+  }
+};
+
+export const getSlotStatusRange = async (req, res) => {
+  try {
+    const { fieldId, slotId, startDate, endDate } = req.query;
+    const currentUserId = req.user?.userId;
+
+    if (!fieldId || !slotId || !startDate || !endDate) {
+      return res.status(400).json({ message: "Thiếu fieldId, slotId, startDate hoặc endDate." });
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({ message: "Ngày không hợp lệ." });
+    }
+
+    if (start > end) {
+      return res.status(400).json({ message: "startDate phải trước hoặc bằng endDate." });
+    }
+
+    const MAX_RANGE_DAYS = 90;
+    const rangeDays = Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
+    if (rangeDays > MAX_RANGE_DAYS) {
+      return res.status(400).json({ message: `Khoảng ngày tối đa ${MAX_RANGE_DAYS} ngày.` });
+    }
+
+    const slot = await prisma.fieldSlot.findUnique({
+      where: { slotId: Number(slotId) },
+    });
+
+    if (!slot || slot.fieldId !== Number(fieldId)) {
+      return res.status(404).json({ message: "Slot không hợp lệ hoặc không thuộc sân này." });
+    }
+
+    // 1. Tạo danh sách dateKeys
+    const dates = [];
+    const dateKeys = [];
+    const cursor = new Date(start);
+    while (cursor <= end) {
+      dates.push(new Date(cursor));
+      // Dùng format YYYY-MM-DD chuẩn địa phương tránh lệch múi giờ ISO
+      const dateStr = cursor.toISOString().split("T")[0];
+      dateKeys.push(dateStr);
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    // 2. Tạo Redis Pipeline để gom tất cả lệnh đọc Redis vào 1 Network Roundtrip
+    const redisPipeline = redis.pipeline(); // Nếu dùng ioredis
+    dateKeys.forEach((dateKey) => {
+      const key = `hold:${fieldId}:${slotId}:${dateKey}`; // Điều chỉnh key pattern của bạn
+      redisPipeline.get(key);
+      redisPipeline.ttl(key);
+    });
+
+    // 3. Chạy song song: Postgres (Booked/Blocked) + Redis Pipeline
+    const [bookedSlots, redisResults] = await Promise.all([
+      prisma.bookingSlot.findMany({
+        where: {
+          slotId: Number(slotId),
+          bookingDate: { gte: start, lte: end },
+          booking: { status: "CONFIRMED" },
+        },
+        select: { bookingDate: true },
+      }),
+
+      redisPipeline.exec(), // Gửi 1 lần duy nhất sang Redis
+    ]);
+
+    // 4. Parse kết quả từ Redis Pipeline
+    // Redis trả về mảng kết quả song song: [ [err, userId1], [err, ttl1], [err, userId2], [err, ttl2], ... ]
+    const holdMap = new Map();
+    const now = Date.now();
+
+    for (let i = 0; i < dateKeys.length; i++) {
+      const dateKey = dateKeys[i];
+      const holdUserId = redisResults[i * 2][1]; // Kết quả của get
+      const ttl = redisResults[i * 2 + 1][1];   // Kết quả của ttl
+
+      if (holdUserId && ttl > 0) {
+        holdMap.set(dateKey, {
+          userId: holdUserId,
+          ttl,
+          expiresAt: new Date(now + ttl * 1000),
+        });
+      }
+    }
+
+    // 5. Map ra kết quả trả về UI
+    const bookedSet = new Set(bookedSlots.map((b) => b.bookingDate.toISOString().split("T")[0]));
+
+    const result = dateKeys.map((dateKey) => {
+      let status = "AVAILABLE";
+      let isMyHold = false;
+      let expiresAt = null;
+      let ttl = null;
+
+      const hold = holdMap.get(dateKey);
+
+      if (bookedSet.has(dateKey)) {
+        status = "BOOKED";
+      } else if (hold) {
+        status = "HOLD";
+        expiresAt = hold.expiresAt;
+        ttl = hold.ttl;
+        if (Number(hold.userId) === Number(currentUserId)) {
+          isMyHold = true;
+        }
+      }
+
+      return {
+        holdId: makeKey(fieldId, slotId, dateKey),
+        bookingDate: dateKey,
+        slotId: slotId,
+        starttime: startDate,
+        endtime: endDate,
+        price: slot.price,
+        status,
+        isMyHold,
+        expiresAt,
+        ttl,
+      };
+    });
+
+    return res.status(200).json({
+      fieldId: Number(fieldId),
+      slotId: Number(slotId),
+      starttime: slot.starttime,
+      endtime: slot.endtime,
+      price: slot.price,
+      startDate: start.toISOString().split("T")[0],
+      endDate: end.toISOString().split("T")[0],
+      slots: result,
+    });
+  } catch (error) {
+    console.error("Error in getSlotStatusRange:", error);
     return res.status(500).json({ message: "Lỗi hệ thống." });
   }
 };

@@ -26,3 +26,18 @@ git commit
 docker exec -it football-redis redis-cli FLUSHDB -> xoa
 
 docker exec -it football-redis redis-cli --scan | ForEach-Object { $k=$_; Write-Host "$k -> $(docker exec football-redis redis-cli GET $k)" } -> xem du lieu 
+
+taskkill /IM node.exe /F -> xoa node
+
+docker exec football-redis redis-cli --scan | ForEach-Object {
+>>     $k = $_.Trim()
+>>     if ($k) {
+>>         $t = (docker exec football-redis redis-cli TYPE $k).Trim()
+>>         if ($t -eq "string") { $v = docker exec football-redis redis-cli GET $k }
+>>         elseif ($t -eq "set") { $v = (docker exec football-redis redis-cli SMEMBERS $k) -join ", " }
+>>         else { $v = $t }
+>>         Write-Host "$k ($t) -> [$v]"
+>>     }
+
+-> in db redis
+

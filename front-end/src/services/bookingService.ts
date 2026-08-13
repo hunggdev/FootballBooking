@@ -6,6 +6,7 @@ import type {
   HoldSlotPayload,
   SlotHold,
   ConfirmBookingPayload,
+  StatusRange,
 } from "@/types/booking";
 
 export const bookingService = {
@@ -80,5 +81,10 @@ export const bookingService = {
   ): Promise<Booking> => {
     const res = await api.put(`/bookings/${bookingId}`, payload);
     return res.data.booking;
+  },
+
+  getStatusRange: async (fieldId: number, slotId: number, startDate: string, endDate: string) => {
+    const res = await api.get("/bookings/statusRange", { params: { fieldId, slotId, startDate, endDate } });
+    return res.data.slots ?? [];
   },
 };

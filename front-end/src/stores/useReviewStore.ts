@@ -1,32 +1,29 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import {
-  getReviews,
-  getReview,
-  getFieldReviews,
-  replyReview,
-} from "@/services/ReviewService";
+import { reviewService } from "@/services/ReviewService"; 
+
 
 import type {
   Review,
   ReplyReviewPayload,
+  CreateReviewPayload,
 } from "@/types/review";
 
 // Lấy danh sách review
-export function useReviews() {
+export const useReviews = () => {
   return useQuery<Review[]>({
     queryKey: ["reviews"],
-    queryFn: getReviews,
+    queryFn: reviewService.getReviews,
     staleTime: 0,
     refetchInterval: 3000,
   });
 }
 
 // Lấy danh sách review theo sân cụ thể
-export function useFieldReviews(fieldId: number) {
+export const useFieldReviews = (fieldId: number) => {
   return useQuery<Review[]>({
     queryKey: ["reviews", "field", fieldId],
-    queryFn: () => getFieldReviews(fieldId),
+    queryFn: () => reviewService.getFieldReviews(fieldId),
     enabled: !!fieldId,
     staleTime: 0,
     refetchInterval: 3000,
@@ -34,17 +31,17 @@ export function useFieldReviews(fieldId: number) {
 }
 
 // Lấy chi tiết review
-export function useReview(reviewId: number) {
+export const useReview = (reviewId: number) => {
   return useQuery<Review>({
     queryKey: ["reviews", reviewId],
-    queryFn: () => getReview(reviewId),
+    queryFn: () => reviewService.getReview(reviewId),
     enabled: !!reviewId,
     retry: false,
   });
 }
 
 // Admin phản hồi review
-export function useReplyReview() {
+export const useReplyReview = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -54,24 +51,34 @@ export function useReplyReview() {
     }: {
       id: number;
       payload: ReplyReviewPayload;
-    }) => replyReview(id, payload),
+    }) => reviewService.replyReview(id, payload),
 
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["reviews"],
       });
-
       queryClient.invalidateQueries({
         queryKey: ["user-reviews"],
       });
-
       queryClient.invalidateQueries({
         queryKey: ["my-bookings"],
       });
-
       queryClient.invalidateQueries({
         queryKey: ["reviews", variables.id],
       });
+    },
+  });
+}
+
+export const useCreateReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: CreateReviewPayload) => reviewService.createReview(payload),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["user-reviews"] });
     },
   });
 }

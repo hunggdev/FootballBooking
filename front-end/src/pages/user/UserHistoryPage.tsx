@@ -1,5 +1,18 @@
 import { useState } from "react";
-import { Calendar, Clock, Star, ShieldCheck, MessageSquarePlus, History, Loader2, CheckCircle2, XCircle, FileText, Receipt } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Star,
+  ShieldCheck,
+  MessageSquarePlus,
+  History,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  FileText,
+  Receipt,
+  DollarSign,
+} from "lucide-react";
 import dayjs from "dayjs";
 
 import { useMyBookings } from "@/stores/useBookingStore";
@@ -21,7 +34,10 @@ function formatCurrency(value: number | string) {
   return `${Math.round(Number(value)).toLocaleString("vi-VN")}đ`;
 }
 
-const statusBadge: Record<Booking["status"], { label: string; className: string; icon: React.ElementType }> = {
+const statusBadge: Record<
+  Booking["status"],
+  { label: string; className: string; icon: React.ElementType }
+> = {
   CONFIRMED: {
     label: "Đã xác nhận",
     className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-500",
@@ -37,12 +53,19 @@ const statusBadge: Record<Booking["status"], { label: string; className: string;
     className: "border-red-500/30 bg-red-500/10 text-red-500",
     icon: XCircle,
   },
+  COMPLETED: {
+    label: "Đã hoàn thành",
+    className: "border-green-500/30 bg-green-500/10 text-green-500",
+    icon: CheckCircle2,
+  },
 };
 
 export default function UserHistoryPage() {
   const { data: bookings = [], isLoading, error } = useMyBookings();
-  const [selectedBookingForReview, setSelectedBookingForReview] = useState<Booking | null>(null);
-  const [selectedBookingForInvoice, setSelectedBookingForInvoice] = useState<Booking | null>(null);
+  const [selectedBookingForReview, setSelectedBookingForReview] =
+    useState<Booking | null>(null);
+  const [selectedBookingForInvoice, setSelectedBookingForInvoice] =
+    useState<Booking | null>(null);
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
@@ -53,9 +76,12 @@ export default function UserHistoryPage() {
             <History className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Lịch sử đặt sân của bạn</h1>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Lịch sử đặt sân của bạn
+            </h1>
             <p className="text-sm text-muted-foreground">
-              Theo dõi danh sách sân đã đặt, xem hóa đơn tự động và gửi đánh giá chất lượng sân.
+              Theo dõi danh sách sân đã đặt, xem hóa đơn tự động và gửi đánh giá
+              chất lượng sân.
             </p>
           </div>
         </div>
@@ -64,7 +90,8 @@ export default function UserHistoryPage() {
       {/* Loading */}
       {isLoading && (
         <div className="flex items-center justify-center py-16 text-muted-foreground">
-          <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Đang tải lịch sử đặt sân...
+          <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Đang tải lịch sử đặt
+          sân...
         </div>
       )}
 
@@ -85,19 +112,24 @@ export default function UserHistoryPage() {
       ) : (
         <div className="space-y-4">
           {bookings.map((booking) => {
-            const fieldName = booking.fieldSlot?.field?.name || `Sân #${booking.bookingId}`;
-            const dateLabel = dayjs(booking.bookingDate).format("DD/MM/YYYY");
-            const timeLabel = formatTimeRange(booking.fieldSlot?.starttime, booking.fieldSlot?.endtime);
-            const statusInfo = statusBadge[booking.status] || statusBadge.CONFIRMED;
+            const fieldName =
+              booking.bookingSlots[0].fieldSlot.field.name ||
+              `Sân #${booking.bookingId}`;
+            const statusInfo =
+              statusBadge[booking.status] || statusBadge.CONFIRMED;
             const StatusIcon = statusInfo.icon;
-            const hasReview = !!booking.review;
 
             return (
-              <Card key={booking.bookingId} className="border shadow-sm transition-all hover:border-border/80">
+              <Card
+                key={booking.bookingId}
+                className="border shadow-sm transition-all hover:border-border/80"
+              >
                 <CardHeader className="pb-3 border-b bg-muted/10">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <CardTitle className="text-base font-bold">{fieldName}</CardTitle>
+                      <CardTitle className="text-base font-bold">
+                        {fieldName}
+                      </CardTitle>
                       <Badge variant="outline" className={statusInfo.className}>
                         <StatusIcon className="mr-1 h-3.5 w-3.5" />
                         {statusInfo.label}
@@ -106,7 +138,10 @@ export default function UserHistoryPage() {
 
                     <div className="flex items-center gap-2 text-xs">
                       <span className="text-muted-foreground">
-                        Mã đơn: <span className="font-mono font-semibold text-foreground">#{booking.bookingId}</span>
+                        Mã đơn:{" "}
+                        <span className="font-mono font-semibold text-foreground">
+                          #{booking.bookingId}
+                        </span>
                       </span>
 
                       {booking.invoice && (
@@ -125,79 +160,64 @@ export default function UserHistoryPage() {
                 </CardHeader>
 
                 <CardContent className="pt-4 space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="h-4 w-4 text-emerald-500" />
-                      <span>Ngày đá:</span>
-                      <span className="font-semibold text-foreground">{dateLabel}</span>
-                    </div>
+                  <div className="overflow-y-auto max-h-[100px] custom-scrollbar">
+                    {booking.bookingSlots.map((slot) => (
+                      <div
+                        key={slot.bookingSlotId}
+                        className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm  "
+                      >
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Calendar className="h-4 w-4 text-emerald-500" />
+                          <span>Ngày đá:</span>
+                          <span className="font-semibold text-foreground">
+                            {dayjs(slot.bookingDate).format("DD/MM/YYYY")}
+                          </span>
+                        </div>
 
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Clock className="h-4 w-4 text-emerald-500" />
-                      <span>Khung giờ:</span>
-                      <span className="font-semibold text-foreground">{timeLabel}</span>
-                    </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Clock className="h-4 w-4 text-emerald-500" />
+                          <span>Khung giờ:</span>
+                          <span className="font-semibold text-foreground">
+                            {formatTimeRange(
+                              slot.fieldSlot?.starttime,
+                              slot.fieldSlot?.endtime,
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <DollarSign className="h-4 w-4 text-emerald-500" />
+                          <span>Số tiền:</span>
+                          <span className="font-semibold text-foreground">
+                            {slot.price}VNĐ
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
 
                   {/* Review Section */}
                   {booking.status === "CONFIRMED" && (
                     <div className="rounded-lg border bg-muted/20 p-4 space-y-3">
-                      {hasReview ? (
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="flex items-center gap-1 text-xs font-semibold text-emerald-500">
-                              <CheckCircle2 className="h-3.5 w-3.5" /> Bạn đã đánh giá sân này
-                            </span>
-                            <div className="flex items-center gap-1 text-amber-400">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`h-3.5 w-3.5 ${
-                                    star <= (booking.review?.rating ?? 0)
-                                      ? "fill-amber-400 text-amber-400"
-                                      : "fill-muted text-muted-foreground/30"
-                                  }`}
-                                />
-                              ))}
-                              <span className="ml-1 text-xs font-bold text-foreground">
-                                {booking.review?.rating}/5
-                              </span>
-                            </div>
-                          </div>
-
-                          {booking.review?.comment && (
-                            <p className="text-sm italic text-foreground/90 bg-background/50 p-2.5 rounded border">
-                              "{booking.review.comment}"
-                            </p>
-                          )}
-
-                          {booking.review?.reply && (
-                            <div className="rounded-md border border-primary/30 bg-primary/10 p-3 text-xs">
-                              <p className="flex items-center gap-1.5 font-bold text-primary mb-1">
-                                <ShieldCheck className="h-3.5 w-3.5" /> Phản hồi từ Quản lý sân:
-                              </p>
-                              <p className="text-muted-foreground">{booking.review.reply}</p>
-                            </div>
-                          )}
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-semibold text-foreground">
+                            Đánh giá chất lượng sân bóng
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Chia sẻ trải nghiệm mặt sân, hệ thống chiếu sáng &
+                            phục vụ để hỗ trợ quản lý sân.
+                          </p>
                         </div>
-                      ) : (
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                          <div>
-                            <p className="text-xs font-semibold text-foreground">Đánh giá chất lượng sân bóng</p>
-                            <p className="text-xs text-muted-foreground">
-                              Chia sẻ trải nghiệm mặt sân, hệ thống chiếu sáng & phục vụ để hỗ trợ quản lý sân.
-                            </p>
-                          </div>
-                          <Button
-                            size="sm"
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-sm shrink-0"
-                            onClick={() => setSelectedBookingForReview(booking)}
-                          >
-                            <MessageSquarePlus className="mr-1.5 h-4 w-4" />
-                            Đánh giá chất lượng sân
-                          </Button>
-                        </div>
-                      )}
+                        <Button
+                          size="sm"
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-sm shrink-0"
+                          onClick={() => setSelectedBookingForReview(booking)}
+                        >
+                          <MessageSquarePlus className="mr-1.5 h-4 w-4" />
+                          Đánh giá chất lượng sân
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </CardContent>
@@ -221,8 +241,7 @@ export default function UserHistoryPage() {
               Đánh giá chất lượng sân
             </DialogTitle>
             <DialogDescription>
-              {selectedBookingForReview?.fieldSlot?.field?.name} · Ngày{" "}
-              {selectedBookingForReview ? dayjs(selectedBookingForReview.bookingDate).format("DD/MM/YYYY") : ""}
+              {selectedBookingForReview?.bookingSlots[0].fieldSlot.field.name}
             </DialogDescription>
           </DialogHeader>
 
@@ -246,44 +265,127 @@ export default function UserHistoryPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg font-bold">
               <FileText className="h-5 w-5 text-emerald-500" />
-              Hóa đơn thanh toán #{selectedBookingForInvoice?.invoice?.invoiceId}
+              Hóa đơn thanh toán #
+              {selectedBookingForInvoice?.invoice?.invoiceId}
             </DialogTitle>
             <DialogDescription>
-              Hóa đơn tự động được tạo cho đơn đặt {selectedBookingForInvoice?.fieldSlot?.field?.name}
+              Hóa đơn tự động được tạo cho đơn đặt{" "}
+              {
+                selectedBookingForInvoice?.bookingSlots[0].fieldSlot?.field
+                  ?.name
+              }
             </DialogDescription>
           </DialogHeader>
 
           {selectedBookingForInvoice?.invoice && (
             <div className="space-y-4 text-sm">
               <div className="rounded-lg border p-3 bg-muted/20 space-y-2">
+                {selectedBookingForInvoice.bookingSlots.length > 1 && (
+                  <div className="overflow-y-auto max-h-[100px] text-[10px] custom-scrollbar">
+                    {selectedBookingForInvoice.bookingSlots.map((slot) => (
+                      <div
+                        key={slot.bookingSlotId}
+                        className="flex flex-row justify-between items-center gap-2 text-muted-foreground"
+                      >
+                        <span className="text-foreground">
+                          {dayjs(slot.bookingDate).format("DD/MM/YYYY")}
+                        </span>
+                        <span className="text-foreground">
+                          {formatTimeRange(
+                            slot.fieldSlot?.starttime,
+                            slot.fieldSlot?.endtime,
+                          )}
+                        </span>
+                        <span className="text-foreground">{slot.price}đ</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tiền thuê sân:</span>
-                  <span className="font-semibold">{formatCurrency(selectedBookingForInvoice.invoice.fieldAmount || selectedBookingForInvoice.totalPrice)}</span>
+                  <span className="font-semibold">
+                    {formatCurrency(
+                      selectedBookingForInvoice.invoice.fieldAmount ||
+                        selectedBookingForInvoice.totalPrice,
+                    )}
+                  </span>
                 </div>
+                {selectedBookingForInvoice.bookingServices.length > 1 && (
+                  <div className="overflow-y-auto max-h-[100px] text-[10px] custom-scrollbar">
+                    {selectedBookingForInvoice.bookingServices.map(
+                      (service) => (
+                        <div
+                          key={service.bookingServiceId}
+                          className="flex flex-row justify-between items-center gap-2 text-muted-foreground"
+                        >
+                          <span className="text-foreground min-w-[100px]">
+                            {service.service?.name}
+                          </span>
+                          <span className="text-foreground">
+                            x{service.quantity}
+                          </span>
+                          <span className="text-foreground min-w-[100px] text-right">
+                            {formatCurrency(service.price * service.quantity)}đ
+                          </span>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                )}
+
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tiền dịch vụ thêm:</span>
-                  <span className="font-semibold">{formatCurrency(selectedBookingForInvoice.invoice.serviceAmount || 0)}</span>
+                  <span className="text-muted-foreground">
+                    Tiền dịch vụ thêm:
+                  </span>
+                  <span className="font-semibold">
+                    {formatCurrency(
+                      selectedBookingForInvoice.invoice.serviceAmount || 0,
+                    )}
+                  </span>
                 </div>
                 <div className="border-t pt-2 flex justify-between font-bold">
                   <span>Tổng cộng:</span>
-                  <span className="text-base text-emerald-500">{formatCurrency(selectedBookingForInvoice.invoice.totalAmount || selectedBookingForInvoice.totalPrice)}</span>
+                  <span className="text-base text-emerald-500">
+                    {formatCurrency(
+                      selectedBookingForInvoice.invoice.totalAmount ||
+                        selectedBookingForInvoice.totalPrice,
+                    )}
+                  </span>
                 </div>
               </div>
 
               <div className="rounded-lg border p-3 space-y-2 bg-emerald-500/5">
                 <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
                   <span>Đã đặt cọc (30%):</span>
-                  <span className="font-bold">{formatCurrency(selectedBookingForInvoice.invoice.deposit || 0)}</span>
+                  <span className="font-bold">
+                    {formatCurrency(
+                      selectedBookingForInvoice.invoice.deposit || 0,
+                    )}
+                  </span>
                 </div>
                 <div className="flex justify-between text-amber-500">
                   <span>Còn lại thanh toán tại sân:</span>
-                  <span className="font-bold">{formatCurrency(selectedBookingForInvoice.invoice.remainAmount || 0)}</span>
+                  <span className="font-bold">
+                    {formatCurrency(
+                      selectedBookingForInvoice.invoice.remainAmount || 0,
+                    )}
+                  </span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
-                <span>Trạng thái: <Badge variant="outline" className="ml-1 uppercase">{selectedBookingForInvoice.invoice.status}</Badge></span>
-                <span>Ngày tạo: {dayjs(selectedBookingForInvoice.invoice.createdAt).format("DD/MM/YYYY HH:mm")}</span>
+                <span>
+                  Trạng thái:{" "}
+                  <Badge variant="outline" className="ml-1 uppercase">
+                    {selectedBookingForInvoice.invoice.status}
+                  </Badge>
+                </span>
+                <span>
+                  Ngày tạo:{" "}
+                  {dayjs(selectedBookingForInvoice.invoice.createdAt).format(
+                    "DD/MM/YYYY HH:mm",
+                  )}
+                </span>
               </div>
             </div>
           )}

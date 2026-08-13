@@ -309,6 +309,7 @@ enum BookingStatus {
 
 enum BookingType {
   ONE_TIME
+  LONG_TERM
   RECURRING
 }
 

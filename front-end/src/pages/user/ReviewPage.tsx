@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Star, MessageSquare, ShieldCheck, Loader2, MessageSquarePlus, Filter } from "lucide-react";
+import {
+  Star,
+  MessageSquare,
+  ShieldCheck,
+  Loader2,
+  MessageSquarePlus,
+  Filter,
+} from "lucide-react";
 import api from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +35,11 @@ export default function ReviewPage() {
 
   const { data: fields = [] } = useFields();
 
-  const { data: reviews = [], isLoading, error } = useQuery<Review[]>({
+  const {
+    data: reviews = [],
+    isLoading,
+    error,
+  } = useQuery<Review[]>({
     queryKey: ["user-reviews", selectedType, selectedFieldId],
     queryFn: async () => {
       const params: Record<string, unknown> = {};
@@ -42,15 +53,15 @@ export default function ReviewPage() {
   });
 
   const { data: myBookings = [] } = useMyBookings();
-  const unreviewedBookings = myBookings.filter(
-    (b) => b.status === "CONFIRMED" && !b.review
-  );
+  const unreviewedBookings = myBookings.filter((b) => b.status === "CONFIRMED");
 
   // Calculate statistics
   const totalReviews = reviews.length;
   const avgRating =
     totalReviews > 0
-      ? (reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews).toFixed(1)
+      ? (reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews).toFixed(
+          1,
+        )
       : "5.0";
 
   const handleOpenReview = () => {
@@ -60,9 +71,10 @@ export default function ReviewPage() {
     setOpenReviewDialog(true);
   };
 
-  const filteredFields = selectedType === "ALL"
-    ? fields
-    : fields.filter((f) => f.fieldType === selectedType);
+  const filteredFields =
+    selectedType === "ALL"
+      ? fields
+      : fields.filter((f) => f.fieldType === selectedType);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
@@ -75,7 +87,8 @@ export default function ReviewPage() {
               Đánh giá chất lượng từng sân bóng
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Xem chi tiết đánh giá, điểm số sao và nhận xét thực tế theo từng sân bóng.
+              Xem chi tiết đánh giá, điểm số sao và nhận xét thực tế theo từng
+              sân bóng.
             </p>
           </div>
 
@@ -87,7 +100,9 @@ export default function ReviewPage() {
               </div>
               <div className="border-r h-8" />
               <div>
-                <p className="text-xs text-muted-foreground">Tổng số đánh giá</p>
+                <p className="text-xs text-muted-foreground">
+                  Tổng số đánh giá
+                </p>
                 <p className="text-sm font-semibold">{totalReviews} đánh giá</p>
               </div>
             </div>
@@ -142,7 +157,7 @@ export default function ReviewPage() {
               value={selectedFieldId}
               onChange={(e) =>
                 setSelectedFieldId(
-                  e.target.value === "ALL" ? "ALL" : Number(e.target.value)
+                  e.target.value === "ALL" ? "ALL" : Number(e.target.value),
                 )
               }
               className="rounded-lg border bg-background px-3 py-1.5 text-xs font-medium text-foreground focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
@@ -158,14 +173,19 @@ export default function ReviewPage() {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Đang hiển thị <span className="font-semibold text-foreground">{reviews.length}</span> đánh giá
+          Đang hiển thị{" "}
+          <span className="font-semibold text-foreground">
+            {reviews.length}
+          </span>{" "}
+          đánh giá
         </p>
       </div>
 
       {/* Loading State */}
       {isLoading && (
         <div className="flex items-center justify-center py-16 text-muted-foreground">
-          <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Đang tải danh sách đánh giá sân...
+          <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Đang tải danh sách
+          đánh giá sân...
         </div>
       )}
 
@@ -192,10 +212,15 @@ export default function ReviewPage() {
               SEVEN: "Sân 7",
               ELEVEN: "Sân 11",
             };
-            const fieldTypeLabel = fieldType ? labelMap[fieldType] || fieldType : null;
+            const fieldTypeLabel = fieldType
+              ? labelMap[fieldType] || fieldType
+              : null;
 
             return (
-              <Card key={review.reviewId} className="flex flex-col justify-between border shadow-xs hover:border-emerald-500/30 transition-all">
+              <Card
+                key={review.reviewId}
+                className="flex flex-col justify-between border shadow-xs hover:border-emerald-500/30 transition-all"
+              >
                 <CardHeader className="pb-3 border-b bg-muted/10">
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -203,12 +228,18 @@ export default function ReviewPage() {
                         {review.field?.name || `Sân #${review.fieldId}`}
                       </CardTitle>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Người đánh giá: <span className="font-semibold text-foreground">{review.user?.fullName || "Khách hàng"}</span>
+                        Người đánh giá:{" "}
+                        <span className="font-semibold text-foreground">
+                          {review.user?.fullName || "Khách hàng"}
+                        </span>
                       </p>
                     </div>
 
                     {fieldTypeLabel && (
-                      <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400">
+                      <Badge
+                        variant="outline"
+                        className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                      >
                         {fieldTypeLabel}
                       </Badge>
                     )}
@@ -229,11 +260,15 @@ export default function ReviewPage() {
                           }`}
                         />
                       ))}
-                      <span className="ml-1 text-xs font-bold">{review.rating}/5 sao</span>
+                      <span className="ml-1 text-xs font-bold">
+                        {review.rating}/5 sao
+                      </span>
                     </div>
 
                     <span className="text-[11px] text-muted-foreground">
-                      {review.createdAt ? dayjs(review.createdAt).format("DD/MM/YYYY HH:mm") : ""}
+                      {review.createdAt
+                        ? dayjs(review.createdAt).format("DD/MM/YYYY HH:mm")
+                        : ""}
                     </span>
                   </div>
 
@@ -246,7 +281,8 @@ export default function ReviewPage() {
                   {review.reply && (
                     <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs">
                       <p className="flex items-center gap-1.5 font-bold text-primary mb-1">
-                        <ShieldCheck className="h-3.5 w-3.5" /> Phản hồi từ Quản lý sân:
+                        <ShieldCheck className="h-3.5 w-3.5" /> Phản hồi từ Quản
+                        lý sân:
                       </p>
                       <p className="text-muted-foreground">{review.reply}</p>
                     </div>
@@ -267,7 +303,8 @@ export default function ReviewPage() {
               Viết đánh giá chất lượng sân
             </DialogTitle>
             <DialogDescription>
-              Chọn trận đấu bạn đã hoàn thành để gửi đánh giá chất lượng cho ban quản lý.
+              Chọn trận đấu bạn đã hoàn thành để gửi đánh giá chất lượng cho ban
+              quản lý.
             </DialogDescription>
           </DialogHeader>
 
@@ -279,22 +316,34 @@ export default function ReviewPage() {
             <div className="space-y-4">
               {unreviewedBookings.length > 1 && (
                 <div>
-                  <label className="mb-1 block text-sm font-semibold">Chọn sân đấu</label>
+                  <label className="mb-1 block text-sm font-semibold">
+                    Chọn sân đấu
+                  </label>
                   <select
                     className="w-full rounded-md border p-2 text-sm bg-background"
                     value={selectedBooking?.bookingId}
                     onChange={(e) => {
                       const b = unreviewedBookings.find(
-                        (item) => item.bookingId === Number(e.target.value)
+                        (item) => item.bookingId === Number(e.target.value),
                       );
                       if (b) setSelectedBooking(b);
                     }}
                   >
-                    {unreviewedBookings.map((b) => (
-                      <option key={b.bookingId} value={b.bookingId}>
-                        {b.fieldSlot?.field?.name} - {dayjs(b.bookingDate).format("DD/MM/YYYY")}
-                      </option>
-                    ))}
+                    {unreviewedBookings
+                      .filter(
+                        (b, index, arr) =>
+                          index ===
+                          arr.findIndex(
+                            (x) =>
+                              x.bookingSlots[0]?.fieldSlot.field.name ===
+                              b.bookingSlots[0]?.fieldSlot.field.name,
+                          ),
+                      )
+                      .map((b) => (
+                        <option key={b.bookingId} value={b.bookingId}>
+                          {b.bookingSlots[0]?.fieldSlot.field.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
               )}

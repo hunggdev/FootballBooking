@@ -6,24 +6,25 @@ import { prisma } from "../config/database.js";
 export const createReview = async (req, res) => {
   try {
     const userId = req.user.userId;
-
     const { bookingId, rating, comment } = req.body;
-
     if (!bookingId || !rating) {
       return res.status(400).json({
         message: "Thiếu thông tin đánh giá.",
       });
     }
-
     // Kiểm tra booking
     const booking = await prisma.booking.findUnique({
       where: {
         bookingId: Number(bookingId),
       },
       include: {
-        fieldSlot: {
+        bookingSlots: {
           include: {
-            field: true,
+            fieldSlot: {
+              include: {
+                field: true,
+              },
+            },
           },
         },
       },
@@ -59,7 +60,7 @@ export const createReview = async (req, res) => {
       data: {
         bookingId: Number(bookingId),
         userId,
-        fieldId: booking.fieldSlot.fieldId,
+        fieldId: booking.bookingSlots[0].fieldSlot.fieldId, 
         rating: Number(rating),
         comment,
       },
@@ -72,7 +73,7 @@ export const createReview = async (req, res) => {
 
     return res.status(201).json({
       message: "Đánh giá thành công.",
-      review,
+      // review,
     });
   } catch (error) {
     console.error(error);

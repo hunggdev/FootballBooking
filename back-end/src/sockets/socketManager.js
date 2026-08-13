@@ -26,6 +26,12 @@ export function initializeSockets(io) {
   io.on("connection", (socket) => {
     console.log(`🔌 Connected: ${socket.id} | User: ${socket.userId || "Guest"}`);
 
+    // Tạo phòng riêng cho từng booking để nhận thông báo thanh toán
+    socket.on("join:booking_room", (bookingId) => {
+      socket.join(`booking:${bookingId}`);
+      console.log(`Socket ${socket.id} joined booking room: ${bookingId}`);
+    });
+
     // A. Tự động đưa User vào Private Room
     if (socket.userId) {
       socket.join(`user:${socket.userId}`);

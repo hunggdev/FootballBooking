@@ -1,14 +1,12 @@
+import type { Socket } from "socket.io-client";
+import type { User } from "./user";
+
 export interface Bookings {
   bookingId: number;
-
   bookingDate: string;
-
   status: "HOLD" | "CONFIRMED" | "CANCELLED";
-
   createdAt: string;
-
   updatedAt: string;
-
   user: {
     userId: number;
     fullName: string;
@@ -17,11 +15,8 @@ export interface Bookings {
 
   fieldSlot: {
     slotId: number;
-
     starttime: string;
-
     endtime: string;
-
     field: {
       fieldId: number;
       name: string;
@@ -74,7 +69,6 @@ export interface MyHold {
   expiresAt: string;
   ttl: number;
 }
-
 
 export interface CreateBookingSlotPayload {
   fieldId: number;
@@ -183,6 +177,7 @@ export interface Invoice {
   status: "PENDING" | "PAID";
   paymentMethod: string;
   paidAt: string | null;
+  createdAt: string | null;
 }
 
 export interface BookingServiceItem {
@@ -213,4 +208,37 @@ export interface Booking {
   bookingSlots: BookingSlot[];
   invoice: Invoice | null;
   bookingServices: BookingServiceItem[];
+  user: User
+}
+
+export interface PaymentData {
+  bin: string | number;
+  accountNumber: string;
+  accountName: string;
+  amount: number;
+  description: string;
+}
+
+export interface PaymentSuccessPayload {
+  bookingId: string | number;
+  amountPaid?: number;
+  paidAt?: string | Date;
+  [key: string]: unknown;
+}
+
+export interface PaymentModalProps {
+  socket: Socket;
+  paymentData: PaymentData | null;
+  bookingId: string | number;
+  onClose: () => void;
+  // onSuccess?: (data: PaymentSuccessPayload) => void;
+}
+
+export interface StatusRange {
+  bookingDate: string;
+  slotId: number;
+  status: "AVAILABLE" | "BOOKED" | "HOLD" | "CLOSED";
+  isMyHold: boolean;
+  expiresAt?: Date;
+  ttl?: number;
 }
