@@ -76,9 +76,30 @@ export const generateInvoice = async (req, res) => {
  */
 export const getInvoices = async (req, res) => {
   try {
-    const invoices = await prisma.invoice.findMany({
-      include: {
-        booking: true,
+    // const invoices = await prisma.invoice.findMany({
+    //   include: {
+    //     booking: true,
+    //     user: {
+    //       select: {
+    //         userId: true,
+    //         fullName: true,
+    //         email: true,
+    //       },
+    //     },
+    //   },
+    //   orderBy: {
+    //     createdAt: "desc",
+    //   },
+    // });
+
+    const invoices = await prisma.booking.findMany({
+      where: {
+        invoiceId: {
+          not: null,
+        },
+      },
+      select: {
+        invoice: true,
         user: {
           select: {
             userId: true,
@@ -90,7 +111,9 @@ export const getInvoices = async (req, res) => {
       orderBy: {
         createdAt: "desc",
       },
-    });
+    })
+
+    // console.log(invoices);
 
     return res.status(200).json({
       message: "Lấy danh sách hóa đơn thành công.",

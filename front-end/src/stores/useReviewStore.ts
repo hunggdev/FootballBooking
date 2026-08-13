@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { reviewService } from "@/services/ReviewService"; 
+import { reviewService } from "@/services/reviewService";  
 
 
 import type {

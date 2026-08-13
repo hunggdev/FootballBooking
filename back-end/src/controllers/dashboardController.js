@@ -34,42 +34,67 @@ export const getDashboard = async (req, res) => {
       },
     });
 
-    // Top 5 sân được đặt nhiều
-    const topFields = await prisma.booking.groupBy({
-      by: ["slotId"],
-      _count: {
-        slotId: true,
-      },
-      orderBy: {
-        _count: {
-          slotId: "desc",
-        },
-      },
-      take: 5,
-    });
-
-    const fieldStatistics = await Promise.all(
-      topFields.map(async (item) => {
-        const slot = await prisma.fieldSlot.findUnique({
-          where: {
-            slotId: item.slotId,
-          },
-          include: {
+    const data = await prisma.bookingSlot.findMany({
+      select: {
+        fieldSlot: {
+          select: {
+            fieldId: true,
             field: {
               select: {
                 name: true,
-              },
-            },
-          },
-        });
+              }
+            }
+          }
+        }
+      }
+    }) 
 
-        return {
-          slotId: item.slotId,
-          fieldName: slot?.field?.name ?? "Không xác định",
-          bookingCount: item._count.slotId,
-        };
-      }),
-    );
+    const fieldIds = [
+  ...new Set(data.map(item => item.fieldSlot.fieldId))
+];
+
+
+
+
+
+    console.log(fieldIds); 
+
+    // Top 5 sân được đặt nhiều
+    // const topFields = await prisma.booking.groupBy({
+    //   by: ["slotId"],
+    //   _count: {
+    //     slotId: true,
+    //   },
+    //   orderBy: {
+    //     _count: {
+    //       slotId: "desc",
+    //     },
+    //   },
+    //   take: 5,
+    // });
+
+    // const fieldStatistics = await Promise.all(
+    //   topFields.map(async (item) => {
+    //     const slot = await prisma.fieldSlot.findUnique({
+    //       where: {
+    //         slotId: item.slotId,
+    //       },
+    //       include: {
+    //         field: {
+    //           select: {
+    //             name: true,
+    //           },
+    //         },
+    //       },
+    //     });
+
+    //     return {
+    //       slotId: item.slotId,
+    //       fieldName: slot?.field?.name ?? "Không xác định",
+    //       bookingCount: item._count.slotId,
+    //     };
+    //   }),
+    // );
 
     return res.status(200).json({
       message: "Lấy thống kê thành công.",
@@ -83,7 +108,7 @@ export const getDashboard = async (req, res) => {
 
         bookingStatus,
 
-        topFields: fieldStatistics,
+        // topFields: fieldStatistics,
       },
     });
   } catch (error) {
