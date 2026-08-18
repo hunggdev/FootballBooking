@@ -67,129 +67,129 @@ export function ManageMatch() {
       return matchSearch && matchStatus;
     });
   }, [data, search, status]);
-        
-    const totalPages = Math.max(1, Math.ceil(filteredMatches.length / PAGE_SIZE));
 
-    const handleAdd = () => {
-      setEditingMatch(null);
-      setFormError(null);
-      setDialogOpen(true);
-    }
+  const totalPages = Math.max(1, Math.ceil(filteredMatches.length / PAGE_SIZE));
 
-    const handleEdit = (match: Match) => {
-      setEditingMatch(match);
-      setFormError(null);
-      setDialogOpen(true);
-    };
+  const handleAdd = () => {
+    setEditingMatch(null);
+    setFormError(null);
+    setDialogOpen(true);
+  }
 
-    const handleView = (match: Match) => {
-      setDetailMatchId(match.matchId);
-      setDetailOpen(true);
-    };
+  const handleEdit = (match: Match) => {
+    setEditingMatch(match);
+    setFormError(null);
+    setDialogOpen(true);
+  };
 
-    const handleDelete = (match: Match) => {
-      const ok = confirm(
-        `Bạn có chắc muốn ngừng hoạt động tài khoản này "${match.matchId}"?`
-      );
-      if (!ok) return;
-      setListError(null);
-      deleteMatch.mutate(match.matchId, {
-        onError(error) {
-          setListError(
-            getErrorMessage(
-              error,
-              "Xóa tài khoản thất bại."
-            )
-          );
-        },
-      });
-    };
+  const handleView = (match: Match) => {
+    setDetailMatchId(match.matchId);
+    setDetailOpen(true);
+  };
 
-    const handleSubmit = (
-      values:
-        | CreateMatchPayload
-        | UpdateMatchPayload
-    ) => {
-
-      setFormError(null);
-
-      if (editingMatch) {
-        updateMatch.mutate(
-          {
-            matchId: editingMatch.matchId,
-            payload: values as UpdateMatchPayload,
-          },
-          {
-            onSuccess() {
-              setDialogOpen(false);
-              setEditingMatch(null);
-            },
-
-            onError(error) {
-              setFormError(
-                getErrorMessage(
-                  error,
-                  "Cập nhật sân thất bại."
-                )
-              );
-            },
-          }
+  const handleDelete = (match: Match) => {
+    const ok = confirm(
+      `Bạn có chắc muốn ngừng hoạt động tài khoản này "${match.matchId}"?`
+    );
+    if (!ok) return;
+    setListError(null);
+    deleteMatch.mutate(match.matchId, {
+      onError(error) {
+        setListError(
+          getErrorMessage(
+            error,
+            "Xóa tài khoản thất bại."
+          )
         );
-        return;
-      }
-      createMatch.mutate(
-        values as CreateMatchPayload,
+      },
+    });
+  };
+
+  const handleSubmit = (
+    values:
+      | CreateMatchPayload
+      | UpdateMatchPayload
+  ) => {
+
+    setFormError(null);
+
+    if (editingMatch) {
+      updateMatch.mutate(
+        {
+          matchId: editingMatch.matchId,
+          payload: values as UpdateMatchPayload,
+        },
         {
           onSuccess() {
             setDialogOpen(false);
+            setEditingMatch(null);
           },
+
           onError(error) {
             setFormError(
               getErrorMessage(
                 error,
-                "Tạo khách hàng thất bại."
+                "Cập nhật sân thất bại."
               )
             );
           },
         }
       );
-    };
+      return;
+    }
+    createMatch.mutate(
+      values as CreateMatchPayload,
+      {
+        onSuccess() {
+          setDialogOpen(false);
+        },
+        onError(error) {
+          setFormError(
+            getErrorMessage(
+              error,
+              "Tạo khách hàng thất bại."
+            )
+          );
+        },
+      }
+    );
+  };
 
-    if (isLoading)
-          return <div>Loading...</div>;
-    if (error)
-          return <div>Có lỗi xảy ra.</div>;
+  if (isLoading)
+    return <div>Loading...</div>;
+  if (error)
+    return <div>Có lỗi xảy ra.</div>;
 
   return (
     <>
       <PageHeader
         title="Quản lý kèo đấu"
         subtitle="Danh sách kèo đấu đã tạo trên hệ thống"
-      /> 
-      <MatchStatsCards 
-        matches={stats?.matches ?? 0} 
-        totalMatchInThisMonth={stats?.totalMatchInThisMonth ?? 0} 
-        open={stats?.matchOpen ?? 0} 
+      />
+      <MatchStatsCards
+        matches={stats?.matches ?? 0}
+        totalMatchInThisMonth={stats?.totalMatchInThisMonth ?? 0}
+        open={stats?.matchOpen ?? 0}
         matched={stats?.matchMatched ?? 0}
         finished={stats?.matchFinished ?? 0}
         cancelled={stats?.matchCancelled ?? 0}
       />
-      <MatchFilterBar 
-        search={search} 
-        onSearchChange={setSearch} 
-        status={status} 
-        onStatusChange={setStatus} 
+      <MatchFilterBar
+        search={search}
+        onSearchChange={setSearch}
+        status={status}
+        onStatusChange={setStatus}
         onClick={handleAdd}
         onChangePage={setCurrentPage}
-        />
+      />
       {listError && (
-        <p className="mt-4 text-sm text-red-500">
+        <p className="mt-4 text-sm text-status-danger">
           {listError}
         </p>
       )}
-      <MatchesTable matches={filteredMatches} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} currentPage={currentPage} pageSize={PAGE_SIZE}/>
-      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}  />
-      
+      <MatchesTable matches={filteredMatches} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} currentPage={currentPage} pageSize={PAGE_SIZE} />
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+
       <MatchDetailDialog
         matchId={detailMatchId}
         open={detailOpen}

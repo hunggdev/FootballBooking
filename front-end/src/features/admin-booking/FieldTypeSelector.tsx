@@ -11,14 +11,37 @@ export default function FieldTypeSelector() {
   };
 
   return (
-    <div>
-      <h2>Chọn loại sân</h2>
-      <ul className="flex gap-4">
+    <div className="space-y-4">
+      {/* Tiêu đề */}
+      <h2 className="text-xl font-bold text-text-primary">
+        Chọn loại sân
+      </h2>
+
+      {/* Danh sách loại sân */}
+      <ul className="flex flex-wrap gap-4">
         {fieldTypes.map((t) => (
           <li
             key={t}
-            className="cursor-pointer rounded-md px-4 py-2 bg-accent hover:bg-primary hover:text-white"
             onClick={() => handleSelect(t)}
+            className="
+              cursor-pointer
+              rounded-lg
+              border
+              border-border
+              bg-surface
+              px-5
+              py-3
+              text-sm
+              font-semibold
+              text-text-primary
+              shadow-sm
+              transition-all
+              duration-200
+              hover:border-brand-primary
+              hover:bg-brand-primary
+              hover:text-white
+              hover:shadow-md
+            "
           >
             {FIELD_TYPE_LABEL[t]}
           </li>

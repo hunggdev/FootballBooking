@@ -275,11 +275,11 @@
 //   };
 
 //   if (isFieldLoading) {
-//     return <p className="p-6 text-center text-sm text-muted-foreground">Đang tải chi tiết sân...</p>;
+//     return <p className="p-6 text-center text-sm text-text-muted">Đang tải chi tiết sân...</p>;
 //   }
 
 //   if (!field) {
-//     return <p className="p-6 text-center text-sm text-muted-foreground">Không tìm thấy sân.</p>;
+//     return <p className="p-6 text-center text-sm text-text-muted">Không tìm thấy sân.</p>;
 //   }
 
 //   const handleConfirm = async () => {
@@ -350,14 +350,14 @@
 //   const dateLabel = `${WEEKDAY_LABEL[dateObj.day()]}, ${dateObj.format("DD/MM")}`;
 
 //   return (
-//     <div className="dark bg-background text-foreground"> 
+//     <div className="dark bg-surface text-text-primary"> 
 //       <div className="mx-auto max-w-6xl space-y-6 p-4">
 //         {/* Field header */}
-//         <div className="rounded-xl border bg-card p-5">
+//         <div className="rounded-xl border bg-surface p-5">
 //           <div className="flex flex-wrap items-start justify-between gap-3">
 //             <div>
 //               <h1 className="text-2xl font-bold">{field.name}</h1>
-//               <p className="mt-1 text-sm text-muted-foreground">
+//               <p className="mt-1 text-sm text-text-muted">
 //                 {field.description ?? "Sân cỏ nhân tạo chất lượng cao, có đèn chiếu sáng."}
 //               </p>
 //             </div>
@@ -381,8 +381,8 @@
 //               className={cn(
 //                 "-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors",
 //                 bookingType === tab.value
-//                   ? "border-primary text-foreground"
-//                   : "border-transparent text-muted-foreground hover:text-foreground"
+//                   ? "border-brand-primary text-text-primary"
+//                   : "border-transparent text-text-muted hover:text-text-primary"
 //               )}
 //             >
 //               {tab.label}
@@ -391,7 +391,7 @@
 //         </div>
 
 //         {bookingType === "LONG_TERM" && (
-//           <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-400">
+//           <p className="rounded-lg border border-status-warning/30 bg-status-warning-bg p-3 text-sm text-status-warning">
 //             Đặt dài hạn: khung giờ bạn chọn bên dưới sẽ được đăng ký giữ cố định theo yêu cầu dài
 //             hạn. Nhân viên sân sẽ liên hệ xác nhận lịch định kỳ sau khi bạn hoàn tất đặt sân.
 //           </p>
@@ -399,27 +399,27 @@
 
 //         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
 //           {/* Left: schedule */}
-//           <div className="space-y-4 rounded-xl border bg-card p-5">
+//           <div className="space-y-4 rounded-xl border bg-surface p-5">
 //             <div className="flex items-center justify-between">
 //               <h2 className="text-lg font-semibold color">Sơ đồ khung giờ</h2>
 //               {(isSlotsLoading || isHolding || isDeletingHold) && (
-//                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+//                 <Loader2 className="h-4 w-4 animate-spin text-text-muted" />
 //               )}
 //             </div>
 
 //             {/* Legend */}
-//             <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+//             <div className="flex flex-wrap items-center gap-4 text-xs text-text-muted">
 //               <span className="flex items-center gap-1.5">
-//                 <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> Còn trống
+//                 <span className="h-2.5 w-2.5 rounded-full bg-brand-primary" /> Còn trống
 //               </span>
 //               <span className="flex items-center gap-1.5">
-//                 <span className="h-2.5 w-2.5 rounded-full bg-amber-500" /> Đang được giữ
+//                 <span className="h-2.5 w-2.5 rounded-full bg-status-warning" /> Đang được giữ
 //               </span>
 //               <span className="flex items-center gap-1.5">
-//                 <span className="h-2.5 w-2.5 rounded-full border-2 border-red-500" /> Đã đặt
+//                 <span className="h-2.5 w-2.5 rounded-full border-2 border-status-danger" /> Đã đặt
 //               </span>
 //               <span className="flex items-center gap-1.5">
-//                 <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/40" /> Đóng
+//                 <span className="h-2.5 w-2.5 rounded-full bg-text-muted/40" /> Đóng
 //               </span>
 //             </div>
 
@@ -444,7 +444,7 @@
 
 //             {/* Slot grid */}
 //             {!isSlotsLoading && (!slots || slots.length === 0) ? (
-//               <p className="py-8 text-center text-sm text-muted-foreground">
+//               <p className="py-8 text-center text-sm text-text-muted">
 //                 Chưa có khung giờ cho ngày này.
 //               </p>
 //             ) : (
@@ -487,27 +487,27 @@
 //                         // Trạng thái 1: Slot trống bình thường
 //                         canSelect &&
 //                           !isMine &&
-//                           "border-emerald-500/40 bg-emerald-500/5 hover:bg-emerald-500/10 cursor-pointer text-emerald-500 dark:text-emerald-300",
+//                           "border-brand-primary/40 bg-brand-primary/5 hover:bg-brand-primary/10 cursor-pointer text-brand-primary",
 //                         // Trạng thái 2: Slot đang được BẠN giữ chỗ
 //                         isMine &&
-//                           "border-emerald-500 bg-emerald-500/15 text-emerald-600 font-bold cursor-pointer ring-1 ring-emerald-500/30 scale-[1.02]",
+//                           "border-brand-primary bg-brand-primary/15 text-brand-primary font-bold cursor-pointer ring-1 ring-brand-primary/30 scale-[1.02]",
 //                         // Trạng thái 4: Slot bị NGƯỜI KHÁC giữ
 //                         isOtherHoldSlot &&
-//                           "cursor-not-allowed border-amber-500/40 bg-amber-500/10 text-amber-600 opacity-80",
+//                           "cursor-not-allowed border-status-warning/40 bg-status-warning-bg text-status-warning opacity-80",
 //                         // Trạng thái 5: Slot ĐÃ BOOK hoặc BẢO TRÌ
 //                         isBooked &&
-//                           "cursor-not-allowed border-red-500 text-muted-foreground opacity-60 ",
+//                           "cursor-not-allowed border-status-danger text-text-muted opacity-60 ",
 //                         isMaintenance &&
-//                           "cursor-not-allowed border-muted text-muted-foreground opacity-60"
+//                           "cursor-not-allowed border-border text-text-muted opacity-60"
 //                       )}
 //                     >
 //                       <span className="text-sm font-medium">
 //                         {formatTimeRange(slot.starttime, slot.endtime)}
 //                       </span>
-//                       <span className="text-xs text-muted-foreground">
+//                       <span className="text-xs text-text-muted">
 //                         {formatCurrency(Number(slot.price))}
 //                       </span>
-//                       <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+//                       <span className="text-[11px] uppercase tracking-wide text-text-muted">
 //                         {stateLabel}
 //                       </span>
 //                     </button>
@@ -518,19 +518,19 @@
 //           </div>
 
 //           {/* Right: booking summary */}
-//           <div className="h-fit space-y-4 rounded-xl border bg-card p-5 lg:sticky lg:top-4">
+//           <div className="h-fit space-y-4 rounded-xl border bg-surface p-5 lg:sticky lg:top-4">
 //             <div>
-//               <p className="text-xs uppercase tracking-wide text-muted-foreground">Vé đặt sân</p>
+//               <p className="text-xs uppercase tracking-wide text-text-muted">Vé đặt sân</p>
 //               <h3 className="text-xl font-bold">{field.name}</h3>
 //             </div>
 
 //             {selectedSlots.length === 0 ? (
-//               <p className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
+//               <p className="rounded-lg border border-dashed p-4 text-center text-sm text-text-muted">
 //                 Chọn một khung giờ còn trống ở bên trái để tạm giữ chỗ.
 //               </p>
 //             ) : bookingDone ? (
 //               <div className="space-y-3">
-//                 <p className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-400">
+//                 <p className="rounded-lg border border-brand-primary/40 bg-brand-primary/10 p-4 text-sm text-brand-primary">
 //                   Đặt sân thành công cho {dateLabel} ·{" "}
 //                   {formatTimeRange(selectedSlots[0].starttime, selectedSlots[selectedSlots.length - 1].endtime)}.
 //                 </p>
@@ -541,7 +541,7 @@
 //             ) : (
 //               <>
 //                 {isHolding && !holds.length && (
-//                   <div className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/5 p-3 text-sm text-red-400">
+//                   <div className="flex items-center gap-2 rounded-lg border border-status-danger/30 bg-status-danger-bg p-3 text-sm text-status-danger">
 //                     <Loader2 className="h-4 w-4 animate-spin" /> Đang giữ chỗ...
 //                   </div>
 //                 )}
@@ -551,7 +551,7 @@
 //                       <p>
 //                        Slot {hold.slotId} 
 //                       </p>
-//                       <p className="text-sm text-muted-foreground">
+//                       <p className="text-sm text-text-muted">
 //                         {hold.bookingDate} · {formatTimeRange(hold.starttime, hold.endtime)}
 //                       </p>
 //                     </div>
@@ -560,7 +560,7 @@
 //                     <button
 //                       type="button"
 //                       onClick={() => handleSelectSlot(hold)}
-//                       className="ml-3 rounded-md p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus:outline-none focus:ring-2 focus:ring-destructive/20"
+//                       className="ml-3 rounded-md p-2 text-text-muted transition-colors hover:bg-status-danger-bg hover:text-status-danger focus:outline-none focus:ring-2 focus:ring-status-danger/20"
 //                       title="Bỏ chọn slot này"
 //                     >
 //                       <Trash2 className="h-4 w-4" />
@@ -571,17 +571,17 @@
 
 //                 <dl className="space-y-2 text-sm">
 //                   <div className="flex justify-between">
-//                     <dt className="text-muted-foreground">Loại đặt sân</dt>
+//                     <dt className="text-text-muted">Loại đặt sân</dt>
 //                     <dd className="font-medium">
 //                       {bookingType === "ONE_TIME" ? "Đặt 1 lần" : "Đặt dài hạn"}
 //                     </dd>
 //                   </div>
 //                   <div className="flex justify-between">
-//                     <dt className="text-muted-foreground">Giá sân</dt>
+//                     <dt className="text-text-muted">Giá sân</dt>
 //                     <dd className="font-medium">{formatCurrency(totalPrice)}</dd>
 //                   </div>
 //                   <div className="flex justify-between">
-//                     <dt className="text-muted-foreground">Tiền cọc (30%)</dt>
+//                     <dt className="text-text-muted">Tiền cọc (30%)</dt>
 //                     <dd className="font-medium">{formatCurrency(deposit)}</dd>
 //                   </div>
 //                 </dl>
@@ -612,7 +612,7 @@
 //                     >
 //                       <div>
 //                         <p className="font-medium">{service.name}</p>
-//                         <p className="text-xs text-muted-foreground">{formatCurrency(service.price)}</p>
+//                         <p className="text-xs text-text-muted">{formatCurrency(service.price)}</p>
 //                       </div>
 //                       <div className="flex items-center gap-1">
 //                         <Button
@@ -644,18 +644,18 @@
 
 //                 <div className="flex items-center justify-between border-t pt-3">
 //                   <span className="text-sm font-semibold">Tổng thanh toán</span>
-//                   <span className="text-xl font-bold text-amber-400">{formatCurrency(total)}</span>
+//                   <span className="text-xl font-bold text-brand-accent">{formatCurrency(total)}</span>
 //                 </div>
 
 //                 <Button
-//                   className="w-full bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+//                   className="w-full bg-brand-primary text-white hover:bg-brand-primary-hover"
 //                   onClick={handleConfirm}
 //                   disabled={!holds.length || isConfirming}
 //                 >
 //                   {isConfirming ? "Đang xác nhận..." : "Xác nhận đặt sân →"}
 //                 </Button>
 
-//                 <p className="text-center text-xs text-muted-foreground">
+//                 <p className="text-center text-xs text-text-muted">
 //                   Vui lòng nhấn xác nhận trong 10 phút tạm giữ chỗ.
 //                 </p>
 //               </>

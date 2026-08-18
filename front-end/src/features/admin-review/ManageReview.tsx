@@ -1,5 +1,8 @@
 import type { AxiosError } from "axios";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+import { PageHeader } from "@/layouts/admin/PageHeader";
+import { Pagination } from "@/components/common/Pagination";
 
 import { useReviews, useReplyReview } from "@/stores/useReviewStore";
 import type { Review } from "@/types/review";
@@ -13,6 +16,8 @@ interface ErrorResponse {
   message?: string;
 }
 
+const PAGE_SIZE = 10;
+
 function getErrorMessage(error: unknown, fallback: string): string {
   const axiosError = error as AxiosError<ErrorResponse>;
   return axiosError.response?.data?.message ?? fallback;
@@ -25,22 +30,40 @@ export function ManageReview() {
   const [openReply, setOpenReply] = useState(false);
   const [openDetail, setOpenDetail] = useState(false);
 
-  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
+  const [selectedReview, setSelectedReview] =
+    useState<Review | null>(null);
 
   const [search, setSearch] = useState("");
   const [replyError, setReplyError] = useState<string | null>(null);
 
-  const filteredReviews = reviews.filter((review) => {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const filteredReviews = useMemo(() => {
     const keyword = search.trim().toLowerCase();
 
-    if (!keyword) return true;
+    if (!keyword) return reviews;
 
-    return (
-      review.reviewId.toString().includes(keyword) ||
-      (review.user?.fullName ?? "").toLowerCase().includes(keyword) ||
-      (review.comment ?? "").toLowerCase().includes(keyword)
-    );
-  });
+    return reviews.filter((review) => {
+      return (
+        review.reviewId.toString().includes(keyword) ||
+        (review.user?.fullName ?? "")
+          .toLowerCase()
+          .includes(keyword) ||
+        (review.comment ?? "")
+          .toLowerCase()
+          .includes(keyword)
+      );
+    });
+  }, [reviews, search]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredReviews.length / PAGE_SIZE)
+  );
+  const safeCurrentPage = Math.min(
+    currentPage,
+    totalPages
+  );
 
   const handleReplySubmit = (reply: string) => {
     if (!selectedReview) return;
@@ -55,10 +78,15 @@ export function ManageReview() {
       {
         onSuccess: () => {
           setOpenReply(false);
+          setSelectedReview(null);
         },
+
         onError: (error) => {
           setReplyError(
-            getErrorMessage(error, "Phản hồi đánh giá thất bại.")
+            getErrorMessage(
+              error,
+              "Phản hồi đánh giá thất bại."
+            )
           );
         },
       }
@@ -66,24 +94,34 @@ export function ManageReview() {
   };
 
   if (isLoading) {
-    return <div className="p-8">Đang tải...</div>;
+    return (
+      <div className="p-8 text-text-secondary">
+        Đang tải...
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="p-8 text-red-500">
+      <div className="p-8 text-status-danger">
         Không thể tải danh sách đánh giá.
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <>
+      <PageHeader
+        title="Quản lý đánh giá"
+        subtitle="Quản lý đánh giá và phản hồi của khách hàng"
+      />
       <ReviewFilterBar
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={(value) => {
+          setSearch(value);
+          setCurrentPage(1);
+        }}
       />
-
       <ReviewTable
         reviews={filteredReviews}
         onView={(review) => {
@@ -96,7 +134,11 @@ export function ManageReview() {
           setOpenReply(true);
         }}
       />
-
+      <Pagination
+        currentPage={safeCurrentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
       <ReviewReplyDialog
         open={openReply}
         onOpenChange={setOpenReply}
@@ -105,12 +147,11 @@ export function ManageReview() {
         isSubmitting={replyReview.isPending}
         serverError={replyError}
       />
-
       <ReviewDetailDialog
         open={openDetail}
         onOpenChange={setOpenDetail}
         review={selectedReview}
       />
-    </div>
+    </>
   );
 }

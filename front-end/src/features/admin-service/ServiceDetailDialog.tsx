@@ -27,7 +27,7 @@ export function ServiceDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto border-border bg-elevated text-text-primary ring-border">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-text-primary">
+          <DialogTitle className="text-xl font-bold text-brand-primary">
             Chi tiết dịch vụ
           </DialogTitle>
         </DialogHeader>
@@ -78,11 +78,10 @@ export function ServiceDetailDialog({
 
                 <div className="mt-2 flex items-center justify-between">
                   <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                      service.status === "ACTIVE"
-                        ? "bg-emerald-500/10 text-emerald-500"
-                        : "bg-status-danger/10 text-status-danger"
-                    }`}
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${service.status === "ACTIVE"
+                        ? "bg-status-success-bg text-status-success"
+                        : "bg-status-danger-bg text-status-danger"
+                      }`}
                   >
                     {service.status === "ACTIVE"
                       ? "Đang kinh doanh"

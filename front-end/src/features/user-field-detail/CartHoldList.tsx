@@ -12,7 +12,7 @@ export function CartHoldList({ holds, isHolding, onRemove }: CartHoldListProps) 
   return (
     <>
       {isHolding && !holds.length && (
-        <div className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/5 p-3 text-sm text-red-400">
+        <div className="flex items-center gap-2 rounded-lg border border-status-warning/30 bg-status-warning-bg p-3 text-sm text-status-warning">
           <Loader2 className="h-4 w-4 animate-spin" /> Đang giữ chỗ...
         </div>
       )}

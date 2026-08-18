@@ -64,13 +64,13 @@ export function ServiceFormDialog({
 
   const defaultForm = initialData
     ? {
-        name: initialData.name,
-        description: initialData.description ?? "",
-        image: initialData.image ?? "",
-        price: initialData.price,
-        quantity: initialData.quantity,
-        status: initialData.status ?? "ACTIVE",
-      }
+      name: initialData.name,
+      description: initialData.description ?? "",
+      image: initialData.image ?? "",
+      price: initialData.price,
+      quantity: initialData.quantity,
+      status: initialData.status ?? "ACTIVE",
+    }
     : emptyForm;
 
   const [form, setForm] = useState(defaultForm);
@@ -151,9 +151,9 @@ export function ServiceFormDialog({
         <DialogHeader>
           <DialogTitle
             className="
-              text-lg
+              text-xl
               font-semibold
-              text-text-primary
+              text-brand-primary
             "
           >
             {isEditing
@@ -183,8 +183,7 @@ export function ServiceFormDialog({
                 placeholder:text-text-muted
                 transition-all
                 duration-200
-                focus-visible:border-brand-primary
-                focus-visible:ring-brand-primary/30
+                focus-visible:border-brand-accent focus-visible:ring-brand-accent/30
               "
             />
           </FieldWrapper>
@@ -210,8 +209,7 @@ export function ServiceFormDialog({
                 placeholder:text-text-muted
                 transition-all
                 duration-200
-                focus-visible:border-brand-primary
-                focus-visible:ring-brand-primary/30
+                focus-visible:border-brand-accent focus-visible:ring-brand-accent/30
               "
             />
           </FieldWrapper>
@@ -235,8 +233,7 @@ export function ServiceFormDialog({
                 placeholder:text-text-muted
                 transition-all
                 duration-200
-                focus-visible:border-brand-primary
-                focus-visible:ring-brand-primary/30
+                focus-visible:border-brand-accent focus-visible:ring-brand-accent/30
               "
             />
           </FieldWrapper>
@@ -264,8 +261,7 @@ export function ServiceFormDialog({
                   text-text-primary
                   transition-all
                   duration-200
-                  focus-visible:border-brand-primary
-                  focus-visible:ring-brand-primary/30
+                  focus-visible:border-brand-accent focus-visible:ring-brand-accent/30
                 "
               />
             </FieldWrapper>
@@ -291,8 +287,7 @@ export function ServiceFormDialog({
                   text-text-primary
                   transition-all
                   duration-200
-                  focus-visible:border-brand-primary
-                  focus-visible:ring-brand-primary/30
+                  focus-visible:border-brand-accent focus-visible:ring-brand-accent/30
                 "
               />
             </FieldWrapper>
@@ -323,9 +318,8 @@ export function ServiceFormDialog({
                     data-placeholder:text-text-muted
                     transition-all
                     duration-200
-                    hover:border-brand-primary/50
-                    focus:border-brand-primary
-                    focus:ring-brand-primary/30
+                    hover:border-brand-accent/50
+                    focus-visible:border-brand-accent focus-visible:ring-brand-accent/30
                   "
                 >
                   <SelectValue placeholder="Chọn trạng thái" />
@@ -342,7 +336,7 @@ export function ServiceFormDialog({
                     value="ACTIVE"
                     className="
                       text-text-secondary
-                      focus:bg-surface-hover
+                  
                       focus:text-text-primary
                     "
                   >
@@ -353,7 +347,7 @@ export function ServiceFormDialog({
                     value="INACTIVE"
                     className="
                       text-text-secondary
-                      focus:bg-surface-hover
+                
                       focus:text-text-primary
                     "
                   >
@@ -382,9 +376,9 @@ export function ServiceFormDialog({
               text-text-secondary
               transition-all
               duration-200
-              hover:border-brand-primary/40
-              hover:bg-brand-primary/10
-              hover:text-brand-primary
+              hover:border-brand-accent/40
+              hover:bg-brand-accent/10
+              hover:text-brand-accent
             "
             onClick={() => {
               resetForm();
@@ -397,18 +391,7 @@ export function ServiceFormDialog({
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="
-              border-transparent
-              bg-brand-primary
-              font-semibold
-              text-white
-              shadow-[0_0_14px_rgba(34,165,90,0.12)]
-              transition-all
-              duration-200
-              hover:-translate-y-px
-              hover:bg-brand-primary-hover
-              hover:shadow-[0_0_18px_rgba(34,165,90,0.22)]
-            "
+            className="border-transparent bg-brand-accent font-semibold text-accent-foreground hover:bg-brand-accent-hover"
           >
             {isSubmitting
               ? "Đang lưu..."

@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "../../components/ui/label"
-import {z} from "zod"
-import {useForm} from "react-hook-form"
-import {zodResolver} from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { useAuthStore } from "@/stores/useAuthStore"
 import { useNavigate } from "react-router"
 
@@ -56,15 +56,15 @@ export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const {signUp} = useAuthStore();
+  const { signUp } = useAuthStore();
   const navigate = useNavigate();
-  const {register, handleSubmit, formState: {errors, isSubmitting}} = useForm<SignUpFormValues>({
-    resolver: zodResolver(signUpSchema)     
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SignUpFormValues>({
+    resolver: zodResolver(signUpSchema)
   });
 
   const onSubmit = async (data: SignUpFormValues) => {
     // goi BE de signup
-    const {fullName, email, phone, password} = data;
+    const { fullName, email, phone, password } = data;
     await signUp(fullName, email, phone, password);
     navigate("/signin");
   };
@@ -78,11 +78,11 @@ export function SignupForm({
               {/* header - logo */}
               <div className="flex flex-col items-center text-center gap-2">
                 <a href="/" className="mx-auto block w-fit text-center">
-                  <img src="/logo.svg" alt="logo" className="w-20 h-20"/>
+                  <img src="/logo.svg" alt="logo" className="w-20 h-20" />
                 </a>
 
-              <h1 className="text-2xl font-bold">Tạo tài khoản của bạn</h1>
-              <p className="text-muted-foreground text-balance">Nhập thông tin bên dưới để tạo tài khoản</p>
+                <h1 className="text-2xl font-bold">Tạo tài khoản của bạn</h1>
+                <p className="text-muted-foreground text-balance">Nhập thông tin bên dưới để tạo tài khoản</p>
               </div>
               {/* họ và tên */}
               <div className="flex flex-col gap-3">
@@ -92,7 +92,7 @@ export function SignupForm({
                 <Input type="text" id="fullName" placeholder="Nguyen Van A" {...register("fullName")}
                 />
                 {errors.fullName && (
-                  <p className="text-sm text-red-500 ">
+                  <p className="text-sm text-status-danger ">
                     {errors.fullName.message}
                   </p>
                 )}
@@ -106,7 +106,7 @@ export function SignupForm({
                 <Input type="text" id="email" placeholder="user@gmail.com" {...register("email")}
                 />
                 {errors.email && (
-                  <p className="text-sm text-red-500 ">
+                  <p className="text-sm text-status-danger ">
                     {errors.email.message}
                   </p>
                 )}
@@ -120,7 +120,7 @@ export function SignupForm({
                 <Input type="text" id="phone" placeholder="03xxxxxxxx" {...register("phone")}
                 />
                 {errors.phone && (
-                  <p className="text-sm text-red-500 ">
+                  <p className="text-sm text-status-danger ">
                     {errors.phone.message}
                   </p>
                 )}
@@ -134,7 +134,7 @@ export function SignupForm({
                 <Input type="password" id="password" placeholder="********" {...register("password")}
                 />
                 {errors.password && (
-                  <p className="text-sm text-red-500 ">
+                  <p className="text-sm text-status-danger ">
                     {errors.password.message}
                   </p>
                 )}

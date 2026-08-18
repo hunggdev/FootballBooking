@@ -1,5 +1,17 @@
-import type { Review } from "@/types/review";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Eye, MessageSquare } from "lucide-react";
+
+import type { Review } from "@/types/review";
 import { formatDateTime } from "@/lib/utils";
 
 interface Props {
@@ -14,99 +26,255 @@ export function ReviewTable({
   onView,
 }: Props) {
   return (
-    <div className="overflow-x-auto rounded-md border">
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="bg-gray-100 text-left">
-            <th className="border p-2">ID</th>
-            <th className="border p-2">Khách hàng</th>
-            <th className="border p-2">Sân</th>
-            <th className="border p-2">Nội dung</th>
-            <th className="border p-2">Đánh giá</th>
-            <th className="border p-2">Phản hồi</th>
-            <th className="border p-2">Ngày tạo</th>
-            <th className="border p-2">Thao tác</th>
-          </tr>
-        </thead>
+    <div
+      className="
+        mt-5
+        rounded-xl
+        bg-[#2d3a4f]
+        p-px
+        transition-all
+        duration-300
+        hover:bg-[image:var(--token-gradient-brand)]
+      "
+    >
+      <Card className="overflow-hidden border-border/50 bg-surface shadow-lg shadow-black/10">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              {/* ================= HEADER ================= */}
+              <TableHeader>
+                <TableRow className="border-border/60 bg-elevated/30 hover:bg-elevated/30">
+                  <TableHead className="w-[7%] text-center text-[11px] font-bold uppercase tracking-wider text-text-muted">
+                    ID
+                  </TableHead>
 
-        <tbody>
-          {reviews.map((review) => (
-            <tr
-              key={review.reviewId}
-              className="hover:bg-gray-50"
-            >
-              <td className="border p-2">{review.reviewId}</td>
+                  <TableHead className="w-[15%] text-left text-[11px] font-bold uppercase tracking-wider text-text-muted">
+                    Khách hàng
+                  </TableHead>
 
-              <td className="border p-2">
-                {review.user?.fullName ?? review.userId}
-              </td>
+                  <TableHead className="w-[15%] text-left text-[11px] font-bold uppercase tracking-wider text-text-muted">
+                    Sân
+                  </TableHead>
 
-              <td className="border p-2">
-                {review.field?.name ?? review.fieldId}
-              </td>
+                  <TableHead className="w-[20%] text-left text-[11px] font-bold uppercase tracking-wider text-text-muted">
+                    Nội dung
+                  </TableHead>
 
-              <td className="max-w-xs border p-2 truncate">
-                {review.comment ?? (
-                  <span className="text-muted-foreground">
-                    Không có nội dung
-                  </span>
+                  <TableHead className="w-[10%] text-center text-[11px] font-bold uppercase tracking-wider text-text-muted">
+                    Đánh giá
+                  </TableHead>
+
+                  <TableHead className="w-[12%] text-center text-[11px] font-bold uppercase tracking-wider text-text-muted">
+                    Phản hồi
+                  </TableHead>
+
+                  <TableHead className="w-[13%] text-center text-[11px] font-bold uppercase tracking-wider text-text-muted">
+                    Ngày tạo
+                  </TableHead>
+
+                  <TableHead className="w-[18%] text-right text-[11px] font-bold uppercase tracking-wider text-text-muted">
+                    Thao tác
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+
+              {/* ================= BODY ================= */}
+              <TableBody>
+                {reviews.map((review) => (
+                  <TableRow
+                    key={review.reviewId}
+                    className="
+                      group
+                      border-border/50
+                      transition-colors
+                      duration-200
+                      hover:bg-surface-hover/60
+                    "
+                  >
+                    {/* ID */}
+                    <TableCell className="text-center">
+                      <span className="text-xs font-semibold text-text-muted">
+                        #{review.reviewId}
+                      </span>
+                    </TableCell>
+
+                    {/* KHÁCH HÀNG */}
+                    <TableCell>
+                      <span
+                        className="
+                          font-semibold
+                          text-text-primary
+                          transition-colors
+                          duration-200
+                          group-hover:text-white
+                        "
+                      >
+                        {review.user?.fullName ?? review.userId}
+                      </span>
+                    </TableCell>
+
+                    {/* SÂN */}
+                    <TableCell>
+                      <span className="text-sm text-text-secondary">
+                        {review.field?.name ?? review.fieldId}
+                      </span>
+                    </TableCell>
+
+                    {/* NỘI DUNG */}
+                    <TableCell>
+                      <div className="max-w-[260px] truncate text-sm text-text-secondary">
+                        {review.comment || (
+                          <span className="italic text-text-muted">
+                            Không có nội dung
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+
+                    {/* ĐÁNH GIÁ */}
+                    <TableCell className="text-center">
+                      <span
+                        className="
+                          inline-flex
+                          items-center
+                          gap-1
+                          rounded-md
+                          border
+                          border-brand-accent/20
+                          bg-brand-accent/10
+                          px-2.5
+                          py-1
+                          text-[11px]
+                          font-bold
+                          text-brand-accent
+                        "
+                      >
+                        {review.rating}
+                        <span>⭐</span>
+                      </span>
+                    </TableCell>
+
+                    {/* PHẢN HỒI */}
+                    <TableCell className="text-center">
+                      {review.reply ? (
+                        <span
+                          className="
+                            inline-flex
+                            items-center
+                            rounded-md
+                            border
+                            border-status-success/20
+                            bg-status-success-bg
+                            px-2.5
+                            py-1
+                            text-[11px]
+                            font-semibold
+                            text-status-success
+                          "
+                        >
+                          Đã phản hồi
+                        </span>
+                      ) : (
+                        <span
+                          className="
+                            inline-flex
+                            items-center
+                            rounded-md
+                            border
+                            border-brand-accent/20
+                            bg-brand-accent/10
+                            px-2.5
+                            py-1
+                            text-[11px]
+                            font-semibold
+                            text-brand-accent
+                          "
+                        >
+                          Chưa phản hồi
+                        </span>
+                      )}
+                    </TableCell>
+
+                    {/* NGÀY TẠO */}
+                    <TableCell className="text-center">
+                      <span className="text-xs text-text-muted">
+                        {formatDateTime(review.createdAt)}
+                      </span>
+                    </TableCell>
+
+                    {/* THAO TÁC */}
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-2">
+                        {/* XEM */}
+                        <Button
+                          size="sm"
+                          onClick={() => onView(review)}
+                          className="
+                            h-8
+                            border
+                            border-status-info/20
+                            bg-status-info-bg
+                            px-2.5
+                            text-xs
+                            font-medium
+                            text-status-info
+                            shadow-none
+                            transition-all
+                            duration-200
+                            hover:-translate-y-px
+                            hover:border-status-info/30
+                            hover:bg-status-info/20
+                          "
+                        >
+                          <Eye className="mr-1.5 h-3.5 w-3.5" />
+                          Xem
+                        </Button>
+
+                        {/* PHẢN HỒI */}
+                        <Button
+                          size="sm"
+                          onClick={() => onReply(review)}
+                          className="
+                            h-8
+                            border
+                            border-brand-accent/20
+                            bg-brand-accent/10
+                            px-2.5
+                            text-xs
+                            font-medium
+                            text-brand-accent
+                            shadow-none
+                            transition-all
+                            duration-200
+                            hover:-translate-y-px
+                            hover:border-brand-accent/40
+                            hover:bg-brand-accent/20
+                          "
+                        >
+                          <MessageSquare className="mr-1.5 h-3.5 w-3.5" />
+                          {review.reply ? "Sửa phản hồi" : "Phản hồi"}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+                {/* EMPTY */}
+                {reviews.length === 0 && (
+                  <TableRow className="border-border/60 hover:bg-transparent">
+                    <TableCell
+                      colSpan={8}
+                      className="py-12 text-center text-sm text-text-muted"
+                    >
+                      Không có đánh giá nào.
+                    </TableCell>
+                  </TableRow>
                 )}
-              </td>
-
-              <td className="border p-2">
-                {review.rating} ⭐
-              </td>
-
-              <td className="border p-2">
-                {review.reply ? (
-                  <span className="text-green-600">
-                    Đã phản hồi
-                  </span>
-                ) : (
-                  <span className="text-amber-600">
-                    Chưa phản hồi
-                  </span>
-                )}
-              </td>
-
-              <td className="border p-2">
-                {formatDateTime(review.createdAt)}
-              </td>
-
-              <td className="border p-2 space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onView(review)}
-                >
-                  Xem
-                </Button>
-
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => onReply(review)}
-                >
-                  {review.reply
-                    ? "Sửa phản hồi"
-                    : "Phản hồi"}
-                </Button>
-              </td>
-            </tr>
-          ))}
-
-          {reviews.length === 0 && (
-            <tr>
-              <td
-                colSpan={8}
-                className="p-4 text-center text-gray-500"
-              >
-                Không có đánh giá nào
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

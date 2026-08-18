@@ -52,19 +52,19 @@ export function ServiceFilterBar({
           <SelectContent className="border-border bg-elevated text-text-primary">
             <SelectItem
               value="all"
-              className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+              className="text-text-secondary focus:text-text-primary"
             >
               Tất cả trạng thái
             </SelectItem>
             <SelectItem
               value="ACTIVE"
-              className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+              className="text-text-secondary  focus:text-text-primary"
             >
               Đang kinh doanh
             </SelectItem>
             <SelectItem
               value="INACTIVE"
-              className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+              className="text-text-secondary  focus:text-text-primary"
             >
               Ngừng kinh doanh
             </SelectItem>

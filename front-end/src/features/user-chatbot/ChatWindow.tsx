@@ -19,7 +19,7 @@ export function ChatWindow({ messages, isLoading, onSend, onClose }: ChatWindowP
   
   return (
     <div>
-          <Card className="flex h-[480px] w-[380px] flex-col overflow-hidden border shadow-sm sm:w-[380px] fixed bottom-10 right-10">
+          <Card className="flex h-[480px] w-[380px] flex-col overflow-hidden border shadow-sm sm:w-[380px] fixed bottom-10 right-10 bg-surface">
             <ChatHeader onClose={onClose}/>
             <ChatMessageList messages={messages} isLoading={isLoading} />
             <ChatInput onSend={handleSend} isLoading={isLoading} />

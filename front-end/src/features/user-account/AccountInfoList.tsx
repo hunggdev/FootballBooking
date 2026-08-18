@@ -1,5 +1,11 @@
 // src/components/account/AccountInfoList.tsx
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { User } from "@/types/user";
 
@@ -22,18 +28,29 @@ export function AccountInfoList({ user }: { user: User }) {
   ];
 
   return (
-    <Card className="border">
+    <Card className="border-border bg-surface text-text-primary">
       <CardHeader>
-        <CardTitle className="text-base">Thông tin cá nhân</CardTitle>
+        <CardTitle className="text-base font-semibold text-text-primary">
+          Thông tin cá nhân
+        </CardTitle>
       </CardHeader>
+
       <CardContent className="flex flex-col gap-3">
         {rows.map((row, idx) => (
           <div key={row.label}>
             <div className="flex items-center justify-between gap-4 py-1 text-sm">
-              <span className="opacity-60">{row.label}</span>
-              <span className="font-medium">{row.value}</span>
+              <span className="text-text-secondary">
+                {row.label}
+              </span>
+
+              <span className="font-medium text-text-primary">
+                {row.value}
+              </span>
             </div>
-            {idx !== rows.length - 1 && <Separator />}
+
+            {idx !== rows.length - 1 && (
+              <Separator className="bg-border-subtle" />
+            )}
           </div>
         ))}
       </CardContent>

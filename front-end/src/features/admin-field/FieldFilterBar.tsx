@@ -51,25 +51,25 @@ export function FieldFilterBar({
           <SelectContent className="border-border bg-elevated text-text-primary">
             <SelectItem
               value="all"
-              className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+              className="text-text-secondary  focus:text-text-primary"
             >
               Tất cả loại sân
             </SelectItem>
             <SelectItem
               value="FIVE"
-              className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+              className="text-text-secondary  focus:text-text-primary"
             >
               Sân 5 người
             </SelectItem>
             <SelectItem
               value="SEVEN"
-              className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+              className="text-text-secondary  focus:text-text-primary"
             >
               Sân 7 người
             </SelectItem>
             <SelectItem
               value="ELEVEN"
-              className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+              className="text-text-secondary  focus:text-text-primary"
             >
               Sân 11 người
             </SelectItem>

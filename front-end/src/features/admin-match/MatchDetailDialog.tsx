@@ -21,13 +21,13 @@ const statusLabel: Record<Match["status"], string> = {
 const getStatusColor = (status: Match["status"]) => {
   switch (status) {
     case "OPEN":
-      return "bg-blue-500/10 text-blue-500";
+      return "bg-status-success-bg text-status-success";
     case "MATCHED":
-      return "bg-emerald-500/10 text-emerald-500";
+      return "bg-brand-primary/10 text-brand-primary";
     case "FINISHED":
-      return "bg-text-muted/10 text-text-secondary";
+      return "bg-elevated text-text-secondary";
     case "CANCELLED":
-      return "bg-status-danger/10 text-status-danger";
+      return "bg-status-danger-bg text-status-danger";
     default:
       return "bg-surface text-text-primary";
   }
@@ -65,7 +65,7 @@ export function MatchDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] w-full max-w-2xl overflow-y-auto border-border bg-elevated text-text-primary ring-border">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-text-primary">
+          <DialogTitle className="text-xl font-bold text-brand-primary">
             Thông tin trận đấu
           </DialogTitle>
         </DialogHeader>
@@ -174,12 +174,19 @@ export function MatchDetailDialog({
             <div className="flex justify-end gap-3 pt-2">
               <Button
                 variant="outline"
-                className="border-border bg-surface text-text-primary hover:bg-surface-hover hover:text-text-primary"
+                className="border-border
+              bg-transparent
+              text-text-secondary
+              transition-all
+              duration-200
+              hover:border-brand-accent/40
+              hover:bg-brand-accent/10
+              hover:text-brand-accent"
                 onClick={() => onOpenChange(false)}
               >
                 Đóng
               </Button>
-              <Button className="bg-brand-primary text-primary-foreground hover:bg-brand-primary-hover border-transparent">
+              <Button className="border-transparent bg-brand-accent font-semibold text-accent-foreground hover:bg-brand-accent-hover">
                 Chỉnh sửa thông tin
               </Button>
             </div>

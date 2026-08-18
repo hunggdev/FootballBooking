@@ -153,7 +153,7 @@ export function MatchFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] max-w-xl overflow-y-auto border-border bg-elevated text-text-primary ring-border">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-text-primary">
+          <DialogTitle className="text-xl font-bold text-brand-primary">
             {isEditing ? "Sửa thông tin kèo đấu" : "Tạo kèo đấu mới"}
           </DialogTitle>
         </DialogHeader>
@@ -310,12 +310,19 @@ export function MatchFormDialog({
           )}
         </FieldGroup>
 
-        <DialogFooter className="mt-4 pt-2">
+        <DialogFooter className="border-border bg-elevated">
           <Button
             type="button"
             variant="outline"
             onClick={handleClose}
-            className="border-border bg-surface text-text-primary hover:bg-surface-hover"
+            className="border-border
+              bg-transparent
+              text-text-secondary
+              transition-all
+              duration-200
+              hover:border-brand-accent/40
+              hover:bg-brand-accent/10
+              hover:text-brand-accent"
           >
             Hủy
           </Button>
@@ -324,13 +331,13 @@ export function MatchFormDialog({
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="border-transparent bg-brand-primary font-semibold text-white hover:bg-brand-primary-hover"
+            className="border-transparent bg-brand-accent font-semibold text-accent-foreground hover:bg-brand-accent-hover"
           >
             {isSubmitting
               ? "Đang lưu..."
               : isEditing
-              ? "Lưu thay đổi"
-              : "Tạo kèo đấu"}
+                ? "Lưu thay đổi"
+                : "Tạo kèo đấu"}
           </Button>
         </DialogFooter>
       </DialogContent>

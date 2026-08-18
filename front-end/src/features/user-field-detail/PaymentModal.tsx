@@ -64,12 +64,12 @@ export default function PaymentModal({
   if (!paymentData) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 shadow-2xl transition-all">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-border bg-elevated p-6 shadow-2xl transition-all">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+          className="absolute right-4 top-4 rounded-full p-1 text-text-muted hover:bg-surface-hover hover:text-text-primary"
         >
           <X className="h-5 w-5" />
         </button>
@@ -77,19 +77,19 @@ export default function PaymentModal({
         {isPaidSuccess ? (
           /* UI THÀNH CÔNG */
           <div className="flex flex-col items-center justify-center py-8 text-center animate-in fade-in zoom-in">
-            <CheckCircle2 className="h-20 w-20 text-green-500 animate-bounce" />
-            <h3 className="mt-4 text-2xl font-bold text-gray-800">Thanh toán thành công!</h3>
-            <p className="mt-2 text-sm text-gray-600">
+            <CheckCircle2 className="h-20 w-20 text-status-success animate-bounce" />
+            <h3 className="mt-4 text-2xl font-bold text-text-primary">Thanh toán thành công!</h3>
+            <p className="mt-2 text-sm text-text-secondary">
               Hệ thống đã xác nhận tiền cọc cho đơn hàng #{bookingId}.
             </p>
           </div>
         ) : (
           /* UI QUÉT MÃ VIETQR */
           <div className="flex flex-col items-center">
-            <h3 className="text-xl font-bold text-gray-900">Thanh toán cọc qua VietQR</h3>
+            <h3 className="text-xl font-bold text-text-primary">Thanh toán cọc qua VietQR</h3>
 
             {/* Countdown Box */}
-            <div className="mt-2 flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+            <div className="mt-2 flex items-center gap-1.5 rounded-full bg-status-warning-bg px-3 py-1 text-xs font-semibold text-status-warning">
               <Clock className="h-3.5 w-3.5" />
               <span>
                 Mã QR hết hạn sau: <strong className="font-mono text-sm">{formatTime(timeLeft)}</strong>
@@ -97,7 +97,7 @@ export default function PaymentModal({
             </div>
 
             {/* Frame QR Code VietQR */}
-            <div className="relative my-4 rounded-xl border-2 border-dashed border-blue-200 bg-blue-50/50 p-3">
+            <div className="relative my-4 rounded-xl border-2 border-dashed border-status-info/30 bg-status-info-bg p-3">
               {timeLeft > 0 ? (
                 <img
                   src={`https://img.vietqr.io/image/${paymentData.bin}-${paymentData.accountNumber}-compact2.png?amount=${paymentData.amount}&addInfo=${encodeURIComponent(paymentData.description)}&accountName=${encodeURIComponent(paymentData.accountName)}`}
@@ -105,53 +105,53 @@ export default function PaymentModal({
                   className="h-64 w-64 object-contain rounded-lg shadow-sm"
                 />
               ) : (
-                <div className="flex h-64 w-64 flex-col items-center justify-center rounded-lg bg-gray-100 text-gray-500">
-                  <AlertCircle className="h-10 w-10 text-red-500 mb-2" />
+                <div className="flex h-64 w-64 flex-col items-center justify-center rounded-lg bg-elevated text-text-muted">
+                  <AlertCircle className="h-10 w-10 text-status-danger mb-2" />
                   <span className="text-sm font-medium">Mã QR đã hết hạn</span>
                 </div>
               )}
             </div>
 
             {/* Thông tin chuyển khoản chi tiết */}
-            <div className="w-full space-y-2.5 rounded-xl bg-gray-50 p-4 text-sm">
-              <div className="flex items-center justify-between border-b border-gray-200/60 pb-2">
-                <span className="text-gray-500">Ngân hàng:</span>
-                <span className="font-bold text-gray-800">{paymentData.accountName}</span>
+            <div className="w-full space-y-2.5 rounded-xl bg-surface p-4 text-sm">
+              <div className="flex items-center justify-between border-b border-border pb-2">
+                <span className="text-text-muted">Ngân hàng:</span>
+                <span className="font-bold text-text-primary">{paymentData.accountName}</span>
               </div>
 
-              <div className="flex items-center justify-between border-b border-gray-200/60 pb-2">
-                <span className="text-gray-500">Số tài khoản:</span>
+              <div className="flex items-center justify-between border-b border-border pb-2">
+                <span className="text-text-muted">Số tài khoản:</span>
                 <button
                   onClick={() => handleCopy(paymentData.accountNumber, "account")}
-                  className="flex items-center gap-1 font-mono font-bold text-blue-600 hover:underline"
+                  className="flex items-center gap-1 font-mono font-bold text-status-info hover:underline"
                 >
                   {paymentData.accountNumber}
                   <Copy className="h-3.5 w-3.5" />
-                  {copiedField === "account" && <span className="text-[10px] text-green-600">Đã chép</span>}
+                  {copiedField === "account" && <span className="text-[10px] text-status-success">Đã chép</span>}
                 </button>
               </div>
 
-              <div className="flex items-center justify-between border-b border-gray-200/60 pb-2">
-                <span className="text-gray-500">Số tiền cọc:</span>
-                <span className="font-bold text-red-600">
+              <div className="flex items-center justify-between border-b border-border pb-2">
+                <span className="text-text-muted">Số tiền cọc:</span>
+                <span className="font-bold text-status-danger">
                   {Number(paymentData.amount).toLocaleString("vi-VN")} đ
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-gray-500">Nội dung chuyển:</span>
+                <span className="text-text-muted">Nội dung chuyển:</span>
                 <button
                   onClick={() => handleCopy(paymentData.description, "desc")}
-                  className="flex items-center gap-1 font-mono font-bold text-blue-600 hover:underline"
+                  className="flex items-center gap-1 font-mono font-bold text-status-info hover:underline"
                 >
                   {paymentData.description}
                   <Copy className="h-3.5 w-3.5" />
-                  {copiedField === "desc" && <span className="text-[10px] text-green-600">Đã chép</span>}
+                  {copiedField === "desc" && <span className="text-[10px] text-status-success">Đã chép</span>}
                 </button>
               </div>
             </div>
 
-            <p className="mt-3 text-center text-xs text-gray-500">
+            <p className="mt-3 text-center text-xs text-text-muted">
               Vui lòng giữ nguyên <strong>Nội dung chuyển khoản</strong> để hệ thống xác thực tự động.
             </p>
           </div>

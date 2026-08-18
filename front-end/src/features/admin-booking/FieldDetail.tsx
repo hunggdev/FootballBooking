@@ -17,24 +17,38 @@ export default function FieldDetail() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        Đang tải chi tiết sân...
+      <div className="min-h-screen bg-background p-6 text-text-primary">
+        <div className="mx-auto max-w-5xl">
+          <p className="text-sm text-text-secondary">
+            Đang tải chi tiết sân...
+          </p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6 text-red-500">
-        Không thể tải thông tin sân.
+      <div className="min-h-screen bg-background p-6 text-text-primary">
+        <div className="mx-auto max-w-5xl">
+          <div className="rounded-xl border border-status-danger/30 bg-status-danger/10 p-6">
+            <p className="font-medium text-status-danger">
+              Không thể tải thông tin sân.
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!fieldDetail) {
     return (
-      <div className="p-6">
-        Không tìm thấy sân.
+      <div className="min-h-screen bg-background p-6 text-text-primary">
+        <div className="mx-auto max-w-5xl">
+          <p className="text-sm text-text-secondary">
+            Không tìm thấy sân.
+          </p>
+        </div>
       </div>
     );
   }
@@ -76,86 +90,127 @@ export default function FieldDetail() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl p-6 space-y-6">
-      <div className="rounded-lg border p-6">
-        <h1 className="text-3xl font-bold">
-          {fieldDetail.name}
-        </h1>
+    <div className="min-h-screen bg-background text-text-primary">
+      <div className="mx-auto max-w-5xl space-y-6 p-6">
+        {/* Thông tin sân */}
+        <div className="rounded-xl border border-border bg-surface p-6 shadow-sm">
+          <h1 className="text-3xl font-bold tracking-tight text-text-primary">
+            {fieldDetail.name}
+          </h1>
 
-        <div className="mt-4 space-y-2">
-          <p>
-            <strong>Loại sân:</strong>{" "}
-            {fieldDetail.fieldType}
-          </p>
+          <div className="mt-5 space-y-3">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
+              <span className="text-sm font-semibold text-text-secondary">
+                Loại sân:
+              </span>
 
-          <p>
-            <strong>Ngày tạo:</strong>{" "}
-            {dayjs(fieldDetail.createdAt).format(
-              "DD/MM/YYYY HH:mm"
-            )}
-          </p>
+              <span className="text-sm font-medium text-text-primary">
+                {fieldDetail.fieldType}
+              </span>
+            </div>
 
-          <p>
-            <strong>Mô tả:</strong>{" "}
-            {fieldDetail.description || "Không có mô tả"}
-          </p>
-        </div>
-      </div>
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
+              <span className="text-sm font-semibold text-text-secondary">
+                Ngày tạo:
+              </span>
 
-      <div className="rounded-lg border p-6">
-        <h2 className="mb-4 text-2xl font-semibold">
-          Danh sách khung giờ
-        </h2>
+              <span className="text-sm text-text-primary">
+                {dayjs(fieldDetail.createdAt).format(
+                  "DD/MM/YYYY HH:mm"
+                )}
+              </span>
+            </div>
 
-        {fieldDetail.fieldSlots.length === 0 ? (
-          <p>Chưa có khung giờ.</p>
-        ) : (
-          <div className="space-y-3">
-            {fieldDetail.fieldSlots.map(
-              (slot: FieldSlot) => (
-                <div
-                  key={slot.slotId}
-                  className="flex items-center justify-between rounded border p-4"
-                >
-                  <div>
-                    <p className="font-medium">
-                      {dayjs(slot.starttime).format(
-                        "HH:mm"
-                      )}{" "}
-                      -{" "}
-                      {dayjs(slot.endtime).format(
-                        "HH:mm"
-                      )}
-                    </p>
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-semibold text-text-secondary">
+                Mô tả:
+              </span>
 
-                    <p className="text-sm text-gray-500">
-                      {Number(slot.price).toLocaleString(
-                        "vi-VN"
-                      )}{" "}
-                      VNĐ
-                    </p>
-
-                    <p className="text-sm">
-                      Trạng thái: {slot.status}
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() =>
-                      bookSlot(slot.slotId)
-                    }
-                    disabled={
-                      slot.status !== "AVAILABLE"
-                    }
-                    className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                  >
-                    Đặt ngay
-                  </button>
-                </div>
-              )
-            )}
+              <p className="text-sm leading-relaxed text-text-primary">
+                {fieldDetail.description || "Không có mô tả"}
+              </p>
+            </div>
           </div>
-        )}
+        </div>
+
+        {/* Danh sách khung giờ */}
+        <div className="rounded-xl border border-border bg-surface p-6 shadow-sm">
+          <h2 className="mb-5 text-2xl font-semibold tracking-tight text-text-primary">
+            Danh sách khung giờ
+          </h2>
+
+          {fieldDetail.fieldSlots.length === 0 ? (
+            <div className="rounded-lg border border-border-subtle bg-surface-hover/30 p-6 text-center">
+              <p className="text-sm text-text-secondary">
+                Chưa có khung giờ.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {fieldDetail.fieldSlots.map(
+                (slot: FieldSlot) => {
+                  const isAvailable = slot.status === "AVAILABLE";
+
+                  return (
+                    <div
+                      key={slot.slotId}
+                      className="flex flex-col gap-4 rounded-xl border border-border bg-background/40 p-4 transition-colors hover:bg-surface-hover/30 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="space-y-1.5">
+                        <p className="font-semibold text-text-primary">
+                          {dayjs(slot.starttime).format("HH:mm")}{" "}
+                          -{" "}
+                          {dayjs(slot.endtime).format("HH:mm")}
+                        </p>
+
+                        <p className="text-sm font-medium text-brand-primary">
+                          {Number(slot.price).toLocaleString(
+                            "vi-VN"
+                          )}{" "}
+                          VNĐ
+                        </p>
+
+                        <p className="text-sm text-text-secondary">
+                          Trạng thái:{" "}
+                          <span
+                            className={
+                              isAvailable
+                                ? "font-semibold text-status-success"
+                                : "font-semibold text-text-muted"
+                            }
+                          >
+                            {slot.status}
+                          </span>
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => bookSlot(slot.slotId)}
+                        disabled={!isAvailable}
+                        className="
+                          rounded-lg
+                          bg-brand-primary
+                          px-4
+                          py-2
+                          text-sm
+                          font-semibold
+                          text-white
+                          transition-colors
+                          hover:bg-brand-primary-hover
+                          disabled:cursor-not-allowed
+                          disabled:bg-surface-hover
+                          disabled:text-text-muted
+                        "
+                      >
+                        {isAvailable ? "Đặt ngay" : "Không khả dụng"}
+                      </button>
+                    </div>
+                  );
+                }
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

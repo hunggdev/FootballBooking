@@ -14,6 +14,7 @@ model User {
   passwordHash        String               @map("password_hash")
   role                String
   status              String
+  image               String?
   createdAt           DateTime             @default(now()) @map("created_at")
   bookings            Booking[]
   invoices            Invoice[]
@@ -38,7 +39,6 @@ model Session {
   user         User      @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: NoAction, map: "session_user_fk")
 
   @@index([userId])
-  @@index([userId], map: "idx_session_user")
   @@map("sessions")
 }
 
@@ -52,7 +52,6 @@ model PasswordResetToken {
   user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@index([userId])
-  @@index([userId], map: "idx_password_user")
   @@map("password_reset_tokens")
 }
 
@@ -66,6 +65,7 @@ model Field {
   updatedAt   DateTime?   @default(now()) @map("updated_at") @db.Timestamptz(6)
   fieldSlots  FieldSlot[]
   reviews     Review[]
+  bookings    Booking[]
 
   @@map("field")
 }
@@ -114,7 +114,7 @@ model MatchParticipant {
 
   @@unique([matchId, userId])
   @@index([userId])
-  @@map("match_participants")
+  @@map("match_participant")
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -156,8 +156,9 @@ model Booking {
   user            User              @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "bookings_user_fk")
   invoice         Invoice?          @relation(fields: [invoiceId], references: [invoiceId])
   review          Review?
-  fieldSlot       FieldSlot?        @relation(fields: [fieldSlotSlotId], references: [slotId])
-  fieldSlotSlotId Int?
+  // fieldSlot       FieldSlot?        @relation(fields: [fieldId], references: [slotId])
+  fieldId         Int?
+  field           Field?             @relation(fields: [fieldId], references: [fieldId])
 
   @@index([userId], map: "idx_booking_user")
   @@map("bookings")
@@ -167,6 +168,7 @@ model BookingSlot {
   bookingSlotId Int      @id @default(autoincrement()) @map("booking_slot_id")
   bookingId     Int      @map("booking_id")
   slotId        Int      @map("slot_id")
+  fieldId       Int?     @map("field_id")
   bookingDate   DateTime @map("booking_date") @db.Date
 
   // Snapshot giá tại thời điểm đặt — KHÔNG lấy giá hiện tại của FieldSlot khi hiển thị lịch sử,
@@ -189,7 +191,7 @@ model FieldSlot {
   starttime    DateTime      @db.Time(6)
   endtime      DateTime      @db.Time(6)
   price        Decimal       @db.Decimal(10, 2)
-  bookings     Booking[]
+  // bookings     Booking[]
   field        Field         @relation(fields: [fieldId], references: [fieldId], onDelete: Cascade, onUpdate: NoAction, map: "fk_field")
   slotHolds    SlotHold[]
   slotBlocks   BlockedSlot[]
@@ -305,6 +307,7 @@ enum BookingStatus {
   HOLD
   CONFIRMED
   CANCELLED
+  COMPLETED
 }
 
 enum BookingType {
@@ -315,6 +318,7 @@ enum BookingType {
 
 enum InvoiceStatus {
   PENDING
+  DEPOSITED
   PAID
 }
 

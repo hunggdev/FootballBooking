@@ -4,7 +4,11 @@ import { Button } from "@/components/ui/button";
 import { TestimonialCard } from "./TestimonialCard";
 import api from "@/lib/api";
 import type { Review } from "@/types/review";
-import { Loader2, MessageSquare } from "lucide-react";
+import {
+  Loader2,
+  MessageSquare,
+  ArrowRight,
+} from "lucide-react";
 
 export function Testimonials() {
   const navigate = useNavigate();
@@ -19,43 +23,124 @@ export function Testimonials() {
     refetchInterval: 5000,
   });
 
-  // Pick top 3-6 latest or highest rated reviews
   const topReviews = reviews.slice(0, 3);
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* ================= HEADER ================= */}
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight">
-            <MessageSquare className="h-5 w-5 text-emerald-500" />
+          {/* Section label */}
+          <div className="mb-1.5 flex items-center gap-2">
+            <span className="h-1.5 w-6 rounded-full bg-brand-primary" />
+
+            <span className="text-xs font-semibold uppercase tracking-wider text-brand-primary">
+              Đánh giá
+            </span>
+          </div>
+
+          {/* Title */}
+          <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight text-text-primary">
+            <MessageSquare className="h-5 w-5 text-brand-primary" />
             Khách hàng nói gì về chúng tôi
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Tổng hợp các đánh giá và cảm nhận thực tế từ các đội bóng đã trải nghiệm dịch vụ.
+
+          {/* Description */}
+          <p className="mt-1 max-w-2xl text-xs leading-5 text-text-secondary">
+            Tổng hợp các đánh giá và cảm nhận thực tế từ các đội bóng
+            đã trải nghiệm dịch vụ.
           </p>
         </div>
 
+        {/* View all */}
         <Button
-          variant="link"
-          className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:underline shrink-0"
+          variant="ghost"
+          className="
+            shrink-0
+            self-start
+            px-2
+            text-sm
+            font-semibold
+            text-brand-primary
+            hover:bg-brand-primary/10
+            hover:text-brand-primary
+            sm:self-auto
+          "
           onClick={() => navigate("/user/reviews")}
         >
-          Xem tất cả đánh giá ({reviews.length}) →
+          Xem tất cả đánh giá ({reviews.length})
+          <ArrowRight className="ml-1 h-4 w-4" />
         </Button>
       </div>
 
+      {/* ================= CONTENT ================= */}
       {isLoading ? (
-        <div className="flex justify-center items-center py-12 text-sm text-muted-foreground">
-          <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Đang tải đánh giá từ khách hàng...
+        <div
+          className="
+            flex
+            min-h-[220px]
+            items-center
+            justify-center
+            rounded-xl
+            border
+            border-border
+            bg-surface
+            text-sm
+            text-text-secondary
+          "
+        >
+          <Loader2 className="mr-2 h-5 w-5 animate-spin text-brand-primary" />
+
+          Đang tải đánh giá từ khách hàng...
         </div>
       ) : topReviews.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground border rounded-lg">
-          Chưa có đánh giá nào từ người chơi. Hãy trải nghiệm và là người đầu tiên để lại nhận xét!
-        </p>
+        <div
+          className="
+            flex
+            min-h-[220px]
+            flex-col
+            items-center
+            justify-center
+            rounded-xl
+            border
+            border-dashed
+            border-border
+            bg-surface
+            px-6
+            text-center
+          "
+        >
+          <div
+            className="
+              mb-3
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-full
+              bg-brand-primary/10
+            "
+          >
+            <MessageSquare className="h-5 w-5 text-brand-primary" />
+          </div>
+
+          <p className="text-sm font-semibold text-text-primary">
+            Chưa có đánh giá nào
+          </p>
+
+          <p className="mt-1 max-w-md text-xs leading-5 text-text-secondary">
+            Hãy trải nghiệm dịch vụ và trở thành người đầu tiên
+            để lại nhận xét về sân bóng.
+          </p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-          {topReviews.map((r) => (
-            <TestimonialCard key={r.reviewId} review={r} />
+          {topReviews.map((review) => (
+            <TestimonialCard
+              key={review.reviewId}
+              review={review}
+            />
           ))}
         </div>
       )}

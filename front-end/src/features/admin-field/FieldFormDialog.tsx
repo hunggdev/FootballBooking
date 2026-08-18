@@ -56,11 +56,11 @@ export function FieldFormDialog({
   const isEditing = !!initialData;
   const defaultForm = initialData
     ? {
-        name: initialData.name,
-        description: initialData.description ?? "",
-        image: initialData.image ?? "",
-        fieldType: initialData.fieldType,
-      }
+      name: initialData.name,
+      description: initialData.description ?? "",
+      image: initialData.image ?? "",
+      fieldType: initialData.fieldType,
+    }
     : emptyForm;
 
   const [form, setForm] = useState(defaultForm);
@@ -117,7 +117,7 @@ export function FieldFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl border-border bg-elevated text-text-primary ring-border">
         <DialogHeader>
-          <DialogTitle className="text-text-primary">
+          <DialogTitle className="text-xl font-bold text-brand-primary">
             {isEditing ? "Sửa sân bóng" : "Thêm sân bóng"}
           </DialogTitle>
         </DialogHeader>
@@ -146,19 +146,19 @@ export function FieldFormDialog({
               <SelectContent className="border-border bg-elevated text-text-primary">
                 <SelectItem
                   value="FIVE"
-                  className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+                  className="text-text-secondary  focus:text-text-primary"
                 >
                   Sân 5 người
                 </SelectItem>
                 <SelectItem
                   value="SEVEN"
-                  className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+                  className="text-text-secondary  focus:text-text-primary"
                 >
                   Sân 7 người
                 </SelectItem>
                 <SelectItem
                   value="ELEVEN"
-                  className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+                  className="text-text-secondary  focus:text-text-primary"
                 >
                   Sân 11 người
                 </SelectItem>
@@ -192,7 +192,16 @@ export function FieldFormDialog({
         <DialogFooter className="border-border bg-elevated">
           <Button
             variant="outline"
-            className="border-border bg-transparent text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+            className="
+              border-border
+              bg-transparent
+              text-text-secondary
+              transition-all
+              duration-200
+              hover:border-brand-accent/40
+              hover:bg-brand-accent/10
+              hover:text-brand-accent
+            "
             onClick={() => {
               resetForm();
               onOpenChange(false);
@@ -208,8 +217,8 @@ export function FieldFormDialog({
             {isSubmitting
               ? "Đang lưu..."
               : isEditing
-              ? "Lưu thay đổi"
-              : "Tạo sân"}
+                ? "Lưu thay đổi"
+                : "Tạo sân"}
           </Button>
         </DialogFooter>
       </DialogContent>

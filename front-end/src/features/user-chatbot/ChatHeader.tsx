@@ -21,7 +21,7 @@ export function ChatHeader({
         </Avatar>
         <div>
           <p className="text-sm font-medium leading-none">{botName}</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-text-muted">
             {isOnline ? "Đang hoạt động" : "Ngoại tuyến"}
           </p>
         </div>

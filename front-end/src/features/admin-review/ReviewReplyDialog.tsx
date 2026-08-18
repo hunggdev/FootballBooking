@@ -2,9 +2,11 @@ import { useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,89 +31,128 @@ export function ReviewReplyDialog({
   serverError,
 }: Props) {
   const [reply, setReply] = useState(review?.reply ?? "");
-  const [prevReview, setPrevReview] = useState(review);
 
-  // ✅ Thay thế useEffect: Cập nhật state trực tiếp khi prop `review` hoặc `open` thay đổi
-  if (review !== prevReview) {
-    setPrevReview(review);
-    setReply(review?.reply ?? "");
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const handleSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
     if (!reply.trim() || isSubmitting) return;
+
     onSubmit(reply.trim());
   };
 
   return (
-    <Dialog open={open && Boolean(review)} onOpenChange={onOpenChange}>
-      <DialogContent>
+    <Dialog
+      open={open && Boolean(review)}
+      onOpenChange={onOpenChange}
+    >
+      <DialogContent className="max-w-xl border-border bg-elevated text-text-primary ring-border">
         {review && (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-5"
+          >
             <DialogHeader>
-              <DialogTitle>
+              <DialogTitle className="text-xl font-bold text-brand-primary">
                 Phản hồi đánh giá #{review.reviewId}
               </DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-4">
-              {review.user?.fullName && (
-                <div>
-                  <Label className="text-xs text-muted-foreground">Khách hàng</Label>
-                  <p className="text-sm font-medium">{review.user.fullName}</p>
-                </div>
-              )}
-
-              <div>
-                <Label>
-                  Đánh giá của khách hàng ({review.rating} ⭐)
+            {/* Khách hàng */}
+            {review.user?.fullName && (
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+                  Khách hàng
                 </Label>
 
-                <p className="text-sm text-muted-foreground bg-muted/50 p-2.5 rounded-md mt-1">
+                <p className="text-sm font-medium text-text-primary">
+                  {review.user.fullName}
+                </p>
+              </div>
+            )}
+
+            {/* Đánh giá */}
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+                Đánh giá ({review.rating} ⭐)
+              </Label>
+
+              <div className="rounded-lg border border-border bg-surface p-3">
+                <p className="text-sm leading-relaxed text-text-secondary">
                   {review.comment || "Không có nội dung"}
                 </p>
               </div>
+            </div>
 
-              <div>
-                <Label htmlFor="reply">
-                  Nội dung phản hồi
-                </Label>
+            {/* Nội dung phản hồi */}
+            <div className="space-y-1">
+              <Label
+                htmlFor="reply"
+                className="text-xs font-semibold uppercase tracking-wider text-text-muted"
+              >
+                Nội dung phản hồi
+              </Label>
 
-                <Textarea
-                  id="reply"
-                  rows={4}
-                  value={reply}
-                  onChange={(e) => setReply(e.target.value)}
-                  placeholder="Nhập phản hồi..."
-                  disabled={isSubmitting}
-                  className="mt-1"
-                />
-              </div>
+              <Textarea
+                id="reply"
+                rows={5}
+                value={reply}
+                onChange={(e) => setReply(e.target.value)}
+                placeholder="Nhập phản hồi cho khách hàng..."
+                disabled={isSubmitting}
+                className="
+                  border-border
+                  bg-surface
+                  text-text-primary
+                  placeholder:text-text-muted
+                  focus-visible:border-brand-accent
+                  focus-visible:ring-brand-accent/30
+                "
+              />
+            </div>
 
-              {serverError && (
-                <p className="text-sm text-red-500 font-medium">
+            {/* Error */}
+            {serverError && (
+              <div className="rounded-md border border-status-danger/20 bg-status-danger-bg p-3">
+                <p className="text-sm font-medium text-status-danger">
                   {serverError}
                 </p>
-              )}
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                  disabled={isSubmitting}
-                >
-                  Hủy
-                </Button>
-
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || !reply.trim()}
-                >
-                  {isSubmitting ? "Đang gửi..." : "Gửi phản hồi"}
-                </Button>
               </div>
-            </div>
+            )}
+
+            <DialogFooter className="border-border bg-elevated">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSubmitting}
+                onClick={() => onOpenChange(false)}
+                className="
+                  border-border
+                  bg-transparent
+                  text-text-secondary
+                  transition-all
+                  duration-200
+                  hover:border-brand-accent/40
+                  hover:bg-brand-accent/10
+                  hover:text-brand-accent
+                "
+              >
+                Hủy
+              </Button>
+
+              <Button
+                type="submit"
+                disabled={isSubmitting || !reply.trim()}
+                className="
+                  border-transparent bg-brand-accent font-semibold text-accent-foreground hover:bg-brand-accent-hover
+                "
+              >
+                {isSubmitting
+                  ? "Đang gửi..."
+                  : review.reply
+                    ? "Cập nhật phản hồi"
+                    : "Gửi phản hồi"}
+              </Button>
+            </DialogFooter>
           </form>
         )}
       </DialogContent>

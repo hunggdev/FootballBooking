@@ -39,21 +39,21 @@ export function AccountsPage() {
             <SelectContent className="border-border bg-elevated text-text-primary">
               <SelectItem
                 value="all"
-                className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+                className="text-text-secondary focus:text-text-primary"
               >
                 Tất cả trạng thái
               </SelectItem>
 
               <SelectItem
                 value="active"
-                className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+                className="text-text-secondary  focus:text-text-primary"
               >
                 Đang hoạt động
               </SelectItem>
 
               <SelectItem
                 value="locked"
-                className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+                className="text-text-secondary focus:text-text-primary"
               >
                 Đã khóa
               </SelectItem>

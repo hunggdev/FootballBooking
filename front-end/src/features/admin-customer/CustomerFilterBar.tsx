@@ -63,28 +63,28 @@ export function CustomerFilterBar({
           <SelectContent className="border-border bg-elevated text-text-primary">
             <SelectItem
               value="all"
-              className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+              className="text-text-secondary focus:text-text-primary"
             >
               Tất cả trạng thái
             </SelectItem>
 
             <SelectItem
               value="ACTIVE"
-              className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+              className="text-text-secondary ffocus:text-text-primary"
             >
               Đã kích hoạt
             </SelectItem>
 
             <SelectItem
               value="INACTIVE"
-              className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+              className="text-text-secondary focus:text-text-primary"
             >
               Chưa kích hoạt
             </SelectItem>
 
             <SelectItem
               value="BANNED"
-              className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+              className="text-text-secondary focus:text-text-primary"
             >
               Đã khóa
             </SelectItem>
@@ -94,7 +94,7 @@ export function CustomerFilterBar({
 
       {/* Add customer */}
       <Button
-        className="border-transparent bg-brand-accent font-semibold text-brand-accent-foreground hover:bg-brand-accent-hover"
+        className="border-transparent bg-brand-accent font-semibold text-accent-foreground hover:bg-brand-accent-hover"
         onClick={onClick}
       >
         <UserPlus className="mr-2 h-4 w-4" />

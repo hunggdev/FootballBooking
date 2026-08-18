@@ -128,12 +128,12 @@ export function AdminTopHeader() {
             align="end"
             className="w-48 border-border bg-elevated text-text-primary"
           >
-            <DropdownMenuItem className="cursor-pointer text-text-secondary focus:bg-surface-hover focus:text-text-primary">
+            <DropdownMenuItem className="cursor-pointer text-text-secondary  focus:text-text-primary">
               <Settings2 className="mr-2 h-4 w-4" />
               Thông tin tài khoản
             </DropdownMenuItem>
 
-            <DropdownMenuItem className="cursor-pointer text-text-secondary focus:bg-surface-hover f
+            <DropdownMenuItem className="cursor-pointer text-text-secondary  f
             ocus:text-status-danger">
               <LogOut />
             </DropdownMenuItem>

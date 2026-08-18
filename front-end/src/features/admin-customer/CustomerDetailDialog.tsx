@@ -23,13 +23,13 @@ import type { Customer } from "@/types/customer";
 import { useCustomer } from "@/stores/useCustomerStore";
 
 const bookingStatusLabel: Record<CustomerBookingHistoryRow["status"], string> =
-  {
-    booked: "Đã đặt",
-    held: "Giữ chỗ",
-    "pending-confirm": "Chờ xác nhận",
-    paid: "Đã thanh toán",
-    cancelled: "Đã hủy",
-  };
+{
+  booked: "Đã đặt",
+  held: "Giữ chỗ",
+  "pending-confirm": "Chờ xác nhận",
+  paid: "Đã thanh toán",
+  cancelled: "Đã hủy",
+};
 
 const bookingStatusClassName: Record<
   CustomerBookingHistoryRow["status"],
@@ -125,7 +125,7 @@ export function CustomerDetailDialog({
         "
       >
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-text-primary">
+          <DialogTitle className="text-lg font-semibold text-brand-primary">
             Thông tin khách hàng
           </DialogTitle>
         </DialogHeader>
@@ -202,11 +202,10 @@ export function CustomerDetailDialog({
                     }
                   >
                     <span
-                      className={`mr-1.5 h-1.5 w-1.5 rounded-full ${
-                        customer.isOnline
-                          ? "bg-status-success"
-                          : "bg-text-muted"
-                      }`}
+                      className={`mr-1.5 h-1.5 w-1.5 rounded-full ${customer.isOnline
+                        ? "bg-status-success"
+                        : "bg-text-muted"
+                        }`}
                     />
                     {customer.isOnline ? "Online" : "Offline"}
                   </Badge>
@@ -397,11 +396,14 @@ export function CustomerDetailDialog({
               <Button
                 variant="outline"
                 className="
-                  border-border
-                  bg-elevated
-                  text-text-secondary
-                  hover:bg-surface-hover
-                  hover:text-text-primary
+                    border-border
+                    bg-transparent
+                    text-text-secondary
+                    transition-all
+                    duration-200
+                    hover:border-brand-accent/40
+                    hover:bg-brand-accent/10
+                    hover:text-brand-accent
                 "
                 onClick={() => onOpenChange(false)}
               >

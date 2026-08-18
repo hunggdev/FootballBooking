@@ -30,18 +30,18 @@ export function SigninForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-    const {signIn} = useAuthStore();
-    const navigate = useNavigate();
-    
-  const {register, handleSubmit, formState: {errors, isSubmitting}} = useForm<SignInFormValues>({
-    resolver: zodResolver(signInSchema)     
+  const { signIn } = useAuthStore();
+  const navigate = useNavigate();
+
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SignInFormValues>({
+    resolver: zodResolver(signInSchema)
   });
 
   const onSubmit = async (data: SignInFormValues) => {
-    const {email, password} = data;
+    const { email, password } = data;
     try {
       await signIn(email, password);
-      const {user} = useAuthStore.getState();
+      const { user } = useAuthStore.getState();
       navigate(user?.role?.toLowerCase() === "admin" ? "/admin" : "/user"); // chỉ navigate khi đăng nhập thành công
     } catch {
       // lỗi đã được xử lý và hiển thị toast trong store
@@ -57,11 +57,11 @@ export function SigninForm({
               {/* header - logo */}
               <div className="flex flex-col items-center text-center gap-2">
                 <a href="/" className="mx-auto block w-fit text-center">
-                  <img src="/logo.svg" alt="logo" className="w-20 h-20"/>
+                  <img src="/logo.svg" alt="logo" className="w-20 h-20" />
                 </a>
 
-              <h1 className="text-2xl font-bold">Đăng nhập vào tài khoản của bạn</h1>
-              <p className="text-muted-foreground text-balance">Nhập thông tin bên dưới để đăng nhập</p>
+                <h1 className="text-2xl font-bold">Đăng nhập vào tài khoản của bạn</h1>
+                <p className="text-muted-foreground text-balance">Nhập thông tin bên dưới để đăng nhập</p>
               </div>
 
               {/*  email */}
@@ -72,7 +72,7 @@ export function SigninForm({
                 <Input type="text" id="email" placeholder="user@gmail.com" {...register("email")}
                 />
                 {errors.email && (
-                  <p className="text-sm text-red-500 ">
+                  <p className="text-sm text-status-danger ">
                     {errors.email.message}
                   </p>
                 )}
@@ -82,16 +82,16 @@ export function SigninForm({
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password" className="block text-sm text-left">
-                  Mật khẩu
-                </Label>
-                <a href="/forgot-password" className="font-medium hover:underline underline-offset-4">
+                    Mật khẩu
+                  </Label>
+                  <a href="/forgot-password" className="font-medium hover:underline underline-offset-4">
                     Quên mật khẩu?
-                </a>
+                  </a>
                 </div>
                 <Input type="password" id="password" placeholder="********" {...register("password")}
                 />
                 {errors.password && (
-                  <p className="text-sm text-red-500 ">
+                  <p className="text-sm text-status-danger ">
                     {errors.password.message}
                   </p>
                 )}
@@ -105,7 +105,7 @@ export function SigninForm({
               <div className="text-center">
                 Chưa có tài khoản ? {" "}
                 <a href="/signup" className="font-medium underline underline-offset-4">
-                  Đăng ký  
+                  Đăng ký
                 </a>
               </div>
 

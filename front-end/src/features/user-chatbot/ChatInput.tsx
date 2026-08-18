@@ -28,7 +28,8 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
     <div className="flex items-end gap-2 border-t p-3">
       <Textarea
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) =
+                className="bg-surface text-text-primary placeholder:text-text-muted"> setValue(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Nhập tin nhắn..."
         rows={1}

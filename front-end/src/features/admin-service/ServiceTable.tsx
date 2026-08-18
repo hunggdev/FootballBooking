@@ -164,9 +164,7 @@ export function ServiceTable({
                         >
                           <ImageOff className="h-4 w-4" />
 
-                          <span className="text-[9px]">
-                            No Image
-                          </span>
+                          <span className="text-[9px]">No Image</span>
                         </div>
                       )}
                     </div>
@@ -281,9 +279,7 @@ export function ServiceTable({
                   {/* ================= NGÀY TẠO ================= */}
                   <TableCell>
                     <span className="text-xs text-text-secondary">
-                      {new Date(service.createdAt).toLocaleDateString(
-                        "vi-VN"
-                      )}
+                      {new Date(service.createdAt).toLocaleDateString("vi-VN")}
                     </span>
                   </TableCell>
 
@@ -330,10 +326,10 @@ export function ServiceTable({
                           transition-all
                           duration-200
                           hover:-translate-y-px
-                          hover:border-brand-primary/40
-                          hover:bg-brand-primary/10
-                          hover:text-brand-primary
-                        "
+                          hover:border-brand-accent/40
+                          hover:bg-brand-accent/10
+                          hover:text-brand-accent
+                          "
                       >
                         <Pencil className="mr-1.5 h-3.5 w-3.5" />
                         Sửa

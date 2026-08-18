@@ -46,7 +46,7 @@ export default function BookingHistoryPage() {
 
   if (isLoading) return <div className="p-6">Đang tải lịch sử đặt sân...</div>;
   if (error)
-    return <div className="p-6 text-red-600">Không thể tải dữ liệu.</div>;
+    return <div className="p-6 text-status-danger">Không thể tải dữ liệu.</div>;
 
   return (
     <div className="space-y-4">

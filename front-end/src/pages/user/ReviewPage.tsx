@@ -79,28 +79,28 @@ export default function ReviewPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       {/* Title Header */}
-      <div className="rounded-xl border bg-card p-6 shadow-sm">
+      <div className="rounded-xl border bg-surface p-6 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-              <MessageSquare className="h-6 w-6 text-emerald-500" />
+              <MessageSquare className="h-6 w-6 text-brand-primary" />
               Đánh giá chất lượng từng sân bóng
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-text-muted">
               Xem chi tiết đánh giá, điểm số sao và nhận xét thực tế theo từng
               sân bóng.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-4 rounded-lg border bg-muted/30 p-4">
-              <div className="flex items-center gap-1.5 text-2xl font-bold text-amber-500">
-                <Star className="h-6 w-6 fill-amber-500 text-amber-500" />
+            <div className="flex items-center gap-4 rounded-lg border bg-surface-hover/30 p-4">
+              <div className="flex items-center gap-1.5 text-2xl font-bold text-rating-star">
+                <Star className="h-6 w-6 fill-rating-star text-rating-star" />
                 {avgRating}
               </div>
               <div className="border-r h-8" />
               <div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-text-muted">
                   Tổng số đánh giá
                 </p>
                 <p className="text-sm font-semibold">{totalReviews} đánh giá</p>
@@ -110,7 +110,7 @@ export default function ReviewPage() {
             {unreviewedBookings.length > 0 && (
               <Button
                 onClick={handleOpenReview}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-sm"
+                className="bg-brand-primary hover:bg-brand-primary-hover text-white font-semibold shadow-sm"
               >
                 <MessageSquarePlus className="mr-1.5 h-4 w-4" />
                 Viết đánh giá ({unreviewedBookings.length})
@@ -124,7 +124,7 @@ export default function ReviewPage() {
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between border-b pb-4">
         <div className="flex flex-wrap items-center gap-3">
           {/* Type Filter Buttons */}
-          <div className="flex gap-1.5 rounded-lg border bg-muted/30 p-1">
+          <div className="flex gap-1.5 rounded-lg border bg-surface-hover/30 p-1">
             {(
               [
                 { value: "ALL", label: "Tất cả" },
@@ -141,8 +141,8 @@ export default function ReviewPage() {
                 }}
                 className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
                   selectedType === tab.value
-                    ? "bg-emerald-600 text-white shadow-xs"
-                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                    ? "bg-brand-primary text-white shadow-xs"
+                    : "text-text-muted hover:bg-surface-hover hover:text-text-primary"
                 }`}
               >
                 {tab.label}
@@ -152,7 +152,7 @@ export default function ReviewPage() {
 
           {/* Specific Field Select */}
           <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-muted-foreground" />
+            <Filter className="h-4 w-4 text-text-muted" />
             <select
               value={selectedFieldId}
               onChange={(e) =>
@@ -160,7 +160,7 @@ export default function ReviewPage() {
                   e.target.value === "ALL" ? "ALL" : Number(e.target.value),
                 )
               }
-              className="rounded-lg border bg-background px-3 py-1.5 text-xs font-medium text-foreground focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
+              className="rounded-lg border bg-surface px-3 py-1.5 text-xs font-medium text-text-primary focus:outline-hidden focus:ring-1 focus:ring-brand-primary"
             >
               <option value="ALL">Tất cả sân cụ thể</option>
               {filteredFields.map((f) => (
@@ -172,9 +172,9 @@ export default function ReviewPage() {
           </div>
         </div>
 
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-text-muted">
           Đang hiển thị{" "}
-          <span className="font-semibold text-foreground">
+          <span className="font-semibold text-text-primary">
             {reviews.length}
           </span>{" "}
           đánh giá
@@ -183,7 +183,7 @@ export default function ReviewPage() {
 
       {/* Loading State */}
       {isLoading && (
-        <div className="flex items-center justify-center py-16 text-muted-foreground">
+        <div className="flex items-center justify-center py-16 text-text-muted">
           <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Đang tải danh sách
           đánh giá sân...
         </div>
@@ -191,15 +191,15 @@ export default function ReviewPage() {
 
       {/* Error State */}
       {error && (
-        <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-6 text-center text-sm text-red-500">
+        <div className="rounded-xl border border-status-danger/20 bg-status-danger-bg p-6 text-center text-sm text-status-danger">
           Không thể tải danh sách đánh giá. Vui lòng thử lại sau.
         </div>
       )}
 
       {/* Reviews Grid */}
       {!isLoading && !error && reviews.length === 0 ? (
-        <Card className="py-12 text-center">
-          <CardContent className="text-muted-foreground">
+        <Card className="py-12 text-center bg-surface">
+          <CardContent className="text-text-muted">
             Chưa có đánh giá nào cho sân này.
           </CardContent>
         </Card>
@@ -219,17 +219,17 @@ export default function ReviewPage() {
             return (
               <Card
                 key={review.reviewId}
-                className="flex flex-col justify-between border shadow-xs hover:border-emerald-500/30 transition-all"
+                className="flex flex-col justify-between border shadow-xs hover:border-brand-primary/30 transition-all bg-surface"
               >
-                <CardHeader className="pb-3 border-b bg-muted/10">
+                <CardHeader className="pb-3 border-b bg-surface-hover/10">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <CardTitle className="text-base font-bold text-emerald-400">
+                      <CardTitle className="text-base font-bold text-brand-primary">
                         {review.field?.name || `Sân #${review.fieldId}`}
                       </CardTitle>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-xs text-text-muted mt-0.5">
                         Người đánh giá:{" "}
-                        <span className="font-semibold text-foreground">
+                        <span className="font-semibold text-text-primary">
                           {review.user?.fullName || "Khách hàng"}
                         </span>
                       </p>
@@ -238,7 +238,7 @@ export default function ReviewPage() {
                     {fieldTypeLabel && (
                       <Badge
                         variant="outline"
-                        className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                        className="border-brand-primary/40 text-brand-primary"
                       >
                         {fieldTypeLabel}
                       </Badge>
@@ -255,8 +255,8 @@ export default function ReviewPage() {
                           key={star}
                           className={`h-4 w-4 ${
                             star <= review.rating
-                              ? "fill-amber-400 text-amber-400"
-                              : "fill-muted text-muted-foreground/30"
+                              ? "fill-rating-star text-rating-star"
+                              : "fill-text-muted text-text-muted/30"
                           }`}
                         />
                       ))}
@@ -265,7 +265,7 @@ export default function ReviewPage() {
                       </span>
                     </div>
 
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-[11px] text-text-muted">
                       {review.createdAt
                         ? dayjs(review.createdAt).format("DD/MM/YYYY HH:mm")
                         : ""}
@@ -273,18 +273,18 @@ export default function ReviewPage() {
                   </div>
 
                   {/* Comment */}
-                  <p className="text-sm text-foreground/90 italic">
+                  <p className="text-sm text-text-primary/90 italic">
                     "{review.comment || "Người dùng không để lại lời nhắn."}"
                   </p>
 
                   {/* Reply from Owner */}
                   {review.reply && (
-                    <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs">
-                      <p className="flex items-center gap-1.5 font-bold text-primary mb-1">
+                    <div className="mt-3 rounded-lg border border-brand-primary/20 bg-brand-primary/5 p-3 text-xs">
+                      <p className="flex items-center gap-1.5 font-bold text-brand-primary mb-1">
                         <ShieldCheck className="h-3.5 w-3.5" /> Phản hồi từ Quản
                         lý sân:
                       </p>
-                      <p className="text-muted-foreground">{review.reply}</p>
+                      <p className="text-text-muted">{review.reply}</p>
                     </div>
                   )}
                 </CardContent>
@@ -296,10 +296,10 @@ export default function ReviewPage() {
 
       {/* Review Modal */}
       <Dialog open={openReviewDialog} onOpenChange={setOpenReviewDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md border-border bg-elevated text-text-primary">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg font-bold">
-              <Star className="h-5 w-5 text-amber-400 fill-amber-400" />
+              <Star className="h-5 w-5 text-rating-star fill-rating-star" />
               Viết đánh giá chất lượng sân
             </DialogTitle>
             <DialogDescription>
@@ -309,7 +309,7 @@ export default function ReviewPage() {
           </DialogHeader>
 
           {unreviewedBookings.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">
+            <p className="text-sm text-text-muted py-4 text-center">
               Bạn không có trận đấu nào chưa đánh giá.
             </p>
           ) : (
@@ -320,7 +320,7 @@ export default function ReviewPage() {
                     Chọn sân đấu
                   </label>
                   <select
-                    className="w-full rounded-md border p-2 text-sm bg-background"
+                    className="w-full rounded-md border p-2 text-sm bg-surface"
                     value={selectedBooking?.bookingId}
                     onChange={(e) => {
                       const b = unreviewedBookings.find(

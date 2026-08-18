@@ -67,31 +67,31 @@ export function MatchFilterBar({
           <SelectContent className="border-border bg-elevated text-text-primary">
             <SelectItem
               value="all"
-              className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+              className="text-text-secondary focus:text-text-primary"
             >
               Tất cả trạng thái
             </SelectItem>
             <SelectItem
               value="OPEN"
-              className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+              className="text-text-secondary  focus:text-text-primary"
             >
               Đang tìm đối (Mở)
             </SelectItem>
             <SelectItem
               value="MATCHED"
-              className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+              className="text-text-secondary  focus:text-text-primary"
             >
               Đã ghép đối
             </SelectItem>
             <SelectItem
               value="FINISHED"
-              className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+              className="text-text-secondary  focus:text-text-primary"
             >
               Đã hoàn thành
             </SelectItem>
             <SelectItem
               value="CANCELLED"
-              className="text-text-secondary focus:bg-surface-hover focus:text-text-primary"
+              className="text-text-secondary  focus:text-text-primary"
             >
               Đã hủy
             </SelectItem>

@@ -24,19 +24,15 @@ export function ForgotPasswordForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const {forgotPassword} = useAuthStore(); 
-  const {register, handleSubmit, formState: {errors, isSubmitting}} = useForm<ForgotPasswordFormValues>({
-    resolver: zodResolver(ForgotPasswordSchema)     
+  const { forgotPassword } = useAuthStore();
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(ForgotPasswordSchema)
   });
 
 
   const onSubmit = async (data: ForgotPasswordFormValues) => {
-    const {email} = data;
-    try {
-      await forgotPassword(email);
-    } catch(error) {
-      throw error
-    }
+    const { email } = data;
+    await forgotPassword(email);
   };
 
   return (
@@ -53,7 +49,7 @@ export function ForgotPasswordForm({
           <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col items-center text-center gap-2">
               <a href="/" className="mx-auto block w-fit text-center">
-                <img src="/logo.svg" alt="logo" className="w-20 h-20"/>
+                <img src="/logo.svg" alt="logo" className="w-20 h-20" />
               </a>
 
               <h1 className="text-2xl font-bold">Quên mật khẩu</h1>
@@ -61,20 +57,20 @@ export function ForgotPasswordForm({
             </div>
 
             <div className="flex flex-col gap-3 mt-10">
-            <Label htmlFor="email" className="block text-sm text-left">
+              <Label htmlFor="email" className="block text-sm text-left">
                 Email
-            </Label>
-            <Input type="text" id="email" placeholder="user@gmail.com" {...register("email")}
-            />
-            {errors.email && (
-                <p className="text-sm text-red-500 ">
-                {errors.email.message}
+              </Label>
+              <Input type="text" id="email" placeholder="user@gmail.com" {...register("email")}
+              />
+              {errors.email && (
+                <p className="text-sm text-status-danger ">
+                  {errors.email.message}
                 </p>
-            )}
+              )}
             </div>
 
             <Button type="submit" className="w-full mt-3" disabled={isSubmitting}>
-                {isSubmitting ? "Loading..." : "Tiếp tục"}
+              {isSubmitting ? "Loading..." : "Tiếp tục"}
             </Button>
 
 

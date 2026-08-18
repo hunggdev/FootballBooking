@@ -110,7 +110,7 @@ export function FieldDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] max-w-xl overflow-y-auto border-border bg-elevated text-text-primary ring-border">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-text-primary">Chi tiết & Quản lý khung giờ sân</DialogTitle>
+          <DialogTitle className="text-xl font-bold text-brand-primary">Chi tiết & Quản lý khung giờ sân</DialogTitle>
         </DialogHeader>
 
         {isLoading && (
@@ -185,7 +185,7 @@ export function FieldDetailDialog({
                   className="space-y-3 rounded-lg border border-border bg-surface p-4"
                 >
                   <p className="text-xs font-bold text-text-primary">Tạo khung giờ mới cho sân này:</p>
-                  
+
                   {formError && (
                     <div className="flex items-center gap-2 rounded-md border border-status-danger/30 bg-status-danger-bg p-2.5 text-xs font-medium text-status-danger">
                       <AlertCircle className="h-4 w-4 shrink-0" />

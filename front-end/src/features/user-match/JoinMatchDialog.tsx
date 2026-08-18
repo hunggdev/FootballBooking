@@ -41,28 +41,55 @@ export function JoinMatchDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+      <DialogContent
+        className="
+          max-w-xl
+          border-border
+          bg-elevated
+          text-text-primary
+          shadow-xl
+        "
+      >
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-text-primary">
             Xác nhận tham gia kèo đấu
           </DialogTitle>
         </DialogHeader>
 
         <FieldGroup className="space-y-4">
-          <div className="rounded-lg border bg-muted/40 p-4 text-sm space-y-2">
+          <div
+            className="
+              space-y-2
+              rounded-lg
+              border
+              border-border
+              bg-surface-hover/40
+              p-4
+              text-sm
+              text-text-primary
+            "
+          >
             <p>
-              Bạn sắp gửi <strong>yêu cầu tham gia</strong> vào kèo đấu này.
+              Bạn sắp gửi{" "}
+              <strong className="text-text-primary">
+                yêu cầu tham gia
+              </strong>{" "}
+              vào kèo đấu này.
             </p>
 
-            <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+            <ul className="list-disc space-y-1 pl-5 text-text-secondary">
               <li>Yêu cầu sẽ được gửi đến đội tạo kèo.</li>
-              <li>Bạn chỉ có thể thi đấu khi được chủ kèo chấp nhận.</li>
-              <li>Bạn có thể hủy yêu cầu nếu chủ kèo chưa xác nhận.</li>
+              <li>
+                Bạn chỉ có thể thi đấu khi được chủ kèo chấp nhận.
+              </li>
+              <li>
+                Bạn có thể hủy yêu cầu nếu chủ kèo chưa xác nhận.
+              </li>
             </ul>
           </div>
 
           {(error || serverError) && (
-            <p className="text-sm text-red-500">
+            <p className="text-sm text-status-danger">
               {error ?? serverError}
             </p>
           )}
@@ -72,6 +99,13 @@ export function JoinMatchDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
+            className="
+              border-border
+              bg-surface
+              text-text-secondary
+              hover:bg-surface-hover
+              hover:text-text-primary
+            "
           >
             Hủy
           </Button>
@@ -79,11 +113,17 @@ export function JoinMatchDialog({
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting}
+            className="
+              bg-brand-primary
+              text-white
+              hover:bg-brand-primary-hover
+              disabled:bg-surface-hover
+              disabled:text-text-muted
+            "
           >
             {isSubmitting
-              ? "Đang gửi yêu cầu..." 
-              : "Gửi yêu cầu tham gia" 
-            }
+              ? "Đang gửi yêu cầu..."
+              : "Gửi yêu cầu tham gia"}
           </Button>
         </DialogFooter>
       </DialogContent>

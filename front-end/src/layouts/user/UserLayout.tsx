@@ -6,7 +6,7 @@ import { TopBar } from "./TopBar";
 
 export default function UserLayout() {
   return (
-    <div className="min-h-screen flex flex-col max-w-[1126px] mx-auto border">
+    <div className="min-h-screen flex flex-col max-w-[1126px] mx-auto border border-border bg-base text-text-primary">
       <TopBar />
       <Header />
       <main className="flex-1">

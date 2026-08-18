@@ -49,8 +49,8 @@ export function ResetPasswordForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const {resetPassword} = useAuthStore(); 
-  const {register, handleSubmit, formState: {errors, isSubmitting}} = useForm<ResetPasswordFormValues>({
+  const { resetPassword } = useAuthStore();
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(ResetPasswordSchema),
     mode: "onSubmit",
 
@@ -59,7 +59,7 @@ export function ResetPasswordForm({
   const token = searchParams.get("token");
 
   const onSubmit = async (data: ResetPasswordFormValues) => {
-    const {newPassword} = data;
+    const { newPassword } = data;
     if (!token) {
       throw new Error("Thiếu token đặt lại mật khẩu.");
     }
@@ -81,7 +81,7 @@ export function ResetPasswordForm({
           <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col items-center text-center gap-2">
               <a href="/" className="mx-auto block w-fit text-center">
-                <img src="/logo.svg" alt="logo" className="w-20 h-20"/>
+                <img src="/logo.svg" alt="logo" className="w-20 h-20" />
               </a>
 
               <h1 className="text-2xl font-bold">Quên mật khẩu</h1>
@@ -89,33 +89,33 @@ export function ResetPasswordForm({
             </div>
             {/* newPassword */}
             <div className="flex flex-col gap-3 mt-10">
-                <Label htmlFor="newPassword" className="block text-sm text-left">
-                    Mật khẩu mới
-                </Label>
-                <Input type="text" id="newPassword" placeholder="Mật khẩu mới" {...register("newPassword")}
-                />
-                {errors.newPassword && (
-                    <p className="text-sm text-red-500 ">
-                    {errors.newPassword.message}
-                    </p>
-                )}
+              <Label htmlFor="newPassword" className="block text-sm text-left">
+                Mật khẩu mới
+              </Label>
+              <Input type="text" id="newPassword" placeholder="Mật khẩu mới" {...register("newPassword")}
+              />
+              {errors.newPassword && (
+                <p className="text-sm text-status-danger ">
+                  {errors.newPassword.message}
+                </p>
+              )}
             </div>
 
             {/* confirmPassword */}
             <div className="flex flex-col gap-3 mt-5">
-                <Label htmlFor="confirmPassword" className="block text-sm text-left">
-                    Xác nhận mật khẩu
-                </Label>
-                <Input type="text" id="confirmPassword" placeholder="Xác nhận mật khẩu" {...register("confirmPassword")} />
-                {errors.confirmPassword && (
-                    <p className="text-sm text-red-500 ">
-                    {errors.confirmPassword.message}
-                    </p>
-                )}
+              <Label htmlFor="confirmPassword" className="block text-sm text-left">
+                Xác nhận mật khẩu
+              </Label>
+              <Input type="text" id="confirmPassword" placeholder="Xác nhận mật khẩu" {...register("confirmPassword")} />
+              {errors.confirmPassword && (
+                <p className="text-sm text-status-danger ">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
             </div>
             {/* button submit */}
             <Button type="submit" className="w-full mt-3" disabled={isSubmitting}>
-                {isSubmitting ? "Loading..." : "Xác nhận"}
+              {isSubmitting ? "Loading..." : "Xác nhận"}
             </Button>
 
           </form>

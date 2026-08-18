@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { useCreateReview } from "@/stores/useReviewStore";
+
 interface ReviewFormProps {
   bookingId: number;
   onSuccess?: () => void;
 }
 
-import {useCreateReview} from "@/stores/useReviewStore";
-
 export default function ReviewForm({
   bookingId,
   onSuccess,
 }: ReviewFormProps) {
-  const {mutateAsync: createReview} = useCreateReview();
+  const { mutateAsync: createReview } = useCreateReview();
+
   const [comment, setComment] = useState("");
   const [rating, setRating] = useState(5);
   const [loading, setLoading] = useState(false);
@@ -23,24 +24,26 @@ export default function ReviewForm({
     try {
       setLoading(true);
 
-      try {
-        await createReview({
+      await createReview({
         bookingId,
         rating,
         comment,
       });
-      } catch (error) {
-        throw error
-      }
 
       setComment("");
       setRating(5);
 
       toast.success("Đánh giá thành công!");
+
       if (onSuccess) onSuccess();
     } catch (error: unknown) {
       console.error(error);
-      const message = error instanceof Error ? error.message : "Không thể gửi đánh giá.";
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Không thể gửi đánh giá.";
+
       toast.error(message);
     } finally {
       setLoading(false);
@@ -48,45 +51,78 @@ export default function ReviewForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Rating */}
       <div>
-        <label className="mb-1 block text-sm font-semibold">
-          Số sao đánh giá (1 - 5 sao)
+        <label className="mb-2 block text-sm font-semibold text-text-primary">
+          Số sao đánh giá
+          <span className="ml-1 text-text-secondary">(1 - 5 sao)</span>
         </label>
+
         <div className="flex items-center gap-2">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
               type="button"
               onClick={() => setRating(star)}
-              className={`text-2xl transition-transform hover:scale-110 ${
-                star <= rating ? "text-amber-400" : "text-gray-300"
-              }`}
+              className={`text-2xl leading-none transition-all duration-150 hover:scale-110 ${star <= rating
+                  ? "text-rating-star drop-shadow-sm"
+                  : "text-text-muted hover:text-rating-star/70"
+                }`}
+              aria-label={`Đánh giá ${star} sao`}
             >
               ★
             </button>
           ))}
-          <span className="text-sm font-bold text-muted-foreground ml-2">{rating}/5 sao</span>
+
+          <span className="ml-2 rounded-md bg-elevated px-2.5 py-1 text-sm font-semibold text-text-secondary">
+            {rating}/5 sao
+          </span>
         </div>
       </div>
 
+      {/* Comment */}
       <div>
-        <label className="mb-1 block text-sm font-semibold">
+        <label className="mb-2 block text-sm font-semibold text-text-primary">
           Nhận xét & Góp ý
         </label>
+
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          className="w-full rounded-md border border-input bg-background p-2.5 text-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
-          rows={3}
+          className="
+            w-full resize-none rounded-lg
+            border border-border
+            bg-surface
+            px-3 py-2.5
+            text-sm text-text-primary
+            placeholder:text-text-muted
+            transition-colors
+            focus:border-brand-primary
+            focus:outline-none
+            focus:ring-2
+            focus:ring-brand-primary/20
+          "
+          rows={4}
           placeholder="Chia sẻ trải nghiệm của bạn về sân bóng này..."
         />
       </div>
 
+      {/* Submit */}
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-md bg-emerald-600 px-4 py-2.5 font-bold text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors cursor-pointer"
+        className="
+          w-full rounded-lg
+          bg-brand-primary
+          px-4 py-2.5
+          font-bold text-white
+          transition-all duration-200
+          hover:bg-brand-primary-hover
+          hover:shadow-md
+          disabled:cursor-not-allowed
+          disabled:opacity-50
+        "
       >
         {loading ? "Đang gửi..." : "Gửi đánh giá →"}
       </button>

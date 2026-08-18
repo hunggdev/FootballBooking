@@ -6,11 +6,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Lock, Unlock, KeyRound } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+import {
+  Lock,
+  Unlock,
+  KeyRound,
+} from "lucide-react";
+
 import type { Account } from "@/features/admin-customer/types";
 
 const statusLabel: Record<Account["status"], string> = {
@@ -54,6 +61,10 @@ function formatDateTime(iso?: string | null) {
   return new Date(iso).toLocaleString("vi-VN");
 }
 
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("vi-VN");
+}
+
 function getInitials(fullName: string) {
   const words = fullName.trim().split(/\s+/);
 
@@ -69,139 +80,415 @@ function getInitials(fullName: string) {
 
 export function AccountsTable() {
   return (
-    <Card className="overflow-hidden rounded-xl border border-border bg-surface">
-      <CardContent className="p-0">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border bg-elevated hover:bg-elevated">
-                <TableHead className="h-12 px-4 text-xs font-semibold uppercase tracking-wide text-text-secondary">
-                  Họ và tên
-                </TableHead>
+      <Card
+        className="
+          overflow-hidden
+          border-border/50
+          bg-surface
+          shadow-lg
+          shadow-black/10
+        "
+      >
+        <CardContent className="p-0">
+          <div className="w-full overflow-x-auto">
+            <Table>
 
-                <TableHead className="h-12 px-4 text-xs font-semibold uppercase tracking-wide text-text-secondary">
-                  Email
-                </TableHead>
-
-                <TableHead className="h-12 px-4 text-xs font-semibold uppercase tracking-wide text-text-secondary">
-                  Đăng nhập gần nhất
-                </TableHead>
-
-                <TableHead className="h-12 px-4 text-xs font-semibold uppercase tracking-wide text-text-secondary">
-                  Ngày tạo
-                </TableHead>
-
-                <TableHead className="h-12 px-4 text-xs font-semibold uppercase tracking-wide text-text-secondary">
-                  Trạng thái tài khoản
-                </TableHead>
-
-                <TableHead className="h-12 px-4 text-right text-xs font-semibold uppercase tracking-wide text-text-secondary">
-                  Thao tác
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
-              {accounts.map((account) => {
-                const isLocked = account.status === "locked";
-
-                return (
-                  <TableRow
-                    key={account.accountId}
-                    className="border-border bg-surface transition-colors hover:bg-surface-hover"
+              {/* ================= HEADER ================= */}
+              <TableHeader>
+                <TableRow
+                  className="
+                    border-border/60
+                    bg-elevated/30
+                    hover:bg-elevated/30
+                  "
+                >
+                  <TableHead
+                    className="
+                      w-16
+                      text-center
+                      text-[11px]
+                      font-bold
+                      uppercase
+                      tracking-wider
+                      text-text-muted
+                    "
                   >
-                    {/* Họ tên */}
-                    <TableCell className="px-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9 border border-border bg-elevated">
-                          <AvatarFallback className="bg-brand-primary/10 text-sm font-semibold text-brand-primary">
-                            {getInitials(account.fullName)}
-                          </AvatarFallback>
-                        </Avatar>
+                    STT
+                  </TableHead>
 
-                        <div className="min-w-0">
-                          <p className="truncate font-medium text-text-primary">
-                            {account.fullName}
-                          </p>
+                  <TableHead
+                    className="
+                      text-[11px]
+                      font-bold
+                      uppercase
+                      tracking-wider
+                      text-text-muted
+                    "
+                  >
+                    Họ và tên
+                  </TableHead>
 
-                          <p className="text-xs text-text-muted">
-                            {account.role === "customer"
-                              ? "Khách hàng"
-                              : "Quản trị viên"}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
+                  <TableHead
+                    className="
+                      text-[11px]
+                      font-bold
+                      uppercase
+                      tracking-wider
+                      text-text-muted
+                    "
+                  >
+                    Email
+                  </TableHead>
 
-                    {/* Email */}
-                    <TableCell className="px-4 py-4 text-sm text-text-secondary">
-                      {account.email}
-                    </TableCell>
+                  <TableHead
+                    className="
+                      text-[11px]
+                      font-bold
+                      uppercase
+                      tracking-wider
+                      text-text-muted
+                    "
+                  >
+                    Đăng nhập gần nhất
+                  </TableHead>
 
-                    {/* Đăng nhập */}
-                    <TableCell className="px-4 py-4 text-sm text-text-secondary">
-                      {formatDateTime(account.lastLoginAt)}
-                    </TableCell>
+                  <TableHead
+                    className="
+                      text-[11px]
+                      font-bold
+                      uppercase
+                      tracking-wider
+                      text-text-muted
+                    "
+                  >
+                    Ngày tạo
+                  </TableHead>
 
-                    {/* Ngày tạo */}
-                    <TableCell className="px-4 py-4 text-sm text-text-secondary">
-                      {new Date(account.createdAt).toLocaleDateString("vi-VN")}
-                    </TableCell>
+                  <TableHead
+                    className="
+                      text-center
+                      text-[11px]
+                      font-bold
+                      uppercase
+                      tracking-wider
+                      text-text-muted
+                    "
+                  >
+                    Trạng thái
+                  </TableHead>
 
-                    {/* Trạng thái */}
-                    <TableCell className="px-4 py-4">
-                      {isLocked ? (
-                        <Badge className="border border-status-danger/30 bg-status-danger-bg text-status-danger hover:bg-status-danger-bg">
-                          <Lock className="mr-1.5 h-3 w-3" />
-                          {statusLabel[account.status]}
-                        </Badge>
-                      ) : (
-                        <Badge className="border border-status-success/30 bg-status-success-bg text-status-success hover:bg-status-success-bg">
-                          <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-status-success" />
-                          {statusLabel[account.status]}
-                        </Badge>
-                      )}
-                    </TableCell>
+                  <TableHead
+                    className="
+                      pr-6
+                      text-right
+                      text-[11px]
+                      font-bold
+                      uppercase
+                      tracking-wider
+                      text-text-muted
+                    "
+                  >
+                    Hành động
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
 
-                    {/* Thao tác */}
-                    <TableCell className="px-4 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-border bg-elevated text-text-secondary hover:border-brand-accent hover:bg-brand-accent/10 hover:text-brand-accent"
-                        >
-                          <KeyRound className="mr-2 h-4 w-4" />
-                          Đặt lại mật khẩu
-                        </Button>
-
-                        {isLocked ? (
-                          <Button
-                            size="sm"
-                            className="border-transparent bg-brand-primary font-semibold text-white hover:bg-brand-primary-hover"
-                          >
-                            <Unlock className="mr-2 h-4 w-4" />
-                            Mở khóa
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-status-danger/40 bg-status-danger-bg text-status-danger hover:bg-status-danger hover:text-white"
-                          >
-                            <Lock className="mr-2 h-4 w-4" />
-                            Khóa
-                          </Button>
-                        )}
-                      </div>
+              {/* ================= BODY ================= */}
+              <TableBody>
+                {accounts.length === 0 ? (
+                  <TableRow
+                    className="
+                      border-border/60
+                      hover:bg-transparent
+                    "
+                  >
+                    <TableCell
+                      colSpan={7}
+                      className="
+                        py-12
+                        text-center
+                        text-sm
+                        text-text-muted
+                      "
+                    >
+                      Không tìm thấy tài khoản nào.
                     </TableCell>
                   </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+                ) : (
+                  accounts.map((account, index) => {
+                    const isLocked =
+                      account.status === "locked";
+
+                    return (
+                      <TableRow
+                        key={account.accountId}
+                        className="
+                          group
+                          border-border/50
+                          transition-colors
+                          duration-200
+                          hover:bg-surface-hover/60
+                        "
+                      >
+
+                        {/* ================= STT ================= */}
+                        <TableCell
+                          className="
+                            text-center
+                            text-xs
+                            font-medium
+                            text-text-muted
+                          "
+                        >
+                          {index + 1}
+                        </TableCell>
+
+                        {/* ================= HỌ VÀ TÊN ================= */}
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+
+                            <Avatar
+                              className="
+                                h-9
+                                w-9
+                                shrink-0
+                                border
+                                border-brand-primary/30
+                                bg-brand-primary/10
+                              "
+                            >
+                              <AvatarFallback
+                                className="
+                                  bg-brand-primary/10
+                                  text-sm
+                                  font-semibold
+                                  text-brand-primary
+                                "
+                              >
+                                {getInitials(account.fullName)}
+                              </AvatarFallback>
+                            </Avatar>
+
+                            <div className="min-w-0">
+                              <p
+                                className="
+                                  truncate
+                                  text-sm
+                                  font-semibold
+                                  text-text-primary
+                                  transition-colors
+                                  duration-200
+                                  group-hover:text-white
+                                "
+                              >
+                                {account.fullName}
+                              </p>
+
+                              <p className="text-xs text-text-muted">
+                                {account.role === "customer"
+                                  ? "Khách hàng"
+                                  : "Quản trị viên"}
+                              </p>
+                            </div>
+
+                          </div>
+                        </TableCell>
+
+                        {/* ================= EMAIL ================= */}
+                        <TableCell
+                          className="
+                            text-sm
+                            text-text-secondary
+                          "
+                        >
+                          {account.email}
+                        </TableCell>
+
+                        {/* ================= ĐĂNG NHẬP ================= */}
+                        <TableCell
+                          className="
+                            text-sm
+                            text-text-secondary
+                          "
+                        >
+                          {formatDateTime(account.lastLoginAt)}
+                        </TableCell>
+
+                        {/* ================= NGÀY TẠO ================= */}
+                        <TableCell
+                          className="
+                            text-sm
+                            text-text-secondary
+                          "
+                        >
+                          {formatDate(account.createdAt)}
+                        </TableCell>
+
+                        {/* ================= TRẠNG THÁI ================= */}
+                        <TableCell className="text-center">
+                          {isLocked ? (
+                            <Badge
+                              variant="outline"
+                              className="
+                                border-status-danger/20
+                                bg-status-danger-bg
+                                text-status-danger
+                              "
+                            >
+                              <Lock
+                                className="
+                                  mr-1.5
+                                  h-3
+                                  w-3
+                                "
+                              />
+
+                              {statusLabel[account.status]}
+                            </Badge>
+                          ) : (
+                            <Badge
+                              variant="outline"
+                              className="
+                                border-status-success/20
+                                bg-status-success-bg
+                                text-status-success
+                              "
+                            >
+                              <span
+                                className="
+                                  mr-1.5
+                                  h-1.5
+                                  w-1.5
+                                  rounded-full
+                                  bg-status-success
+                                "
+                              />
+
+                              {statusLabel[account.status]}
+                            </Badge>
+                          )}
+                        </TableCell>
+
+                        {/* ================= HÀNH ĐỘNG ================= */}
+                        <TableCell className="pr-6">
+                          <div
+                            className="
+                              flex
+                              items-center
+                              justify-end
+                              gap-2
+                            "
+                          >
+
+                            {/* ĐẶT LẠI MẬT KHẨU */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="
+                                h-8
+                                border-border
+                                bg-transparent
+                                px-2.5
+                                text-xs
+                                font-medium
+                                text-text-secondary
+                                shadow-none
+                                transition-all
+                                duration-200
+                                hover:-translate-y-px
+                                hover:border-brand-accent/40
+                                hover:bg-brand-accent/10
+                                hover:text-brand-accent
+                              "
+                            >
+                              <KeyRound
+                                className="
+                                  mr-1.5
+                                  h-3.5
+                                  w-3.5
+                                "
+                              />
+
+                              Đặt lại mật khẩu
+                            </Button>
+
+                            {/* MỞ KHÓA */}
+                            {isLocked ? (
+                              <Button
+                                size="sm"
+                                className="
+                                  h-8
+                                  border
+                                  border-brand-primary/20
+                                  bg-brand-primary/10
+                                  px-2.5
+                                  text-xs
+                                  font-medium
+                                  text-brand-primary
+                                  shadow-none
+                                  transition-all
+                                  duration-200
+                                  hover:-translate-y-px
+                                  hover:border-brand-primary/30
+                                  hover:bg-brand-primary/20
+                                "
+                              >
+                                <Unlock
+                                  className="
+                                    mr-1.5
+                                    h-3.5
+                                    w-3.5
+                                  "
+                                />
+
+                                Mở khóa
+                              </Button>
+                            ) : (
+                              /* KHÓA */
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="
+                                  h-8
+                                  border
+                                  border-status-danger/20
+                                  bg-status-danger-bg
+                                  px-2.5
+                                  text-xs
+                                  font-medium
+                                  text-status-danger
+                                  shadow-none
+                                  transition-all
+                                  duration-200
+                                  hover:-translate-y-px
+                                  hover:border-status-danger/30
+                                  hover:bg-status-danger/20
+                                "
+                              >
+                                <Lock
+                                  className="
+                                    mr-1.5
+                                    h-3.5
+                                    w-3.5
+                                  "
+                                />
+
+                                Khóa
+                              </Button>
+                            )}
+
+                          </div>
+                        </TableCell>
+
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
   );
 }

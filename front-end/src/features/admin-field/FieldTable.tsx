@@ -48,8 +48,19 @@ export function FieldsTable({
   const currentFields = fields.slice(startIndex, endIndex);
 
   return (
-    
-    <Card className="mt-5 overflow-hidden border-border/50 bg-surface shadow-lg shadow-black/10">
+    <div
+      className="
+        mt-5
+        rounded-xl
+        bg-[#2d3a4f]
+        p-px
+        transition-all
+        duration-300
+        hover:bg-[image:var(--token-gradient-brand)]
+      "
+    >
+      
+    <Card className="overflow-hidden border-border/50 bg-surface shadow-lg shadow-black/10">
       <CardContent className="p-0">
         <Table>
           {/* ================= HEADER ================= */}
@@ -237,9 +248,9 @@ export function FieldsTable({
                         transition-all
                         duration-200
                         hover:-translate-y-px
-                        hover:border-brand-primary/40
-                        hover:bg-brand-primary/10
-                        hover:text-brand-primary
+                        hover:border-brand-accent/40
+                        hover:bg-brand-accent/10
+                        hover:text-brand-accent
                       "
                     >
                       <Pencil className="mr-1.5 h-3.5 w-3.5" />
@@ -278,5 +289,6 @@ export function FieldsTable({
         </Table>
       </CardContent>
     </Card>
+    </div>
   );
 }

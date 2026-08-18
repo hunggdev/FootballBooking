@@ -124,7 +124,7 @@ export function CustomerFormDialog({
     if (!result.success) {
       setError(
         result.error.issues[0]?.message ??
-          "Dữ liệu không hợp lệ."
+        "Dữ liệu không hợp lệ."
       );
       return;
     }
@@ -185,7 +185,7 @@ export function CustomerFormDialog({
         "
       >
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-text-primary">
+          <DialogTitle className="text-xl font-bold text-brand-primary">
             {isEditing
               ? "Sửa thông tin khách hàng"
               : "Thêm khách hàng"}
@@ -446,7 +446,7 @@ export function CustomerFormDialog({
         {/* =========================
             FOOTER
         ========================== */}
-        <DialogFooter className="gap-2">
+        <DialogFooter className="border-border bg-elevated">
           <Button
             type="button"
             variant="outline"
@@ -457,10 +457,13 @@ export function CustomerFormDialog({
             disabled={isSubmitting}
             className="
               border-border
-              bg-surface
+              bg-transparent
               text-text-secondary
-              hover:bg-surface-hover
-              hover:text-text-primary
+              transition-all
+              duration-200
+              hover:border-brand-accent/40
+              hover:bg-brand-accent/10
+              hover:text-brand-accent
             "
           >
             Hủy
@@ -471,12 +474,8 @@ export function CustomerFormDialog({
             onClick={handleSubmit}
             disabled={isSubmitting}
             className="
-              border-transparent
-              bg-brand-accent
-              font-semibold
-              text-brand-accent-foreground
-              hover:bg-brand-accent-hover
-            "
+              border-transparent bg-brand-accent font-semibold text-accent-foreground hover:bg-brand-accent-hover"
+
           >
             {isSubmitting
               ? "Đang lưu..."
