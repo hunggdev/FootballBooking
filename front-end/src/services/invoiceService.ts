@@ -1,9 +1,9 @@
 import api from "@/lib/api";
-import type { Invoice } from "@/types/invoice";
+import type { Invoice, Invoices } from "@/types/invoice";
 
 export const invoiceService = {
   // Lấy danh sách hóa đơn (admin)
-  getInvoices: async (): Promise<Invoice[]> => {
+  getInvoices: async (): Promise<Invoices[]> => {
     const res = await api.get("/invoices");
     return res.data.invoices;
   },

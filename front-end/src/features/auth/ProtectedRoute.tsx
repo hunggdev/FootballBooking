@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "@/stores/useAuthStore";
 
-export default function ProtectedRoute() {
+interface ProtectedRouteProps {
+  allowedRoles?: string[];
+}
+
+export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   const { loading, refresh, fetchMe } = useAuthStore();
   const [starting, setStarting] = useState(true);
 
@@ -37,8 +41,16 @@ export default function ProtectedRoute() {
     );
   }
 
-  if (!useAuthStore.getState().accessToken) {
+  const token = useAuthStore.getState().accessToken;
+  const user = useAuthStore.getState().user;
+
+  if (!token) {
     return <Navigate to="/signin" replace />;
+  }
+
+  if (allowedRoles && user && !allowedRoles.map((r) => r.toLowerCase()).includes(user.role?.toLowerCase() || "")) {
+    const redirectPath = user.role?.toLowerCase() === "admin" ? "/admin" : "/user";
+    return <Navigate to={redirectPath} replace />;
   }
 
   return <Outlet />;

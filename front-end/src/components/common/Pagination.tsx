@@ -25,7 +25,7 @@ export function Pagination({
     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t">
       {totalItems && startItem && endItem ? (
         <p className="text-xs text-muted-foreground">
-          Đang hiển thị <span className="font-semibold text-foreground">{startItem} - {endItem}</span> trên tổng số <span className="font-semibold text-foreground">{totalItems}</span> sân
+          Đang hiển thị <span className="font-semibold text-foreground">{startItem} - {endItem}</span> trên tổng số <span className="font-semibold text-foreground">{totalItems}</span>
         </p>
       ) : (
         <p className="text-xs text-muted-foreground">

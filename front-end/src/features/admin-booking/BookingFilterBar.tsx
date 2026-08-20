@@ -33,7 +33,6 @@ export function BookingFilterBar({
           onChange={(e) => onSearchChange(e.target.value)}
           className="w-64 border"
         />
-
         <Select
           value={status}
           onValueChange={(value) =>

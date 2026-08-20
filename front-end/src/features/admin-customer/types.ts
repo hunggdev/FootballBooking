@@ -85,7 +85,7 @@ export interface CustomerBookingHistoryRow {
   fieldName: string;
   dateTime: string;
   amount: number;
-  status: "booked" | "held" | "pending-confirm" | "paid" | "cancelled";
+  status: "COMPLETED" | "CANCELLED" | "PENDING" | "CONFIRMED";
 }
 
 export interface Account {

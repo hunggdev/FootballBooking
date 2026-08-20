@@ -7,9 +7,12 @@ import { Button } from "@/components/ui/button";
 import { InvoiceTable } from "./InvoiceTable";
 import { InvoiceDetailDialog } from "./InvoiceDetailDialog";
 import { GenerateInvoiceDialog } from "./GenerateInvoiceDialog";
+import { Pagination } from "@/components/common/Pagination";
+
+const PAGE_SIZE = 10;
 
 import { useInvoices, useGenerateInvoice } from "@/stores/useInvoiceStore";
-import type { Invoice } from "@/types/invoice";
+import type { Invoice, Invoices } from "@/types/invoice";
 
 interface ErrorResponse {
   message?: string;
@@ -21,25 +24,32 @@ function getErrorMessage(error: unknown, fallback: string): string {
 }
 
 export function ManageInvoice() {
-  const { data: invoices = [], isLoading, error } = useInvoices();
+  const { data: invoices, isLoading, error } = useInvoices();
   const generateInvoice = useGenerateInvoice();
+
 
   const [search, setSearch] = useState("");
   const [detailOpen, setDetailOpen] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoices | null>(null);
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
 
   const filteredInvoices = useMemo(() => {
     const keyword = search.trim().toLowerCase();
     if (!keyword) return invoices;
     return invoices.filter(
-      (invoice) =>
-        invoice.invoiceId.toString().includes(keyword) ||
-        invoice.bookingId.toString().includes(keyword) ||
-        (invoice.user?.fullName ?? "").toLowerCase().includes(keyword)
+      (i) =>
+        i.invoice.invoiceId.toString().includes(keyword) ||
+        i.invoice.bookingId.toString().includes(keyword) ||
+        i.user.fullName.toLowerCase().includes(keyword)
     );
   }, [invoices, search]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredInvoices?.length / PAGE_SIZE));
+    
+    
 
   const handleGenerate = (bookingId: number) => {
     setGenerateError(null);
@@ -59,6 +69,7 @@ export function ManageInvoice() {
       <div className="p-8 text-red-500">Không thể tải danh sách hóa đơn.</div>
     );
   }
+
 
   return (
     <>
@@ -80,15 +91,21 @@ export function ManageInvoice() {
         >
           Xuất hóa đơn
         </Button>
-      </div>
+      </div> 
+
 
       <InvoiceTable
-        invoices={filteredInvoices}
+        invoices={filteredInvoices || []}
         onView={(invoice) => {
           setSelectedInvoice(invoice);
           setDetailOpen(true);
         }}
+        currentPage={currentPage} 
+        pageSize={PAGE_SIZE}
       />
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={invoices?.length} pageSize={PAGE_SIZE} />
+
 
       <InvoiceDetailDialog
         invoice={selectedInvoice}
@@ -96,13 +113,13 @@ export function ManageInvoice() {
         onOpenChange={setDetailOpen}
       />
 
-      <GenerateInvoiceDialog
+      {/* <GenerateInvoiceDialog
         open={generateOpen}
         onOpenChange={setGenerateOpen}
         onSubmit={handleGenerate}
         isSubmitting={generateInvoice.isPending}
         serverError={generateError}
-      />
+      /> */}
     </>
   );
 }

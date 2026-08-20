@@ -1,5 +1,6 @@
 import { prisma } from "../config/database.js";
 import bcrypt from "bcrypt";
+import { createNotification } from "../libs/notifications.js";
 
 const ACCESS_TOKEN_TTL = 1 * 24 * 60 * 60 * 1000;
 const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000; 
@@ -85,6 +86,7 @@ export const getMatchById = async (req, res) => {
 //Tạo trận đấu
 export const createMatch = async (req, res) => {
   try {
+    const io = req.app.get("io");
     const userId = req.user.userId;
     const {
       minAge,
@@ -109,6 +111,18 @@ export const createMatch = async (req, res) => {
             status: "OPEN",
         }
     });
+
+    await createNotification({
+      recipientId: 1,
+      actorId: userId,
+      type: "NEW_MATCH",
+      title: "Kèo đấu mới",
+      message: `${req.user.fullName} vừa tạo kèo đấu`,
+      entityType: "MATCH",
+      entityId: newMatch.matchId,
+    }).then(() =>{
+      io.to("user:1").emit("user:notification", {userId: 1});
+    })
 
     return res.status(200).json({message: "Tạo trận đấu thành công", match: newMatch});
     } catch (error) {
@@ -135,7 +149,7 @@ export const updateMatch = async (req, res) => {
     const match = await prisma.match.findFirst({
       where: {
         matchId,
-        userId,
+        // userId,
       },
     });
 
@@ -148,7 +162,7 @@ export const updateMatch = async (req, res) => {
     const updatedMatch = await prisma.match.update({
       where: {
         matchId,
-        userId,
+        // userId,
       },
       data: {
         minAge: minAge,
@@ -177,11 +191,12 @@ export const updateMatch = async (req, res) => {
 // Deleted trận đấu
 export const deleteMatch = async (req, res) => {
   try {
+    const io = req.app.get("io");
     const matchId = Number(req.params.id);
     const userId = req.user.userId;
 
     const match = await prisma.match.findFirst({
-      where: { matchId, userId },
+      where: { matchId },
     });
 
     if (!match) {
@@ -191,11 +206,24 @@ export const deleteMatch = async (req, res) => {
     }
 
     const updatedMatch = await prisma.match.update({
-      where: { matchId, userId },
+      where: { matchId },
       data: {
         status: "CANCELLED",
       },
     });
+
+    await createNotification({
+      recipientId: 1,
+      actorId: userId,
+      type: "MATCH_CANCELLED",
+      title: "Hủy kèo đấu",
+      message: `${req.user.fullName} vừa hủy kèo đấu`,
+      entityType: "MATCH",
+      entityId: matchId,
+    }).then(() =>{
+      io.to("user:1").emit("user:notification", {userId: 1});
+    })
+
 
     return res.status(200).json({
       message: "Xóa trận đấu thành công",
@@ -281,6 +309,7 @@ export const statsMatch = async (req, res) => {
 
 export const joinMatch = async (req, res) => {
   try {
+    const io = req.app.get("io");
     const matchId = Number(req.params.id);
     const userId = req.user.userId;
 
@@ -323,6 +352,19 @@ export const joinMatch = async (req, res) => {
           status: "MATCHED",
         },
       });
+    
+    await createNotification({
+      recipientId: match.userId,
+      actorId: userId,
+      type: "NEW_MATCH", 
+      title: "Tham gia kèo đấu",
+      message: `${req.user.fullName} vừa tham gia trận đấu của bạn`,
+      entityType: "MATCH",
+      entityId: matchId,
+    }).then(() =>{
+      io.to(`user:${match.userId}`).emit("user:notification", {userId: match.userId});
+    })
+
 
     return res.status(200).json({
       message: "Tham gia trận đấu thành công",

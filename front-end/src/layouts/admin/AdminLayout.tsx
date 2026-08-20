@@ -15,7 +15,7 @@ export default function AdminLayout({
     <div className="flex min-h-screen ">
       <Sidebar activeId={activeNavId} />
 
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col ml-64">
         <AdminTopHeader />
 
         <main className="flex-1 p-6">

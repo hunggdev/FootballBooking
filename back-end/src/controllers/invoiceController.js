@@ -99,6 +99,18 @@ export const getInvoices = async (req, res) => {
         },
       },
       select: {
+        field: true,
+        bookingId: true,
+        bookingSlots: {
+          include: {
+            fieldSlot: true,
+          }
+        },
+        bookingServices: {
+          include: {
+            service: true,
+          }
+        },
         invoice: true,
         user: {
           select: {
@@ -113,7 +125,6 @@ export const getInvoices = async (req, res) => {
       },
     })
 
-    // console.log(invoices);
 
     return res.status(200).json({
       message: "Lấy danh sách hóa đơn thành công.",
@@ -178,3 +189,4 @@ export const getInvoiceById = async (req, res) => {
     });
   }
 };
+ 

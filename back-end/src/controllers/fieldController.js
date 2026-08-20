@@ -1,39 +1,19 @@
 import { prisma } from "../config/database.js";
-const validateField = ({ name, fieldType }) => {
-  const fieldName = (name ?? "").trim().replace(/\s+/g, " ");
-
-  if (!fieldName) {
-    return "Tên sân không được để trống";
-  }
-
-  if (!["FIVE", "SEVEN", "ELEVEN"].includes(fieldType)) {
-    return "Loại sân không hợp lệ";
-  }
-
-  return null;
-};
-
-const checkFieldConflict = async ({ fieldId, name, fieldType }) => {
-  return prisma.field.findFirst({
-    where: {
-      name: {
-        equals: name,
-        mode: "insensitive",
-      },
-      fieldType,
-
-      ...(fieldId && {
-        NOT: {
-          fieldId,
-        },
-      }),
-    },
-  });
-};
+import { validateField, checkFieldConflict } from "../utils/validateFields.js";
+import {
+  parseTimeStringToDate,
+} from "../utils/validateFieldSlots.js";
 
 export const getFields = async (req, res) => {
   try {
+    const role = req.user?.role;
     const { type } = req.query;
+
+    if (role !== "ADMIN") {
+      return res.status(403).json({
+        message: "Không có quyền truy cập",
+      });
+    }
 
     const fields = await prisma.field.findMany({
       where: type
@@ -93,8 +73,15 @@ export const getFieldById = async (req, res) => {
 
 export const createField = async (req, res) => {
   try {
-    const { name, description = null, image = null, fieldType } = req.body;
+    const {
+      name,
+      description = null,
+      image = null,
+      fieldType,
+      selectedFieldSlots,
+    } = req.body;
 
+    
     const error = validateField({
       name,
       fieldType,
@@ -127,6 +114,20 @@ export const createField = async (req, res) => {
         fieldType,
       },
     });
+
+    const data = selectedFieldSlots.map((slot) => ({
+      fieldId: field.fieldId,
+      starttime: parseTimeStringToDate(slot.starttime),
+      endtime: parseTimeStringToDate(slot.endtime),
+      price: Number(slot.price),
+      status: slot.status,
+    }));
+
+    const result = await prisma.fieldSlot.createMany({
+      data: data,
+      skipDuplicates: true, // Tùy chọn: Bỏ qua nếu bị trùng lặp trường Unique (ví dụ trùng email)
+    });
+
 
     return res.status(201).json({
       message: "Tạo sân thành công",

@@ -1,6 +1,6 @@
 // src/pages/admin/StatsPage.tsx
-import StatsOverview from "@/features/admin-stats/StatsOverview";
+import { ManageStats } from "@/features/admin-stats1/ManageStats";
 
 export default function StatsPage() {
-  return <StatsOverview />;
+  return <ManageStats />;
 }

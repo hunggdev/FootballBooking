@@ -6,13 +6,17 @@ import {
   useCancelBooking,
 } from "@/stores/useBookingStore";
 import type { Booking, CreateBookingPayload, UpdateBookingPayload } from "@/types/booking";
+import { PageHeader } from "@/layouts/admin/PageHeader";
 
 import { BookingTable } from "./BookingTable";
 import { BookingFormDialog } from "./BookingFormDialog";
 import { BookingDetailDialog } from "./BookingDetaiDialog";
 import { BookingFilterBar } from "./BookingFilterBar";
+import { useNavigate } from "react-router";
 
 export function ManageBooking() {
+  const navigate = useNavigate();
+
   const { data: bookings = [], isLoading } = useBookings();
   const createMutation = useCreateBooking();
   const updateMutation = useUpdateBooking();
@@ -50,7 +54,7 @@ export function ManageBooking() {
       search === "" ||
       b.bookingId.toString().includes(search) ||
       (b.user?.fullName ?? "").toLowerCase().includes(search.toLowerCase()) || 
-      (b.fieldSlot?.field?.name ?? "").toLowerCase().includes(search.toLowerCase()); 
+      (b?.field?.name ?? "").toLowerCase().includes(search.toLowerCase()); 
     const matchStatus = status === "all" || b.status === status;
     return matchSearch && matchStatus;
   });
@@ -58,14 +62,19 @@ export function ManageBooking() {
 
   return (
     <div className="space-y-4">
+      <PageHeader
+        title="Quản lý đặt sân"
+        subtitle="Quản lý các lượt đặt sân trong hệ thống"
+      />
+      
+
       <BookingFilterBar
         search={search}
         onSearchChange={setSearch}
         status={status}
         onStatusChange={setStatus}
         onClick={() => {
-          setSelectedBooking(null);
-          setOpenForm(true);
+          navigate("/user/booking");
         }}
       />
 

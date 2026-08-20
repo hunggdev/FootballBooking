@@ -17,7 +17,7 @@ import ManageMatchPage from "@/pages/admin/ManageMatchPage";
 
 export const adminRoutes: RouteObject = {
   path: "/admin",
-  element: <ProtectedRoute />,
+  element: <ProtectedRoute allowedRoles={["admin"]} />,
   children: [
     {
       element: <AdminLayout activeNavId="dashboard" />,

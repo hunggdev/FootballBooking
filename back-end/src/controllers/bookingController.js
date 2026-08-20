@@ -9,10 +9,10 @@ import {
   makeKey,
   getUserHolds,
   addUserHoldIndex,
-  removeUserHoldIndex
+  removeUserHoldIndex,
 } from "../libs/redisHold.js";
 import { redis } from "../config/redis.js";
-
+import { createNotification } from "../libs/notifications.js";
 
 export const getSlots = async (req, res) => {
   try {
@@ -116,7 +116,10 @@ export const getSlots = async (req, res) => {
         expiresAt = hold.expiresAt;
         // ĐỔI: không lấy thẳng hold.ttl từ Redis -> luôn derive lại từ expiresAt
         // tại thời điểm response, tránh lệch đơn vị/độ trễ (bug 9999 phút trước đó).
-        ttl = Math.max(0, Math.floor((new Date(hold.expiresAt).getTime() - now) / 1000));
+        ttl = Math.max(
+          0,
+          Math.floor((new Date(hold.expiresAt).getTime() - now) / 1000),
+        );
 
         if (Number(hold.userId) === Number(currentUserId)) {
           isMyHold = true;
@@ -124,7 +127,11 @@ export const getSlots = async (req, res) => {
       }
 
       return {
-        holdId: makeKey(fieldId, slot.slotId, bookingDate.toISOString().split("T")[0]),
+        holdId: makeKey(
+          fieldId,
+          slot.slotId,
+          bookingDate.toISOString().split("T")[0],
+        ),
         bookingDate: bookingDate.toISOString().split("T")[0],
         slotId: slot.slotId,
         starttime: slot.starttime,
@@ -188,7 +195,13 @@ export const getMyHolds = async (req, res) => {
       }),
       prisma.fieldSlot.findMany({
         where: { slotId: { in: slotIds } },
-        select: { slotId: true, fieldId: true, starttime: true, endtime: true, price: true },
+        select: {
+          slotId: true,
+          fieldId: true,
+          starttime: true,
+          endtime: true,
+          price: true,
+        },
       }),
     ]);
 
@@ -284,7 +297,9 @@ export const holdSlot = async (req, res) => {
     const currentUserId = await getHold(fieldId, slotId, dateKey);
     if (currentUserId) {
       if (currentUserId !== String(userId)) {
-        return res.status(409).json({ message: "Khung giờ đang được người khác giữ." });
+        return res
+          .status(409)
+          .json({ message: "Khung giờ đang được người khác giữ." });
       }
 
       // ĐỔI: trả expiresAt/ttl thật, không để FE hiểu nhầm là chưa có dữ liệu.
@@ -293,13 +308,24 @@ export const holdSlot = async (req, res) => {
 
       return res.status(200).json({
         message: "Đang giữ chỗ.",
-        hold: { holdId, userId, bookingDate: dateKey, fieldId, slotId, status: "HOLD", expiresAt, ttl },
+        hold: {
+          holdId,
+          userId,
+          bookingDate: dateKey,
+          fieldId,
+          slotId,
+          status: "HOLD",
+          expiresAt,
+          ttl,
+        },
       });
     }
 
     const success = await setHold(fieldId, slotId, dateKey, userId);
     if (!success) {
-      return res.status(409).json({ message: "Khung giờ đang được người khác giữ." });
+      return res
+        .status(409)
+        .json({ message: "Khung giờ đang được người khác giữ." });
     }
 
     const ttl = await getHoldTTL(fieldId, slotId, dateKey);
@@ -318,12 +344,28 @@ export const holdSlot = async (req, res) => {
       expiresAt,
       ttl,
     });
-// .to(`user:${userId}`)
-    io.emit("user:cart_updated", {fieldId, slotId, bookingDate: dateKey, status: "HOLD", expiresAt, ttl });
+    // .to(`user:${userId}`)
+    io.emit("user:cart_updated", {
+      fieldId,
+      slotId,
+      bookingDate: dateKey,
+      status: "HOLD",
+      expiresAt,
+      ttl,
+    });
 
     return res.status(201).json({
       message: "Giữ chỗ thành công.",
-      hold: { holdId, expiresAt, userId, bookingDate: dateKey, fieldId, slotId, status: "HOLD", ttl },
+      hold: {
+        holdId,
+        expiresAt,
+        userId,
+        bookingDate: dateKey,
+        fieldId,
+        slotId,
+        status: "HOLD",
+        ttl,
+      },
     });
   } catch (error) {
     console.error(error);
@@ -335,7 +377,7 @@ export const deleteSlotHold = async (req, res) => {
   try {
     const io = req.app.get("io");
     const userId = req.user.userId;
-    const { slotId, bookingDate,fieldId } = req.body;
+    const { slotId, bookingDate, fieldId } = req.body;
 
     if (!slotId || !bookingDate || !fieldId) {
       return res.status(400).json({
@@ -358,7 +400,7 @@ export const deleteSlotHold = async (req, res) => {
         message: "Không tìm thấy hold hoặc bạn không có quyền hủy.",
       });
     }
-    
+
     const deleted = await deleteHold(fieldId, slotId, dateKey, userId);
     if (!deleted) {
       return res.status(403).json({
@@ -366,7 +408,7 @@ export const deleteSlotHold = async (req, res) => {
       });
     }
 
-    const holdId = makeKey(fieldId, slotId, dateKey)
+    const holdId = makeKey(fieldId, slotId, dateKey);
 
     removeUserHoldIndex(userId, makeKey(fieldId, slotId, dateKey));
 
@@ -380,8 +422,15 @@ export const deleteSlotHold = async (req, res) => {
       expiresAt: null,
       ttl: null,
     });
-// .to(`user:${userId}`)
-    io.emit("user:cart_updated", {fieldId, slotId, bookingDate: dateKey, status: "AVAILABLE", expiresAt: null, ttl: null });
+    // .to(`user:${userId}`)
+    io.emit("user:cart_updated", {
+      fieldId,
+      slotId,
+      bookingDate: dateKey,
+      status: "AVAILABLE",
+      expiresAt: null,
+      ttl: null,
+    });
 
     return res.status(200).json({
       message: "Hủy giữ chỗ thành công.",
@@ -410,9 +459,13 @@ export const createBooking = async (req, res) => {
 
     for (const s of slots) {
       if (!s.slotId || !s.bookingDate || !s.fieldId) {
-        return res.status(400).json({ message: "Thông tin khung giờ không hợp lệ." });
+        return res
+          .status(400)
+          .json({ message: "Thông tin khung giờ không hợp lệ." });
       }
     }
+
+    const fieldId = slots[0]?.fieldId;
 
     const normalizedSlots = slots.map((s) => ({
       fieldId: Number(s.fieldId),
@@ -445,13 +498,17 @@ export const createBooking = async (req, res) => {
       for (const s of normalizedSlots) {
         const fs = slotMap.get(s.slotId);
         if (!fs) throw new Error(`Không tìm thấy khung giờ ${s.slotId}.`);
-        if (fs.fieldId !== s.fieldId) throw new Error(`Khung giờ ${s.slotId} không thuộc sân đã chọn.`);
+        if (fs.fieldId !== s.fieldId)
+          throw new Error(`Khung giờ ${s.slotId} không thuộc sân đã chọn.`);
       }
 
       // Chốt chặn sớm cho lỗi rõ ràng (chốt chặn cuối cùng vẫn là unique index ở DB).
       const existedBookingSlots = await tx.bookingSlot.findMany({
         where: {
-          OR: normalizedSlots.map((s) => ({ slotId: s.slotId, bookingDate: s.bookingDay })),
+          OR: normalizedSlots.map((s) => ({
+            slotId: s.slotId,
+            bookingDate: s.bookingDay,
+          })),
           booking: { status: "CONFIRMED" },
         },
       });
@@ -464,24 +521,31 @@ export const createBooking = async (req, res) => {
 
       if (Array.isArray(services) && services.length > 0) {
         for (const item of services) {
-          const s = await tx.service.findUnique({ where: { serviceId: Number(item.serviceId) } });
+          const s = await tx.service.findUnique({
+            where: { serviceId: Number(item.serviceId) },
+          });
           if (s) {
             const qty = Number(item.quantity) || 1;
             servicesTotal = servicesTotal.plus(s.price.mul(qty));
-            serviceItemsToCreate.push({ serviceId: s.serviceId, quantity: qty, price: s.price });
+            serviceItemsToCreate.push({
+              serviceId: s.serviceId,
+              quantity: qty,
+              price: s.price,
+            });
           }
         }
       }
 
       const fieldAmount = normalizedSlots.reduce(
         (sum, s) => sum.plus(slotMap.get(s.slotId).price),
-        new Prisma.Decimal(0)
+        new Prisma.Decimal(0),
       );
       const totalPrice = fieldAmount.plus(servicesTotal);
       const deposit = new Prisma.Decimal(depositAmount);
 
       const newBooking = await tx.booking.create({
         data: {
+          fieldId,
           userId,
           type,
           status: "CONFIRMED",
@@ -500,12 +564,19 @@ export const createBooking = async (req, res) => {
 
       for (const svc of serviceItemsToCreate) {
         await tx.bookingServices.create({
-          data: { bookingId: newBooking.bookingId, serviceId: svc.serviceId, quantity: svc.quantity, price: svc.price },
+          data: {
+            bookingId: newBooking.bookingId,
+            serviceId: svc.serviceId,
+            quantity: svc.quantity,
+            price: svc.price,
+          },
         });
       }
 
       const remainAmount = totalPrice.minus(deposit);
-      const invoiceStatus = remainAmount.lessThanOrEqualTo(0) ? "PAID" : "PENDING";
+      const invoiceStatus = remainAmount.lessThanOrEqualTo(0)
+        ? "PAID"
+        : "DEPOSITED";
 
       // ĐỔI: Invoice không còn field bookingId -> tạo Invoice trước, gắn ngược invoiceId vào Booking.
       const invoice = await tx.invoice.create({
@@ -515,10 +586,12 @@ export const createBooking = async (req, res) => {
           serviceAmount: servicesTotal,
           totalAmount: totalPrice,
           deposit,
-          remainAmount: remainAmount.lessThan(0) ? new Prisma.Decimal(0) : remainAmount,
+          remainAmount: remainAmount.lessThan(0)
+            ? new Prisma.Decimal(0)
+            : remainAmount,
           status: invoiceStatus,
           paymentMethod: "DEPOSIT",
-          paidAt: invoiceStatus === "PAID" ? new Date() : null,
+          paidAt: invoiceStatus === "DEPOSITED" ? new Date() : null,
         },
       });
 
@@ -530,7 +603,9 @@ export const createBooking = async (req, res) => {
       return tx.booking.findUnique({
         where: { bookingId: newBooking.bookingId },
         include: {
-          bookingSlots: { include: { fieldSlot: { include: { field: true } } } },
+          bookingSlots: {
+            include: { fieldSlot: { include: { field: true } } },
+          },
           invoice: true,
           bookingServices: { include: { service: true } },
         },
@@ -542,7 +617,10 @@ export const createBooking = async (req, res) => {
     await Promise.all(
       normalizedSlots.map(async (s) => {
         await deleteHold(s.fieldId, s.slotId, s.dateKey, userId);
-        await removeUserHoldIndex(userId, makeKey(s.fieldId, s.slotId, s.dateKey));
+        await removeUserHoldIndex(
+          userId,
+          makeKey(s.fieldId, s.slotId, s.dateKey),
+        );
 
         console.log("Xoa thanh cong");
 
@@ -557,11 +635,29 @@ export const createBooking = async (req, res) => {
           ttl: null,
         });
 
-        io.emit("user:cart_updated", {fieldId: s.fieldId, slotId: s.slotId, bookingDate: s.dateKey, status: "BOOKED", expiresAt: null, ttl: null });
-
-      })
+        io.emit("user:cart_updated", {
+          fieldId: s.fieldId,
+          slotId: s.slotId,
+          bookingDate: s.dateKey,
+          status: "BOOKED",
+          expiresAt: null,
+          ttl: null,
+        });
+      }),
     );
     // io.to(`user:${userId}`).emit("user:cart_updated", { action: "CLEAR" });
+    await createNotification({
+      recipientId: 1,
+      actorId: userId,
+      type: "NEW_BOOKING",
+      title: "Booking mới",
+      message: `${req.user.fullName} vừa đặt sân`,
+      entityType: "BOOKING",
+      entityId: booking.bookingId,
+    }).then(() =>{
+      io.to("user:1").emit("user:notification", {userId: 1});
+    })
+
 
     return res.status(201).json({ message: "Đặt sân thành công.", booking });
   } catch (error) {
@@ -578,10 +674,14 @@ export const getBookings = async (req, res) => {
         bookingSlots: { include: { fieldSlot: { include: { field: true } } } },
         invoice: true,
         review: true,
+        bookingServices: {
+          include: {
+            service: true,
+          },
+        }, 
       },
       orderBy: { createdAt: "desc" },
     });
-    console.log("getBooking ok");
     return res.status(200).json({ bookings });
   } catch (error) {
     console.error(error);
@@ -616,7 +716,7 @@ export const getBookingById = async (req, res) => {
 
 export const bookingHistory = async (req, res) => {
   try {
-    const userId = req.user.userId; 
+    const userId = req.user.userId;
 
     const bookings = await prisma.booking.findMany({
       where: { userId },
@@ -660,15 +760,20 @@ export const cancelBooking = async (req, res) => {
     const io = req.app.get("io");
     updated.bookingSlots.forEach((bs) => {
       const dateKey = bs.bookingDate.toISOString().split("T")[0];
-      io.to(`schedule:${bs.fieldSlot.fieldId}:${dateKey}`).emit("schedule:updated", {
-        fieldId: bs.fieldSlot.fieldId,
-        slotId: bs.slotId,
-        bookingDate: dateKey,
-        status: "AVAILABLE",
-      });
+      io.to(`schedule:${bs.fieldSlot.fieldId}:${dateKey}`).emit(
+        "schedule:updated",
+        {
+          fieldId: bs.fieldSlot.fieldId,
+          slotId: bs.slotId,
+          bookingDate: dateKey,
+          status: "AVAILABLE",
+        },
+      );
     });
 
-    return res.status(200).json({ message: "Hủy booking thành công.", booking: updated });
+    return res
+      .status(200)
+      .json({ message: "Hủy booking thành công.", booking: updated });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Lỗi hệ thống." });
@@ -685,6 +790,11 @@ export const updateBooking = async (req, res) => {
     if (!booking) {
       return res.status(404).json({ message: "Không tìm thấy booking." });
     }
+
+    const invoiceId = await prisma.booking.findFirst({
+      where: { bookingId },
+      select: { invoiceId: true }, 
+    });
 
     const dataToUpdate = {};
     if (status) dataToUpdate.status = status;
@@ -703,7 +813,23 @@ export const updateBooking = async (req, res) => {
       },
     });
 
-    return res.status(200).json({ message: "Cập nhật booking thành công.", booking: updated });
+    if(dataToUpdate.status === "COMPLETED"){
+      await prisma.invoice.update({
+        where: { invoiceId: invoiceId.invoiceId },
+        data: { status: "PAID" },
+      });
+    }
+    
+    if(dataToUpdate.status === "CANCELLED"){
+      await prisma.invoice.update({
+        where: { invoiceId: invoiceId.invoiceId },
+        data: { status: "CANCELLED" }, 
+      });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Cập nhật booking thành công.", booking: updated });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Lỗi hệ thống." });
@@ -716,7 +842,9 @@ export const getSlotStatusRange = async (req, res) => {
     const currentUserId = req.user?.userId;
 
     if (!fieldId || !slotId || !startDate || !endDate) {
-      return res.status(400).json({ message: "Thiếu fieldId, slotId, startDate hoặc endDate." });
+      return res
+        .status(400)
+        .json({ message: "Thiếu fieldId, slotId, startDate hoặc endDate." });
     }
 
     const start = new Date(startDate);
@@ -727,13 +855,18 @@ export const getSlotStatusRange = async (req, res) => {
     }
 
     if (start > end) {
-      return res.status(400).json({ message: "startDate phải trước hoặc bằng endDate." });
+      return res
+        .status(400)
+        .json({ message: "startDate phải trước hoặc bằng endDate." });
     }
 
     const MAX_RANGE_DAYS = 90;
-    const rangeDays = Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
+    const rangeDays =
+      Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
     if (rangeDays > MAX_RANGE_DAYS) {
-      return res.status(400).json({ message: `Khoảng ngày tối đa ${MAX_RANGE_DAYS} ngày.` });
+      return res
+        .status(400)
+        .json({ message: `Khoảng ngày tối đa ${MAX_RANGE_DAYS} ngày.` });
     }
 
     const slot = await prisma.fieldSlot.findUnique({
@@ -741,7 +874,9 @@ export const getSlotStatusRange = async (req, res) => {
     });
 
     if (!slot || slot.fieldId !== Number(fieldId)) {
-      return res.status(404).json({ message: "Slot không hợp lệ hoặc không thuộc sân này." });
+      return res
+        .status(404)
+        .json({ message: "Slot không hợp lệ hoặc không thuộc sân này." });
     }
 
     // 1. Tạo danh sách dateKeys
@@ -786,7 +921,7 @@ export const getSlotStatusRange = async (req, res) => {
     for (let i = 0; i < dateKeys.length; i++) {
       const dateKey = dateKeys[i];
       const holdUserId = redisResults[i * 2][1]; // Kết quả của get
-      const ttl = redisResults[i * 2 + 1][1];   // Kết quả của ttl
+      const ttl = redisResults[i * 2 + 1][1]; // Kết quả của ttl
 
       if (holdUserId && ttl > 0) {
         holdMap.set(dateKey, {
@@ -798,7 +933,9 @@ export const getSlotStatusRange = async (req, res) => {
     }
 
     // 5. Map ra kết quả trả về UI
-    const bookedSet = new Set(bookedSlots.map((b) => b.bookingDate.toISOString().split("T")[0]));
+    const bookedSet = new Set(
+      bookedSlots.map((b) => b.bookingDate.toISOString().split("T")[0]),
+    );
 
     const result = dateKeys.map((dateKey) => {
       let status = "AVAILABLE";
@@ -848,4 +985,3 @@ export const getSlotStatusRange = async (req, res) => {
     return res.status(500).json({ message: "Lỗi hệ thống." });
   }
 };
-

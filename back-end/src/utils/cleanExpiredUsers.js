@@ -13,8 +13,21 @@ export const cleanExpiredUsers = async () => {
             }
         });
 
+        const deletedPRSToken = await prisma.passwordResetToken.deleteMany({
+            where: {
+                used: false,
+                expiresAt: {
+                    lt: expiredTime
+                }
+            }
+        });
+
         if (deletedUsers.count > 0) {
             console.log(`🧹 [Cron Job] Đã dọn dẹp ${deletedUsers.count} tài khoản chưa kích hoạt.`);
+        }
+        
+        if (deletedPRSToken.count > 0) {
+            console.log(`🧹 [Cron Job] Đã dọn dẹp ${deletedPRSToken.count} password reset token không sử dụng.`);
         }
     } catch (error) {
         console.error('❌ [Cron Job] Lỗi khi dọn dẹp user chưa kích hoạt:', error);

@@ -18,7 +18,6 @@ type StatusFilter = "all" | "HOLD" | "CONFIRMED" | "CANCELLED";
 
 export default function BookingHistoryPage() {
   const { data: bookings = [], isLoading, error } = useBookings();
-  console.log(bookings);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<StatusFilter>("all");
   const [detailOpen, setDetailOpen] = useState(false);

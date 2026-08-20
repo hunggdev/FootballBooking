@@ -1,10 +1,13 @@
 import express from "express";
 
-import { getDashboard } from "../controllers/dashboardController.js";
-
-import { protectedRoute, requireAdmin } from "../middlewares/authMiddleware.js";
+import {
+  getOverviewStats,
+  getChartStats,
+  getRecentStats,
+} from "../controllers/dashboardController.js";
 
 const router = express.Router();
-router.get("/", protectedRoute, requireAdmin, getDashboard);
-
+router.get("/overview", getOverviewStats);
+router.get("/chart", getChartStats);
+router.get("/recent", getRecentStats);
 export default router;

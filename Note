@@ -41,3 +41,16 @@ docker exec football-redis redis-cli --scan | ForEach-Object {
 
 -> in db redis
 
+python -m uvicorn app:app --reload --port 8000
+
+const usersData = [
+  { name: "Nguyen Van A", email: "a@gmail.com", role: "USER" },
+  { name: "Tran Thi B", email: "b@gmail.com", role: "ADMIN" },
+  { name: "Le Van C", email: "c@gmail.com", role: "USER" },
+];
+
+const result = await prisma.user.createMany({
+  data: usersData,
+  skipDuplicates: true, // Tùy chọn: Bỏ qua nếu bị trùng lặp trường Unique (ví dụ trùng email)
+});
+

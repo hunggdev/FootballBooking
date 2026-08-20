@@ -42,7 +42,6 @@ export function ManageCustomer() {
   
   const customers: Customer[] = data?.customers ?? [];
   const stats: Stats = statsData?? {};
-  console.log(stats);
   
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("all");
@@ -74,7 +73,6 @@ export function ManageCustomer() {
     const totalPages = Math.max(1, Math.ceil(filteredCustomers.length / PAGE_SIZE));
     
 
-  console.log(data);
 
   const handleAdd = () => {
     setEditingCustomer(null);
@@ -199,7 +197,8 @@ export function ManageCustomer() {
         currentPage={currentPage}
         pageSize={PAGE_SIZE}
       />
-      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}  />
+      
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={customers.length} pageSize={10} />
       
       <CustomerDetailDialog
         customerId={detailCustomerId}

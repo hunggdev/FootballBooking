@@ -9,13 +9,22 @@ import { userRoutes } from "./UserRoutes";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 
+import PublicRoute from "@/features/auth/PublicRoute";
+import VerifyEmailPage from "@/pages/user/VerifyEmailPage";
+
 export default function AppRoutes() {
   const routes = useRoutes([
-    { path: "/", element: <SignInPage /> },
-    { path: "/signin", element: <SignInPage /> },
-    { path: "/signup", element: <SignUpPage /> },
-    { path: "/forgot-password", element: <ForgotPasswordPage /> },
-    { path: "/reset-password", element: <ResetPasswordPage /> },
+    {
+      element: <PublicRoute />,
+      children: [
+        { path: "/", element: <SignInPage /> },
+        { path: "/signin", element: <SignInPage /> },
+        { path: "/signup", element: <SignUpPage /> },
+        { path: "/verify-email", element: <VerifyEmailPage /> },
+        { path: "/forgot-password", element: <ForgotPasswordPage /> },
+        { path: "/reset-password", element: <ResetPasswordPage /> },
+      ],
+    },
     adminRoutes,
     userRoutes,
   ]);
@@ -26,7 +35,7 @@ export default function AppRoutes() {
       <Toaster richColors />
       {routes}
 
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </>
   );
 }

@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Search, Bell, ChevronDown } from "lucide-react";
 import LogOut from "@/features/auth/SignOutButton";
+import NotificationDropdown from "@/components/common/Notification";
 
 const notifications = [
   { id: "1", text: "#KH1032 vừa đặt Sân A lúc 18:00-19:00", time: "2 phút trước" },
@@ -45,16 +46,17 @@ export function AdminTopHeader() {
 
       {/* Actions */}
       <div className="flex shrink-0 items-center gap-2">
-        <Button variant="outline" size="icon" className="border">
+        {/* <Button variant="outline" size="icon" className="border">
           <Search className="h-4 w-4" />
-        </Button>
+        </Button> */}
 
-        <Button variant="outline" size="icon" className="relative border">
+        <NotificationDropdown/>
+        {/* <Button variant="outline" size="icon" className="relative border">
           <Bell className="h-4 w-4" />
           <Badge variant="outline" className="absolute -right-1 -top-1 h-4 min-w-4 justify-center p-0 text-[10px]">
             3
           </Badge>
-        </Button>
+        </Button> */}
 
         <DropdownMenu>
           <DropdownMenuTrigger>
@@ -70,7 +72,7 @@ export function AdminTopHeader() {
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>Thông tin tài khoản</DropdownMenuItem>
+            {/* <DropdownMenuItem>Thông tin tài khoản</DropdownMenuItem> */}
             <DropdownMenuItem><LogOut/></DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

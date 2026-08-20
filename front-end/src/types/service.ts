@@ -1,22 +1,15 @@
 export interface Service {
     id: number;
     serviceId: number;
-
     name: string;
-
     description?: string | null;
-
     image?: string | null;
-
     price: number;
-
     quantity: number;
-
     status: "ACTIVE" | "INACTIVE";
-
     createdAt: string;
-
     updatedAt: string;
+    service: Service;
 }
 
 export interface CreateServicePayload {

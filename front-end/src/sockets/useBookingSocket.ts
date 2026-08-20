@@ -158,10 +158,20 @@ export const useBookingSocket = (
       );
     }
 
+    const onNotificationUpdated = (data: any) => {
+      console.log(data.userId, userId)
+      if(Number(data.userId) === Number(userId)){
+        queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        queryClient.invalidateQueries({ queryKey: ["unread-notifications"] });
+      }
+    }
+
+
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("schedule:updated", onScheduleUpdated);
     socket.on("user:cart_updated", onCartUpdated);
+    socket.on("user:notification", onNotificationUpdated);
 
     // 🧹 CLEANUP: Chuyển ngày hoặc unmount component thì leave room cũ
     return () => {
@@ -170,8 +180,10 @@ export const useBookingSocket = (
       socket.off("disconnect", onDisconnect);
       socket.off("schedule:updated", onScheduleUpdated);
       socket.off("user:cart_updated", onCartUpdated);
+      socket.off("user:notification", onNotificationUpdated);
     };
   }, [userId, fieldId, formattedDate, queryClient]);
 
   return { isConnected, socket };
 };
+

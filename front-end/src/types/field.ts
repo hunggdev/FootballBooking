@@ -24,7 +24,7 @@ export interface FieldSlot {
   starttime: string;
   endtime: string;
   price: number;
-  status: "AVAILABLE" | "BOOKED" | "MAINTENANCE" | "HOLD";
+  status: "AVAILABLE" | "BOOKED" | "MAINTENANCE";
   isMyHold?: boolean;
   expiresAt?: string | null;
   ttl: number;
@@ -45,6 +45,7 @@ export interface CreateFieldPayload {
   description?: string;
   image?: string;
   fieldType: FieldType;
+  selectedFieldSlots: FieldSlot[];
 }
 
 export interface UpdateFieldPayload {

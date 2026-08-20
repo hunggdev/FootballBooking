@@ -32,7 +32,7 @@ function getErrorMessage(
   return axiosError.response?.data?.message ?? fallback;
 }
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 export function ManageMatch() {
   const {data, isLoading, error} = useMatches();
@@ -43,7 +43,6 @@ export function ManageMatch() {
   
   const matches: Match[] = data?.matches ?? [];
   const stats: Stats = statsData?? {};
-  console.log(stats);
   
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("all");
@@ -91,7 +90,7 @@ export function ManageMatch() {
 
     const handleDelete = (match: Match) => {
       const ok = confirm(
-        `Bạn có chắc muốn ngừng hoạt động tài khoản này "${match.matchId}"?`
+        `Bạn có chắc muốn xóa kèo đấu này "${match.matchId}"?`
       );
       if (!ok) return;
       setListError(null);
@@ -100,7 +99,7 @@ export function ManageMatch() {
           setListError(
             getErrorMessage(
               error,
-              "Xóa tài khoản thất bại."
+              "Xóa kèo đấu thất bại."
             )
           );
         },
@@ -190,7 +189,7 @@ export function ManageMatch() {
         </p>
       )}
       <MatchesTable matches={filteredMatches} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} currentPage={currentPage} pageSize={PAGE_SIZE}/>
-      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}  />
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={matches.length} pageSize={PAGE_SIZE} />
       
       <MatchDetailDialog
         matchId={detailMatchId}

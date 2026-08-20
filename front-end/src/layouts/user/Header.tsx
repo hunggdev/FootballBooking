@@ -1,3 +1,4 @@
+import NotificationDropdown from "@/components/common/Notification";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -6,12 +7,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { NavLink, useNavigate } from "react-router-dom"; 
+import { NavLink, useNavigate } from "react-router-dom";
 
 // 1. Cấu hình thêm thuộc tính `exact` để kiểm soát route nào cần Active khớp tuyệt đối
 const navItems = [
-  { id: "home", label: "Trang chủ", path: "/user", exact: true },        
-  { id: "booking", label: "Đặt sân", path: "/user/booking", exact: false }, 
+  { id: "home", label: "Trang chủ", path: "/user", exact: true },
+  { id: "booking", label: "Đặt sân", path: "/user/booking", exact: false },
   { id: "reviews", label: "Đánh giá", path: "/user/reviews", exact: false },
   { id: "odds", label: "Kèo đấu", path: "/user/match", exact: false },
 ];
@@ -24,7 +25,7 @@ export function Header() {
   const handleLogout = async () => {
     try {
       await signOut();
-      navigate("/signin"); 
+      navigate("/signin");
     } catch (error) {
       console.error(error);
     }
@@ -36,7 +37,7 @@ export function Header() {
         {/* Logo */}
         <div
           className="cursor-pointer text-xl font-bold"
-          onClick={() => navigate("/user")} 
+          onClick={() => navigate("/user")}
         >
           Football Booking
         </div>
@@ -68,39 +69,43 @@ export function Header() {
               >
                 {item.label}
               </span>
-            )
+            ),
           )}
         </nav>
 
-        {/* User */}
-        <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm hover:bg-accent">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback>
-                {user?.fullName?.charAt(0).toUpperCase() ?? "U"}
-              </AvatarFallback>
-            </Avatar>
+        <div className="flex items-center gap-2">
+          <NotificationDropdown />
 
-            <span>{user?.fullName ?? "Người dùng"}</span>
-          </DropdownMenuTrigger>
+          {/* User */}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm hover:bg-accent">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback>
+                  {user?.fullName?.charAt(0).toUpperCase() ?? "U"}
+                </AvatarFallback>
+              </Avatar>
 
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => navigate("/user/account")}>
-              Thông tin tài khoản
-            </DropdownMenuItem>
+              <span>{user?.fullName ?? "Người dùng"}</span>
+            </DropdownMenuTrigger>
 
-            <DropdownMenuItem onClick={() => navigate("/user/history")}>
-              Lịch sử đặt sân
-            </DropdownMenuItem>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => navigate("/user/account")}>
+                Thông tin tài khoản
+              </DropdownMenuItem>
 
-            <DropdownMenuItem
-              onClick={handleLogout}
-              className="text-red-600 focus:text-red-600"
-            >
-              Đăng xuất
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem onClick={() => navigate("/user/history")}>
+                Lịch sử đặt sân
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="text-red-600 focus:text-red-600"
+              >
+                Đăng xuất
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </header>
   );

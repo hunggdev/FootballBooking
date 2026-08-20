@@ -10,6 +10,13 @@ export interface Customer {
     totalSpent?: number,
     status: string,
     password: "" | string,
+    bookings: {
+        bookingId: number,
+        totalPrice: number,
+        createdAt: string,
+        updatedAt: string,
+        status: string, 
+    }[]
 }
 
 export interface CreateCustomerPayload {

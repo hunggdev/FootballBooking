@@ -13,7 +13,7 @@ import FieldDetailPage from "@/pages/user/FieldDetailPage";
 
 export const userRoutes: RouteObject = {
   path: "/user",
-  element: <ProtectedRoute />,
+  element: <ProtectedRoute allowedRoles={["admin", "customer"]} />,
   children: [
     {
       element: <UserLayout />,

@@ -93,7 +93,7 @@ export const useCreateSlot = () => {
       payload,
     }: {
       fieldId: number;
-      payload: { starttime: string; endtime: string; price: number; status?: string };
+      payload: { starttime: string; endtime: string; price: number; status: string };
     }) => fieldService.createSlot(fieldId, payload),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["fields"] }),

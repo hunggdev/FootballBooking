@@ -60,7 +60,7 @@ export const createReview = async (req, res) => {
       data: {
         bookingId: Number(bookingId),
         userId,
-        fieldId: booking.bookingSlots[0].fieldSlot.fieldId, 
+        fieldId: booking.bookingSlots[0].fieldSlot.fieldId,
         rating: Number(rating),
         comment,
       },

@@ -8,6 +8,7 @@ import {
 import { Label } from "@/components/ui/label";
 import type { Booking } from "@/types/booking";
 import { formatTime, formatDate } from "@/lib/utils";
+import { bookingService } from "@/services/bookingService";
 
 interface Props {
   open: boolean;
@@ -17,6 +18,8 @@ interface Props {
 
 export function BookingDetailDialog({ open, onOpenChange, booking }: Props) {
   if (!booking) return null;
+
+  const services = booking?.bookingServices;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -30,7 +33,7 @@ export function BookingDetailDialog({ open, onOpenChange, booking }: Props) {
             <Label>Khách hàng:</Label>
             <p className="ml-2">{booking.user?.fullName ?? "-"}</p>
           </div>
-
+        {/* sân */}
           <div className="flex gap-2">
             <Label>Sân:</Label>
             <p className="ml-2">
@@ -77,6 +80,52 @@ export function BookingDetailDialog({ open, onOpenChange, booking }: Props) {
               </tbody>
             </table>
           </div>
+
+          {/* dịch vụ  */}
+
+          <div className="flex gap-2">
+            <Label>Dịch vụ:</Label>
+          </div>
+
+          <div className="max-h-[300px] overflow-y-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-gray-100 text-left">
+                  <th className="border p-2">ID</th>
+                  <th className="border p-2">Tên dịch vụ</th>
+                  <th className="border p-2">Số lượng</th>
+                  <th className="border p-2">Giá</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {services?.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="p-4 text-center text-gray-500">
+                      Không có dịch vụ nào
+                    </td>
+                  </tr>
+                ) : (
+                  services?.map((service) => (
+                    <tr key={service.serviceId} className="hover:bg-gray-50">
+                      <td className="border p-2">{service.serviceId}</td>
+
+                      <td className="border p-2">
+                        {service.service.name}
+                      </td>
+
+                      <td className="border p-2">
+                        {service.quantity}
+                      </td>
+
+                      <td className="border p-2">{service.price}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          
 
           <div className="flex gap-2">
             <Label>Status:</Label>

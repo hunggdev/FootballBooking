@@ -48,7 +48,6 @@ function formatDate(iso: string) {
 export function MatchDetailDialog({ matchId, open, onOpenChange, }: MatchDetailDialogProps) {
   const {data, isLoading, error} = useMatch(matchId ?? 0);
   const match: Match | undefined = data?.match;
-  console.log(match, "match");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

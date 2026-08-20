@@ -24,7 +24,7 @@ export function BookingTimeDonutCard({ data }: Props) {
           >
             {data.map((slice, index) => (
               <Cell
-                key={slice.label} // 
+                key={slice.label} //
                 fill={COLORS[index % COLORS.length]}
               />
             ))}

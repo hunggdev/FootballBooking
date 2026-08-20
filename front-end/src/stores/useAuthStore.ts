@@ -18,11 +18,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             set({loading: true});
             // goi api
             await authService.signUp(fullName, email, phone, password);
-            toast.success("Đăng ký thành công");
+            toast.success("Đăng ký tài khoản thành công");
             
         } catch (error) {
             console.error(error);
-            toast.error("Đăng ký không thành công");
+            toast.error("Đăng ký tài khoản không thành công");
         } finally {
             set({loading: false});
         }
@@ -68,9 +68,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             const {user} = await authService.fetchMe();
             set({user});
         } catch (error) {
-            console.error(error);
+            console.error("fetchMe error:", error);
             set({user: null, accessToken: null});
-            toast.error("Lấy thông tin không thành công");
         } finally {
             set({loading: false});
         } 
@@ -86,10 +85,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             if(!user){
                 await fetchMe();
             }
-            toast.success("Refresh token thành công");
         } catch (error) {
-            console.error(error);
-            toast.error("Refresh token không thành công");
+            console.error("refresh error:", error);
             get().clearState();
         } finally {
             set({loading: false});
@@ -100,12 +97,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         try {
             set({loading: true});
             await authService.forgotPassword(email);
-            toast.success("Email đã được gửi");
+            toast.success("Kiểm tra email để xác thực cấp lại mật khẩu, link xác nhận có hiệu lực trong 15 phút");
         } catch (error) {
             console.error(error);
-            toast.error("Email không tồn tại");
+            toast.error("Kiểm tra email để xác thực cấp lại mật khẩu, link xác nhận có hiệu lực trong 15 phút");   
         } finally {
-            set({loading: false});
+            set({loading: false}); 
         }
     },
 

@@ -1,5 +1,6 @@
 import type { Socket } from "socket.io-client";
 import type { User } from "./user";
+import type { Field } from "./field";
 
 export interface Bookings {
   bookingId: number;
@@ -208,7 +209,8 @@ export interface Booking {
   bookingSlots: BookingSlot[];
   invoice: Invoice | null;
   bookingServices: BookingServiceItem[];
-  user: User
+  user: User;
+  field: Field;
 }
 
 export interface PaymentData {

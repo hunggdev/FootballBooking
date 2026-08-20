@@ -2,7 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import type { Booking } from "@/types/booking";
-import { formatDate, formatTimeRange } from "@/lib/utils";
+import { formatDate, formatDateTime, formatTimeRange } from "@/lib/utils";
+import { Pagination } from "@/components/common/Pagination";
+import { useState } from "react";
+
 
 interface Props {
   bookings: Booking[];
@@ -17,8 +20,23 @@ export function BookingTable({
   onEdit,
   onDelete,
 }: Props) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10; 
+
+  const totalItems = bookings.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  const paginatedFields = bookings.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  
+
+
   return (
-    <div className="overflow-x-auto rounded-md border">
+    <div>
+    <div className="overflow-x-auto rounded-md border my-6">
       <table className="w-full border-collapse">
         <thead>
           <tr className="bg-gray-100 text-left">
@@ -27,20 +45,21 @@ export function BookingTable({
             <th className="border p-2">Sân</th>
             <th className="border p-2">Tổng tiền</th>
             <th className="border p-2">Đã cọc</th>
+            <th className="border p-2">Thời gian tạo</th>
             <th className="border p-2">Trạng thái</th>
             <th className="border p-2">Thao tác</th>
           </tr>
         </thead>
 
         <tbody>
-          {bookings.length === 0 ? (
+          {paginatedFields.length === 0 ? (
             <tr>
               <td colSpan={7} className="p-4 text-center text-gray-500">
                 Không có booking nào
               </td>
             </tr>
           ) : (
-            bookings.map((booking) => (
+            paginatedFields.map((booking) => (
               <tr
                 key={booking.bookingId}
                 className="hover:bg-gray-50"
@@ -66,6 +85,10 @@ export function BookingTable({
                 </td>
 
                 <td className="border p-2">
+                  {formatDateTime(booking.createdAt)}
+                </td>
+
+                <td className="border p-2">
                   {booking.status}
                 </td>
 
@@ -86,6 +109,7 @@ export function BookingTable({
                         variant="outline"
                         size="sm"
                         onClick={() => onEdit(booking)}
+                        disabled={booking.status === "COMPLETED" || booking.status === "CANCELLED"}
                       >
                         Sửa
                       </Button>
@@ -96,6 +120,7 @@ export function BookingTable({
                         variant="destructive"
                         size="sm"
                         onClick={() => onDelete(booking)}
+                        disabled={booking.status === "COMPLETED" || booking.status === "CANCELLED"}
                       >
                         Xóa
                       </Button>
@@ -108,5 +133,17 @@ export function BookingTable({
         </tbody>
       </table>
     </div>
+ 
+    <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        totalItems={totalItems}
+        pageSize={pageSize}
+      />
+
+    </div>
+
+
   );
 }

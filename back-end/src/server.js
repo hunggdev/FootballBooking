@@ -13,6 +13,7 @@ import serviceRoute from "./routes/serviceRoute.js";
 import bookingRoute from "./routes/bookingRoute.js";
 import invoiceRoute from "./routes/invoiceRoute.js";
 import reviewRoute from "./routes/reviewRoute.js";
+import notificationRoute from "./routes/notificationRoute.js";
 import dashboardRoute from "./routes/dashboardRoute.js";
 import cron from "node-cron";
 import matchRoute from "./routes/matchRoute.js";
@@ -61,6 +62,7 @@ app.use("/api/reviews", reviewRoute);
 app.use("/api/dashboard", dashboardRoute);
 app.use("/api/matches", matchRoute);
 app.use("/api/payments", paymentRoute);
+app.use("/api/notifications", notificationRoute);
 
 // ------------------------------------------------
 
@@ -79,8 +81,8 @@ connectDB().then(() => {
       throw err;
     }
   });
-});
 
-cron.schedule("*/1 * * * *", () => {
-  cleanExpiredUsers();
+  cron.schedule("*/1 * * * *", () => {
+    cleanExpiredUsers();
+  });
 });

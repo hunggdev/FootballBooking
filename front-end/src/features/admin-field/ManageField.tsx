@@ -169,6 +169,7 @@ export function ManageField() {
       
 
       <FieldFormDialog
+        fieldId={detailFieldId}
         key={editingField?.fieldId ?? "create"}
         open={dialogOpen}
         onOpenChange={setDialogOpen}

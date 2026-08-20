@@ -2,55 +2,78 @@ import { prisma } from "../config/database.js";
 import bcrypt from "bcrypt";
 
 const ACCESS_TOKEN_TTL = 1 * 24 * 60 * 60 * 1000;
-const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000; 
+const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000;
 
-import { validateUser, validatePhone, validateEmail, duplicateUser } from "../utils/validateUsers.js";
+import {
+  validateUser,
+  validatePhone,
+  validateEmail,
+  duplicateUser,
+} from "../utils/validateUsers.js";
 
 //Xem danh sách khách hàng
 export const getCustomers = async (req, res) => {
-    try {
-        // lấy tất cả user có role = user
-        const showAll = req.query.all === "1";
-        const users = await prisma.user.findMany({
-            where: {
-                role: "CUSTOMER", 
-            },
-            orderBy: {
-              createdAt: "desc",
-            },
-            select: {
-                userId: true,
-                fullName: true,
-                email: true,
-                phone: true,
-                status: true,
-                createdAt: true,
-                sessions: {
-                    select:{
-                        sessionId: true,
-                    }
-                },
-            }
-        });
+  try {
+    // lấy tất cả user có role = user
+    const showAll = req.query.all === "1";
+    const users = await prisma.user.findMany({
+      where: {
+        role: "CUSTOMER",
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        userId: true,
+        fullName: true,
+        email: true,
+        phone: true,
+        status: true,
+        createdAt: true,
+        sessions: {
+          select: {
+            sessionId: true,
+          },
+        },
+        bookings: {
+          select: {
+            bookingId: true,
+            totalPrice: true,
+            createdAt: true,
+            updatedAt: true,
+            status: true,
+          },
+        },
+      },
+    });
 
-        const customers = users.map((user) => ({
-            userId: user.userId,
-            fullName: user.fullName,
-            email: user.email,
-            phone: user.phone,
-            status: user.status,
-            bookingCount: 0,
-            totalSpent: 0,
-            createdAt: user.createdAt,
-            isOnline: user.sessions.length > 0,
-        }));
-        
-        return res.status(200).json({customers}); 
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({message: "Lỗi hệ thống"});
-    }
-}
+    const stats = await prisma.booking.groupBy({
+      by: ["userId"],
+      _count: {
+        bookingId: true,
+      },
+      _sum: {
+        totalPrice: true,
+      },
+    });
+
+    const customers = users.map((user) => {
+      const customerStats = stats.find((s) => s.userId === user.userId);
+      return {
+        ...user,
+        bookingCount: customerStats?._count.bookingId || 0,
+        totalSpent: Number(customerStats?._sum.totalPrice || 0),
+        createdAt: user.createdAt,
+        isOnline: user.sessions.length > 0,
+      };
+    });
+
+    return res.status(200).json({ customers });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Lỗi hệ thống" });
+  }
+};
 
 //Xem chi tiết
 export const getCustomerById = async (req, res) => {
@@ -59,6 +82,29 @@ export const getCustomerById = async (req, res) => {
     const customer = await prisma.user.findUnique({
       where: {
         userId: customerId,
+      },
+
+      select: {
+        userId: true,
+        fullName: true,
+        email: true,
+        phone: true,
+        status: true,
+        createdAt: true,
+        sessions: {
+          select: {
+            sessionId: true,
+          },
+        },
+        bookings: {
+          select: {
+            bookingId: true,
+            totalPrice: true,
+            createdAt: true,
+            updatedAt: true,
+            status: true,
+          },
+        },
       },
     });
 
@@ -83,55 +129,49 @@ export const getCustomerById = async (req, res) => {
 //Tạo account khách hàng
 export const createCustomer = async (req, res) => {
   try {
-    const {
-      fullName,
-      email,
-      phone,
-      password,
-    } = req.body;
-    console.log({fullName, email, phone, password})
+    const { fullName, email, phone, password } = req.body;
+    console.log({ fullName, email, phone, password });
 
-    const error = validateUser({fullName, email, phone, password});
+    const error = validateUser({ fullName, email, phone, password });
     if (error) {
       return res.status(400).json({ message: error });
     }
 
-    const duplicate = await duplicateUser(email, phone)
+    const duplicate = await duplicateUser(email, phone);
     if (duplicate) {
-        return res.status(400).json({ message: duplicate });
+      return res.status(400).json({ message: duplicate });
     }
-  
+
     // mã hóa password
     const hashedPassword = await bcrypt.hash(password, 10); // salt = 10
 
     // tạo user mới (với status là active)
     const newUser = await prisma.user.create({
-        data: {
-            fullName,
-            email,
-            phone,
-            passwordHash: hashedPassword,
-            role: "CUSTOMER",
-            status: "ACTIVE"
-        }
+      data: {
+        fullName,
+        email,
+        phone,
+        passwordHash: hashedPassword,
+        role: "CUSTOMER",
+        status: "ACTIVE",
+      },
     });
 
-    return res.status(200).json({message: "Tạo tài khoản khách hàng thành công", customer: newUser});
-    } catch (error) {
-        console.error("CREATE CUSTOMER:", error);
-        return res.status(500).json({message: "Lỗi hệ thống"});
-    }
+    return res.status(200).json({
+      message: "Tạo tài khoản khách hàng thành công",
+      customer: newUser,
+    });
+  } catch (error) {
+    console.error("CREATE CUSTOMER:", error);
+    return res.status(500).json({ message: "Lỗi hệ thống" });
+  }
 };
 
 //Updat thông tin khách hàng
 export const updateCustomer = async (req, res) => {
   try {
     const customerId = Number(req.params.id);
-    const {
-      fullName,
-      phone,
-      status,
-    } = req.body;
+    const { fullName, phone, status } = req.body;
 
     const customer = await prisma.user.findUnique({
       where: {
@@ -145,7 +185,7 @@ export const updateCustomer = async (req, res) => {
       });
     }
 
-    const error = validatePhone(phone)
+    const error = validatePhone(phone);
     if (error) {
       return res.status(400).json({ message: error });
     }
@@ -169,7 +209,7 @@ export const updateCustomer = async (req, res) => {
 
     return res.status(200).json({
       message: "Cập nhật thông tin khách hàng thành công",
-      customer: updatedCustomer
+      customer: updatedCustomer,
     });
   } catch (error) {
     console.error("UPDATE CUSTOMER:", error);
@@ -207,7 +247,7 @@ export const deleteCustomer = async (req, res) => {
       customer: updatedCustomer,
     });
   } catch (error) {
-    console.error("DELETE CUSTOMER: ",error);
+    console.error("DELETE CUSTOMER: ", error);
 
     return res.status(500).json({
       message: "Lỗi hệ thống",
@@ -217,10 +257,17 @@ export const deleteCustomer = async (req, res) => {
 
 export const statsCustomer = async (req, res) => {
   try {
-    
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    const endOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
     const [
       customers,
       totalUserInThisMonth,
@@ -274,7 +321,7 @@ export const statsCustomer = async (req, res) => {
         },
       }),
     ]);
-    
+
     return res.status(200).json({
       customers,
       totalUserInThisMonth,
@@ -283,8 +330,6 @@ export const statsCustomer = async (req, res) => {
       activeCustomers,
       inactiveCustomers,
     });
-
-
   } catch (error) {
     console.error("STATS CUSTOMER:", error);
 
@@ -292,6 +337,4 @@ export const statsCustomer = async (req, res) => {
       message: "Lỗi hệ thống",
     });
   }
-}
-
-
+};

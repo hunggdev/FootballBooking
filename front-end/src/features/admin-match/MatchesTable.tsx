@@ -106,7 +106,7 @@ export function MatchesTable({matches, onView, onEdit, onDelete, currentPage, pa
                 <TableCell className="space-x-2 text-right">
                   <Button size="sm" variant="secondary" onClick={() => onView(match)}>Xem</Button>
                   <Button size="sm" variant="outline" onClick={() => onEdit(match)} disabled={match.status !== "OPEN"}>Sửa</Button>
-                  <Button size="sm" variant="destructive" onClick={() => onDelete(match)} disabled={match.status === "FINISHED" || match.status === "CANCELLED"}>Xóa</Button>
+                  <Button size="sm" variant="destructive" onClick={() => onDelete(match)} disabled={match.status === "FINISHED" || match.status === "CANCELLED" || match.status === "MATCHED"}>Xóa</Button>
                 </TableCell>
               </TableRow>
             ))}

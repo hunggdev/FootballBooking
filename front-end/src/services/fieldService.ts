@@ -79,7 +79,7 @@ export const fieldService = {
 
   createSlot: async (
     fieldId: number,
-    payload: { starttime: string; endtime: string; price: number; status?: string }
+    payload: { starttime: string; endtime: string; price: number; status: string}
   ): Promise<FieldSlot> => {
     const res = await api.post(`/fields/${fieldId}/slots`, payload);
     return res.data.slot;

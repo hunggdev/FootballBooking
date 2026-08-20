@@ -55,7 +55,8 @@ export function initializeSockets(io) {
     });
 
     socket.on("disconnect", () => {
-      console.log(`❌ Disconnected: ${socket.id} | User: ${socket.userId || "Guest"}`); 
+      socket.leave(`user:${socket.userId}`);
+      console.log(`❌ Disconnected: ${socket.id} | User: ${socket.userId || "Guest"}`);
     });
   });
 }

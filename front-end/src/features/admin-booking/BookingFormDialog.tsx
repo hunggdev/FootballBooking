@@ -32,9 +32,9 @@ interface Props {
 
 const getInitialFormState = (booking?: Booking | null) => ({
   userId: booking?.user?.userId ?? 0,
-  fieldId: booking?.fieldSlot?.field?.fieldId ?? 0,
-  starttime: booking?.fieldSlot?.starttime ? formatTime(booking.fieldSlot.starttime) : "",
-  endtime: booking?.fieldSlot?.endtime ? formatTime(booking.fieldSlot.endtime) : "",
+  fieldId: booking?.field?.fieldId ?? 0,
+  // starttime: booking?.fieldSlot?.starttime ? formatTime(booking.fieldSlot.starttime) : "",
+  // endtime: booking?.fieldSlot?.endtime ? formatTime(booking.fieldSlot.endtime) : "",
   status: (booking?.status ?? "PENDING") as "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED",
 });
 
@@ -61,9 +61,10 @@ export function BookingFormDialog({
   const handleSubmit = () => {
     if (initialData) {
       onSubmit(formState as UpdateBookingPayload);
-    } else {
-      onSubmit(formState as CreateBookingPayload);
-    }
+    } 
+    // else {
+    //   onSubmit(formState as CreateBookingPayload);
+    // }
   };
 
   return (
@@ -82,6 +83,7 @@ export function BookingFormDialog({
               id="userId"
               type="number"
               value={formState.userId}
+              disabled={true}
               onChange={(e) =>
                 setFormState((prev) => ({ ...prev, userId: Number(e.target.value) }))
               }
@@ -94,13 +96,14 @@ export function BookingFormDialog({
               id="fieldId"
               type="number"
               value={formState.fieldId}
+              disabled={true}
               onChange={(e) =>
                 setFormState((prev) => ({ ...prev, fieldId: Number(e.target.value) }))
               }
             />
           </div>
 
-          <div>
+          {/* <div>
             <Label htmlFor="starttime">Start Time</Label>
             <Input
               id="starttime"
@@ -110,9 +113,9 @@ export function BookingFormDialog({
                 setFormState((prev) => ({ ...prev, starttime: e.target.value }))
               }
             />
-          </div>
+          </div> */}
 
-          <div>
+          {/* <div>
             <Label htmlFor="endtime">End Time</Label>
             <Input
               id="endtime"
@@ -122,7 +125,7 @@ export function BookingFormDialog({
                 setFormState((prev) => ({ ...prev, endtime: e.target.value }))
               }
             />
-          </div>
+          </div> */}
 
           {initialData && (
             <div>

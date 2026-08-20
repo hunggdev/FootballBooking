@@ -280,7 +280,7 @@ export default function UserHistoryPage() {
           {selectedBookingForInvoice?.invoice && (
             <div className="space-y-4 text-sm">
               <div className="rounded-lg border p-3 bg-muted/20 space-y-2">
-                {selectedBookingForInvoice.bookingSlots.length > 1 && (
+                {selectedBookingForInvoice.bookingSlots.length > 0 && (
                   <div className="overflow-y-auto max-h-[100px] text-[10px] custom-scrollbar">
                     {selectedBookingForInvoice.bookingSlots.map((slot) => (
                       <div
@@ -310,7 +310,7 @@ export default function UserHistoryPage() {
                     )}
                   </span>
                 </div>
-                {selectedBookingForInvoice.bookingServices.length > 1 && (
+                {selectedBookingForInvoice.bookingServices.length > 0 && (
                   <div className="overflow-y-auto max-h-[100px] text-[10px] custom-scrollbar">
                     {selectedBookingForInvoice.bookingServices.map(
                       (service) => (
