@@ -54,6 +54,7 @@ export default function FieldDetail() {
   const [selectedDate, setSelectedDate] = useState(
     () => urlDate?.split("T")[0] || dayjs().format("YYYY-MM-DD"),
   );
+
   // Nguồn sự thật DUY NHẤT cho giỏ giữ chỗ — không tách selectedSlots riêng nữa.
   const [holds, setHolds] = useState<HoldSlot[]>([]);
   const [cart, setCart] = useState<Record<number, number>>({});
@@ -66,11 +67,13 @@ export default function FieldDetail() {
   const [isBookingClosed, setIsBookingClosed] = useState(false);
 
   const { data: field, isLoading: isFieldLoading } = useField(numericFieldId);
+
   const {
     data: slots,
     isLoading: isSlotsLoading,
     refetch: refetchSlots,
   } = useSlots(numericFieldId, selectedDate);
+
   const { data: mySlots } = useMyHolds(); // fetch 1 lần, sống bằng socket — KHÔNG phụ thuộc selectedDate
   const { data: services } = useServices();
 
@@ -78,6 +81,7 @@ export default function FieldDetail() {
   const deleteSlotHoldMutation = useDeleteSlotHold();
   const confirmBookingMutation = useConfirmBooking();
   const createBookingMutation = useCreateBooking();
+
   const isHolding = holdSlotMutation.isPending;
   const isDeletingHold = deleteSlotHoldMutation.isPending;
   const isConfirming = confirmBookingMutation.isPending;
@@ -98,16 +102,20 @@ export default function FieldDetail() {
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
+
       setHolds((prev) =>
         prev.map((hold) => ({
           ...hold,
           ttl: Math.max(
             0,
-            Math.floor((new Date(hold.expiresAt).getTime() - now) / 1000),
+            Math.floor(
+              (new Date(hold.expiresAt).getTime() - now) / 1000,
+            ),
           ),
         })),
       );
     }, 1000);
+
     return () => clearInterval(interval);
   }, []);
 
@@ -128,9 +136,12 @@ export default function FieldDetail() {
   // Tự động dọn các hold đã hết hạn (sửa: dùng <= 0 thay vì === 0)
   useEffect(() => {
     const now = Date.now();
+
     const expired = holds.filter(
-      (hold) => (new Date(hold.expiresAt).getTime() - now) / 1000 <= 0,
+      (hold) =>
+        (new Date(hold.expiresAt).getTime() - now) / 1000 <= 0,
     );
+
     if (expired.length === 0) return;
 
     (async () => {
@@ -144,10 +155,17 @@ export default function FieldDetail() {
             }),
           ),
         );
+
         setHolds((prev) =>
-          prev.filter((h) => !expired.some((e) => e.holdId === h.holdId)),
+          prev.filter(
+            (h) => !expired.some((e) => e.holdId === h.holdId),
+          ),
         );
-        toast.error(`${expired.length} khung giờ đã hết thời gian giữ chỗ`);
+
+        toast.error(
+          `${expired.length} khung giờ đã hết thời gian giữ chỗ`,
+        );
+
         refetchSlots();
       } catch (error) {
         console.error(error);
@@ -157,23 +175,29 @@ export default function FieldDetail() {
 
   const handleSelectSlot = async (slot: HoldSlot) => {
     const formattedDate = slot.bookingDate.split("T")[0];
-    const isMine =
-      Boolean(slot.isMyHold) 
-      // ||
-      // holds.some(
-      //   (h) => h.holdId === slot.holdId && h.bookingDate === formattedDate,
-      // );
+
+    const isMine = Boolean(slot.isMyHold);
+
     const canSelect = slot.status === "AVAILABLE" || isMine;
+
     if (!canSelect || bookingDone) return;
 
     if (isMine) {
-      setHolds((prev) => prev.filter((h) => h.holdId !== slot.holdId));
+      setHolds((prev) =>
+        prev.filter((h) => h.holdId !== slot.holdId),
+      );
+
       queryClient.setQueryData<HoldSlot[]>(
         ["slots", numericFieldId, formattedDate],
         (old) =>
           old?.map((s) =>
-            s.slotId === slot.slotId && s.bookingDate === formattedDate
-              ? { ...s, isMyHold: false, status: "AVAILABLE" }
+            s.slotId === slot.slotId &&
+              s.bookingDate === formattedDate
+              ? {
+                ...s,
+                isMyHold: false,
+                status: "AVAILABLE",
+              }
               : s,
           ),
       );
@@ -184,21 +208,31 @@ export default function FieldDetail() {
           slotId: slot.slotId,
           bookingDate: slot.bookingDate || formattedDate,
         });
+
         toast.success("Đã hủy giữ chỗ thành công.");
       } catch (error: unknown) {
         queryClient.invalidateQueries({
           queryKey: ["slots", numericFieldId, formattedDate],
         });
-        queryClient.invalidateQueries({ queryKey: ["my-holds"] });
+
+        queryClient.invalidateQueries({
+          queryKey: ["my-holds"],
+        });
+
         toast.error(
-          error instanceof Error ? error.message : "Hủy giữ chỗ thất bại.",
+          error instanceof Error
+            ? error.message
+            : "Hủy giữ chỗ thất bại.",
         );
       }
+
       return;
     }
 
-    // Optimistic hold — giá trị 600s CHỈ là hiển thị tạm trong lúc chờ server, sẽ được ghi đè ngay bên dưới.
+    // Optimistic hold — giá trị 600s CHỈ là hiển thị tạm trong lúc chờ server,
+    // sẽ được ghi đè ngay bên dưới.
     let holdId = `hold:${numericFieldId}:${slot.slotId}:${formattedDate}`;
+
     const optimisticHold: HoldSlot = {
       ...slot,
       holdId,
@@ -208,19 +242,22 @@ export default function FieldDetail() {
       expiresAt: new Date(Date.now() + 600000).toISOString(),
       ttl: 600,
     };
+
     setHolds((prev) => [...prev, optimisticHold]);
+
     queryClient.setQueryData<HoldSlot[]>(
       ["slots", numericFieldId, formattedDate],
       (old) =>
         old?.map((s) =>
-          s.slotId === slot.slotId && s.bookingDate === formattedDate
+          s.slotId === slot.slotId &&
+            s.bookingDate === formattedDate
             ? {
-                ...s,
-                isMyHold: true,
-                status: "HOLD",
-                expiresAt: optimisticHold.expiresAt,
-                ttl: 600,
-              }
+              ...s,
+              isMyHold: true,
+              status: "HOLD",
+              expiresAt: optimisticHold.expiresAt,
+              ttl: 600,
+            }
             : s,
         ),
     );
@@ -231,22 +268,35 @@ export default function FieldDetail() {
         slotId: slot.slotId,
         bookingDate: formattedDate,
       });
-      // Ghi đè bằng expiresAt/ttl THẬT từ Redis — tránh lệch giờ do độ trễ mạng.
+
+      // Ghi đè bằng expiresAt/ttl THẬT từ Redis —
+      // tránh lệch giờ do độ trễ mạng.
       if (created?.expiresAt) {
         setHolds((prev) =>
           prev.map((h) =>
             h.holdId === holdId
-              ? { ...h, expiresAt: created.expiresAt, ttl: created.ttl }
+              ? {
+                ...h,
+                expiresAt: created.expiresAt,
+                ttl: created.ttl ?? h.ttl,
+              }
               : h,
           ),
         );
       }
     } catch (error: unknown) {
-      setHolds((prev) => prev.filter((h) => h.holdId !== holdId));
+      setHolds((prev) =>
+        prev.filter((h) => h.holdId !== holdId),
+      );
+
       queryClient.invalidateQueries({
         queryKey: ["slots", numericFieldId, formattedDate],
       });
-      queryClient.invalidateQueries({ queryKey: ["my-holds"] });
+
+      queryClient.invalidateQueries({
+        queryKey: ["my-holds"],
+      });
+
       toast.error(
         error instanceof Error
           ? error.message
@@ -257,25 +307,42 @@ export default function FieldDetail() {
 
   const addService = (serviceId: string | null) => {
     if (!serviceId) return;
+
     const id = Number(serviceId);
-    setCart((prev) => ({ ...prev, [id]: prev[id] ? prev[id] + 1 : 1 }));
+
+    setCart((prev) => ({
+      ...prev,
+      [id]: prev[id] ? prev[id] + 1 : 1,
+    }));
   };
 
-  const changeQuantity = (serviceId: number, delta: number) => {
+  const changeQuantity = (
+    serviceId: number,
+    delta: number,
+  ) => {
     setCart((prev) => {
       const next = (prev[serviceId] ?? 0) + delta;
+
       if (next <= 0)
         return Object.fromEntries(
-          Object.entries(prev).filter(([id]) => Number(id) !== serviceId),
+          Object.entries(prev).filter(
+            ([id]) => Number(id) !== serviceId,
+          ),
         );
-      return { ...prev, [serviceId]: next };
+
+      return {
+        ...prev,
+        [serviceId]: next,
+      };
     });
   };
 
   const removeService = (serviceId: number) => {
     setCart((prev) =>
       Object.fromEntries(
-        Object.entries(prev).filter(([id]) => Number(id) !== serviceId),
+        Object.entries(prev).filter(
+          ([id]) => Number(id) !== serviceId,
+        ),
       ),
     );
   };
@@ -297,9 +364,8 @@ export default function FieldDetail() {
       description: "Thanh toán cọc tiền đặt sân bóng",
     });
 
-    // holds đến từ useMyHolds, hiện tại trang chỉ hiển thị 1 sân nên mọi hold
-    // ở đây đều thuộc numericFieldId. Nếu sau này mở rộng đa sân trong cùng giỏ,
-    // cần đổi HoldSlot để tự mang fieldId riêng thay vì suy ra từ context trang.
+    // holds đến từ useMyHolds, hiện tại trang chỉ hiển thị 1 sân
+    // nên mọi hold ở đây đều thuộc numericFieldId.
     const payloadSlots = holds.map((hold) => ({
       fieldId: numericFieldId,
       slotId: hold.slotId,
@@ -314,45 +380,36 @@ export default function FieldDetail() {
     );
 
     try {
-      const resultBooking = await createBookingMutation.mutateAsync({
-        slots: payloadSlots,
-        type: bookingType,
-        depositAmount: deposit,
-        note: undefined,
-        services: payloadServices,
-      });
+      const resultBooking =
+        await createBookingMutation.mutateAsync({
+          slots: payloadSlots,
+          type: bookingType,
+          depositAmount: deposit,
+          note: undefined,
+          services: payloadServices,
+        });
+
       setBookingId(resultBooking.bookingId);
 
       setBookingDone(true);
 
-      // Booking đã CONFIRMED -> các slot này không còn là "hold" nữa, xoá khỏi giỏ ngay (optimistic).
-      // Server cũng emit "user:cart_updated" { action: "CLEAR" } và "schedule:updated" status BOOKED,
-      // nhưng set trực tiếp ở đây để UI phản hồi 0ms, không đợi round-trip socket.
+      // Booking đã CONFIRMED -> các slot này không còn là "hold" nữa,
+      // xoá khỏi giỏ ngay (optimistic).
       setHolds([]);
       setCart({});
 
-      // useCreateBooking đã tự invalidate ["my-holds"] trong onSuccess, chỉ cần
-      // invalidate thêm cache Grid vì hook đó không biết selectedDate hiện tại.
       queryClient.invalidateQueries({
         queryKey: ["slots", numericFieldId, selectedDate],
       });
 
       toast.success("Đặt sân thành công!");
     } catch (error: unknown) {
-      // Đọc message thật từ backend qua response.data, không dùng error.message mặc định
-      // của AxiosError (chỉ là "Request failed with status code 400").
-      // const message = axios.isAxiosError(error)
-      //   ? error.response?.data?.message ?? "Đặt sân thất bại."
-      //   : error instanceof Error
-      //   ? error.message
-      //   : "Đặt sân thất bại.";
-
       toast.error("Đặt sân thất bại");
 
-      // Lỗi phổ biến nhất ở đây: một slot hết hạn giữ chỗ đúng lúc bấm xác nhận
-      // (createBooking check hold trước transaction). Đồng bộ lại state thật từ server
-      // thay vì đoán, để không hiển thị sai lệch với những gì đã thực sự xảy ra.
-      queryClient.invalidateQueries({ queryKey: ["my-holds"] });
+      queryClient.invalidateQueries({
+        queryKey: ["my-holds"],
+      });
+
       queryClient.invalidateQueries({
         queryKey: ["slots", numericFieldId, selectedDate],
       });
@@ -361,20 +418,23 @@ export default function FieldDetail() {
 
   if (isFieldLoading)
     return (
-      <p className="p-6 text-center text-sm text-muted-foreground">
+      <p className="p-6 text-center text-sm text-text-secondary">
         Đang tải chi tiết sân...
       </p>
     );
+
   if (!field)
     return (
-      <p className="p-6 text-center text-sm text-muted-foreground">
+      <p className="p-6 text-center text-sm text-text-secondary">
         Không tìm thấy sân.
       </p>
     );
 
   const cartItems = Object.entries(cart)
     .map(([id, quantity]) => ({
-      service: activeServices.find((s) => s.serviceId === Number(id)),
+      service: activeServices.find(
+        (s) => s.serviceId === Number(id),
+      ),
       quantity,
     }))
     .filter(
@@ -387,22 +447,30 @@ export default function FieldDetail() {
     );
 
   const servicesTotal = cartItems.reduce(
-    (sum, item) => sum + item.service.price * item.quantity,
+    (sum, item) =>
+      sum + item.service.price * item.quantity,
     0,
   );
+
   const totalPrice = holds.reduce(
     (total, slot) => total + Number(slot.price),
     0,
   );
+
   const total = totalPrice + servicesTotal;
+
   const deposit =
-    holds.length > 0 ? Math.round((totalPrice * 0.3) / 1000) * 1000 : 0;
+    holds.length > 0
+      ? Math.round((totalPrice * 0.3) / 1000) * 1000
+      : 0;
 
   const dateObj = dayjs(selectedDate);
-  const dateLabel = `${WEEKDAY_LABEL[dateObj.day()]}, ${dateObj.format("DD/MM")}`;
+
+  const dateLabel = `${WEEKDAY_LABEL[dateObj.day()]
+    }, ${dateObj.format("DD/MM")}`;
 
   return (
-    <div className="dark bg-background text-foreground">
+    <div className="dark min-h-screen bg-base text-text-primary">
       <div className="mx-auto max-w-6xl space-y-6 p-4">
         <FieldHeader
           name={field.name}
@@ -418,27 +486,35 @@ export default function FieldDetail() {
 
         <div className="grid grid-cols-4 gap-6 lg:grid-cols-[1fr_360px]">
           {bookingType === "ONE_TIME" && (
-            <div className="space-y-4 rounded-xl border bg-card p-5">
+            <div className="space-y-4 rounded-xl border border-border bg-surface p-5">
               <SlotLegend />
+
               <DateNavigator
                 dateLabel={dateLabel}
                 onPrev={() =>
                   changeDate(
-                    dayjs(selectedDate).subtract(1, "day").format("YYYY-MM-DD"),
+                    dayjs(selectedDate)
+                      .subtract(1, "day")
+                      .format("YYYY-MM-DD"),
                   )
                 }
                 onNext={() =>
                   changeDate(
-                    dayjs(selectedDate).add(1, "day").format("YYYY-MM-DD"),
+                    dayjs(selectedDate)
+                      .add(1, "day")
+                      .format("YYYY-MM-DD"),
                   )
                 }
               />
+
               <SlotGrid
                 slots={slots}
                 holds={holds}
                 selectedDate={selectedDate}
                 isLoading={isSlotsLoading}
-                isMutating={isHolding || isDeletingHold}
+                isMutating={
+                  isHolding || isDeletingHold
+                }
                 bookingDone={bookingDone}
                 onSelectSlot={handleSelectSlot}
               />
@@ -447,11 +523,13 @@ export default function FieldDetail() {
 
           {bookingType === "LONG_TERM" && (
             <div className="flex flex-col">
-              <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-400">
-                Đặt dài hạn: khung giờ bạn chọn bên dưới sẽ được đăng ký giữ cố
-                định theo yêu cầu dài hạn. Nhân viên sân sẽ liên hệ xác nhận
+              <p className="rounded-lg border border-status-warning/30 bg-status-warning-bg p-3 text-sm text-status-warning">
+                Đặt dài hạn: khung giờ bạn chọn bên dưới
+                sẽ được đăng ký giữ cố định theo yêu cầu
+                dài hạn. Nhân viên sân sẽ liên hệ xác nhận
                 lịch định kỳ sau khi bạn hoàn tất đặt sân.
               </p>
+
               <BookLongTime
                 fieldId={numericFieldId}
                 slots={slots}
@@ -474,14 +552,19 @@ export default function FieldDetail() {
             deposit={deposit}
             total={total}
             onRemoveHold={(holdId) => {
-              const hold = holds.find((h) => h.holdId === holdId);
+              const hold = holds.find(
+                (h) => h.holdId === holdId,
+              );
+
               if (hold) handleSelectSlot(hold);
             }}
             onAddService={addService}
             onChangeQuantity={changeQuantity}
             onRemoveService={removeService}
             onConfirm={handleConfirm}
-            onViewHistory={() => navigate("/user/history")}
+            onViewHistory={() =>
+              navigate("/user/history")
+            }
           />
 
           {isBookingClosed && paymentData && (
@@ -496,7 +579,10 @@ export default function FieldDetail() {
           )}
         </div>
 
-        <FieldReviewSection fieldId={numericFieldId} fieldName={field.name} />
+        <FieldReviewSection
+          fieldId={numericFieldId}
+          fieldName={field.name}
+        />
       </div>
     </div>
   );

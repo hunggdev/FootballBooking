@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { PageIntro } from "./PageIntro";
 import { MatchToolbar } from "./MatchToolbar";
-import { MatchesTable} from "./MatchTable";
+import { MatchesTable } from "./MatchTable";
 import { Pagination } from "@/components/common/Pagination";
 import { useMatches, useCreateMatch, useUpdateMatch, useDeleteMatch, useJoinMatch, useCancelJoinMatch } from "@/stores/useMatchStore";
 import { JoinMatchDialog } from "./JoinMatchDialog";
@@ -10,7 +10,7 @@ import { MatchFormDialog } from "./MatchFormDialog";
 import type {
   Match,
   CreateMatchPayload,
-  UpdateMatchPayload 
+  UpdateMatchPayload
 } from "@/types/match";
 import type { AxiosError } from "axios";
 import { MatchDetailDialog } from "./MatchDetailDialog";
@@ -32,7 +32,7 @@ function getErrorMessage(
 
 
 export default function ManageMatch() {
-  const {data, isLoading, error} = useMatches();
+  const { data, isLoading, error } = useMatches();
 
   const createMatch = useCreateMatch();
   const updateMatch = useUpdateMatch();
@@ -57,31 +57,31 @@ export default function ManageMatch() {
   const matches: Match[] = data?.matches ?? [];
 
   const filteredMatches = useMemo(() => {
-      return matches.filter((match) => {
-        const matchSearch = match.user.fullName.toLowerCase().includes(search.toLowerCase());
-        let matchFilter = true;
+    const keyword = search.toLowerCase();
 
-        switch (filter) {
-          case "OPEN":
-            matchFilter = match.status === "OPEN";
-            break;
-          case "MINE":
-            matchFilter = match.isMine;
-            break;
-          case "JOINED":
-            matchFilter = match.isJoined;
-            break;
-          case "FINISHED":
-            matchFilter = match.status === "FINISHED";
-            break;
-          default:
-            matchFilter = true;
-        }
-  
-        return (matchSearch && matchFilter);
-      });
-    }, [filter, matches, search]);
+    return matches.filter((match) => {
+      const matchSearch = match.user.fullName
+        .toLowerCase()
+        .includes(keyword);
 
+      switch (filter) {
+        case "OPEN":
+          return matchSearch && match.status === "OPEN";
+
+        case "MINE":
+          return matchSearch && match.isMine;
+
+        case "JOINED":
+          return matchSearch && match.isJoined;
+
+        case "FINISHED":
+          return matchSearch && match.status === "FINISHED";
+
+        default:
+          return matchSearch;
+      }
+    });
+  }, [filter, matches, search]);
   const totalPages = Math.max(1, Math.ceil(filteredMatches.length / PAGE_SIZE));
 
   const handleClickJoin = (matchId: number) => {
@@ -143,84 +143,84 @@ export default function ManageMatch() {
   };
 
   const handleJoinSubmit = () => {
-  if (!selectedMatchId) {
-    setFormJoinError("Không tìm thấy trận đấu.");
-    return;
-  }
+    if (!selectedMatchId) {
+      setFormJoinError("Không tìm thấy trận đấu.");
+      return;
+    }
 
-  setFormJoinError(null);
+    setFormJoinError(null);
 
-  joinMatch.mutate(selectedMatchId, {
-    onSuccess() {
-      setDialogOpen(false);
-      setSelectedMatchId(null);
-    },
+    joinMatch.mutate(selectedMatchId, {
+      onSuccess() {
+        setDialogJoinOpen(false);
+        setSelectedMatchId(null);
+      },
 
-    onError(error) {
-      setFormError(
-        getErrorMessage(error, "Tham gia kèo thất bại.")
-      );
-    },
-  });
-};
+      onError(error) {
+        setFormJoinError(
+          getErrorMessage(error, "Tham gia kèo thất bại.")
+        );
+      },
+    });
+  };
 
   const handleSubmit = (
-        values:
-          | CreateMatchPayload
-          | UpdateMatchPayload
-      ) => {
-  
-        setFormError(null);
-  
-        if (editingMatch) {
-          updateMatch.mutate(
-            {
-              matchId: editingMatch.matchId,
-              payload: values as UpdateMatchPayload,
-            },
-            {
-              onSuccess() {
-                setDialogOpen(false);
-                setEditingMatch(null);
-              },
-  
-              onError(error) {
-                setFormError(
-                  getErrorMessage(
-                    error,
-                    "Cập nhật sân thất bại."
-                  )
-                );
-              },
-            }
-          );
-          return;
+    values:
+      | CreateMatchPayload
+      | UpdateMatchPayload
+  ) => {
+
+    setFormError(null);
+
+    if (editingMatch) {
+      updateMatch.mutate(
+        {
+          matchId: editingMatch.matchId,
+          payload: values as UpdateMatchPayload,
+        },
+        {
+          onSuccess() {
+            setDialogOpen(false);
+            setEditingMatch(null);
+          },
+
+          onError(error) {
+            setFormError(
+              getErrorMessage(
+                error,
+                "Cập nhật sân thất bại."
+              )
+            );
+          },
         }
-        createMatch.mutate(
-          values as CreateMatchPayload,
-          {
-            onSuccess() {
-              setDialogOpen(false);
-            },
-            onError(error) {
-              setFormError(
-                getErrorMessage(
-                  error,
-                  "Tạo khách hàng thất bại."
-                )
-              );
-            },
-          }
-        );
-      };
+      );
+      return;
+    }
+    createMatch.mutate(
+      values as CreateMatchPayload,
+      {
+        onSuccess() {
+          setDialogOpen(false);
+        },
+        onError(error) {
+          setFormError(
+            getErrorMessage(
+              error,
+              "Tạo khách hàng thất bại."
+            )
+          );
+        },
+      }
+    );
+  };
 
   if (isLoading)
-        return <div>Loading...</div>;
+    return <div>Loading...</div>;
   if (error)
-        return <div>Có lỗi xảy ra.</div>;
+    return <div>Có lỗi xảy ra.</div>;
 
   return (
-    
+
     <div className="space-y-6 p-6">
       <PageIntro />
 
@@ -236,29 +236,29 @@ export default function ManageMatch() {
             onChangePage={setCurrentPage}
           />
           {listError && (
-            <p className="mt-4 text-sm text-red-500">
+            <p className="mt-4 text-sm text-status-danger">
               {listError}
             </p>
           )}
 
-          <MatchesTable 
-            matches={filteredMatches} 
-            currentPage={currentPage} 
-            pageSize={PAGE_SIZE} 
-            filter={filter} 
-            onView={handleView} 
-            onEdit={handleEdit} 
-            onDelete={handleDelete} 
+          <MatchesTable
+            matches={filteredMatches}
+            currentPage={currentPage}
+            pageSize={PAGE_SIZE}
+            filter={filter}
+            onView={handleView}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
             onSelect={handleClickJoin}
             onCancel={handleCancel}
-            />
+          />
           <MatchDetailDialog
             open={detailOpen}
             onOpenChange={setDetailOpen}
             matchId={detailMatchId}
           />
 
-          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}/>
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
           <JoinMatchDialog
             open={dialogJoinOpen}
             onOpenChange={setDialogJoinOpen}

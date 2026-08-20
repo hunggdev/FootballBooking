@@ -1,4 +1,3 @@
-// src/components/account/ChangePasswordSection.tsx
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -17,90 +16,98 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUserStore } from "@/stores/useUserStore";
 
-const ChangePasswordSchema = z.object({
-  password: z
-    .string()
-    .min(1, "Mật khẩu không được để trống")
-    .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-    .max(64, "Mật khẩu tối đa 64 ký tự")
-    .regex(/[a-z]/, "Mật khẩu phải có ít nhất 1 chữ thường")
-    .regex(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ hoa")
-    .regex(/[0-9]/, "Mật khẩu phải có ít nhất 1 chữ số")
-    .regex(
-      /[!@#$%^&*(),.?":{}|<>]/,
-      "Mật khẩu phải có ít nhất 1 ký tự đặc biệt"
-    ),
-  newPassword: z
-  .string()
-  .min(1, "Mật khẩu không được để trống")
-  .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-  .max(64, "Mật khẩu tối đa 64 ký tự")
-  .regex(/[a-z]/, "Mật khẩu phải có ít nhất 1 chữ thường")
-  .regex(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ hoa")
-  .regex(/[0-9]/, "Mật khẩu phải có ít nhất 1 chữ số")
-  .regex(
-    /[!@#$%^&*(),.?":{}|<>]/,
-    "Mật khẩu phải có ít nhất 1 ký tự đặc biệt"
-  ),
-  confirmPassword: z
-  .string()
-  .min(1, "Mật khẩu không được để trống")
-  .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-  .max(64, "Mật khẩu tối đa 64 ký tự")
-  .regex(/[a-z]/, "Mật khẩu phải có ít nhất 1 chữ thường")
-  .regex(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ hoa")
-  .regex(/[0-9]/, "Mật khẩu phải có ít nhất 1 chữ số")
-  .regex(
-    /[!@#$%^&*(),.?":{}|<>]/,
-    "Mật khẩu phải có ít nhất 1 ký tự đặc biệt"
-  ),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Mật khẩu mới và xác nhận mật khẩu không khớp",
-  path: ["confirmPassword"],
-});
+const ChangePasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(1, "Mật khẩu không được để trống")
+      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+      .max(64, "Mật khẩu tối đa 64 ký tự")
+      .regex(/[a-z]/, "Mật khẩu phải có ít nhất 1 chữ thường")
+      .regex(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ hoa")
+      .regex(/[0-9]/, "Mật khẩu phải có ít nhất 1 chữ số")
+      .regex(
+        /[!@#$%^&*(),.?":{}|<>]/,
+        "Mật khẩu phải có ít nhất 1 ký tự đặc biệt",
+      ),
+
+    newPassword: z
+      .string()
+      .min(1, "Mật khẩu không được để trống")
+      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+      .max(64, "Mật khẩu tối đa 64 ký tự")
+      .regex(/[a-z]/, "Mật khẩu phải có ít nhất 1 chữ thường")
+      .regex(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ hoa")
+      .regex(/[0-9]/, "Mật khẩu phải có ít nhất 1 chữ số")
+      .regex(
+        /[!@#$%^&*(),.?":{}|<>]/,
+        "Mật khẩu phải có ít nhất 1 ký tự đặc biệt",
+      ),
+
+    confirmPassword: z
+      .string()
+      .min(1, "Mật khẩu không được để trống")
+      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+      .max(64, "Mật khẩu tối đa 64 ký tự")
+      .regex(/[a-z]/, "Mật khẩu phải có ít nhất 1 chữ thường")
+      .regex(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ hoa")
+      .regex(/[0-9]/, "Mật khẩu phải có ít nhất 1 chữ số")
+      .regex(
+        /[!@#$%^&*(),.?":{}|<>]/,
+        "Mật khẩu phải có ít nhất 1 ký tự đặc biệt",
+      ),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Mật khẩu mới và xác nhận mật khẩu không khớp",
+    path: ["confirmPassword"],
+  });
 
 type ChangePasswordFormValues = z.infer<typeof ChangePasswordSchema>;
 
 export function ChangePasswordSection() {
   const [showPassword, setShowPassword] = useState(false);
-const [showNewPassword, setShowNewPassword] = useState(false);
-const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const {changePassword} = useUserStore();
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const { changePassword } = useUserStore();
   const [showForm, setShowForm] = useState(false);
-  const {register, handleSubmit, reset, formState: { errors, isSubmitting }}= useForm<ChangePasswordFormValues>({
-      resolver: zodResolver(ChangePasswordSchema),
-      mode: "onSubmit",
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ChangePasswordFormValues>({
+    resolver: zodResolver(ChangePasswordSchema),
+    mode: "onSubmit",
   });
 
   const onSubmit = async (data: ChangePasswordFormValues) => {
-    const {password, newPassword, confirmPassword} = data;
-    console.log(data);
-    try{
-      
-      await changePassword(password, newPassword, confirmPassword);
-    }catch{
+    const { password, newPassword, confirmPassword } = data;
 
-    }
+    await changePassword(password, newPassword, confirmPassword);
   };
 
   return (
-    <Card className="border">
+    <Card className="border-border bg-surface text-text-primary">
       <CardHeader>
-        <CardTitle>Bảo mật</CardTitle>
+        <CardTitle className="text-base font-semibold text-text-primary">
+          Bảo mật
+        </CardTitle>
       </CardHeader>
 
       {!showForm ? (
         <>
           <CardContent>
-            <p className="text-sm opacity-60">
+            <p className="text-sm text-text-secondary">
               Đổi mật khẩu đăng nhập cho tài khoản của bạn.
             </p>
           </CardContent>
 
-          <CardFooter className="border-t">
+          <CardFooter className="border-t border-border-subtle">
             <Button
               type="button"
-              variant="outline"
+              className="bg-brand-primary font-semibold text-white hover:bg-brand-primary-hover"
               onClick={() => setShowForm(true)}
             >
               Đổi mật khẩu
@@ -111,71 +118,117 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent>
             <div className="space-y-4">
+              {/* Mật khẩu hiện tại */}
               <div className="space-y-1">
-                <Label htmlFor="password">Mật khẩu hiện tại</Label>
+                <Label
+                  htmlFor="password"
+                  className="text-sm font-medium text-text-secondary"
+                >
+                  Mật khẩu hiện tại
+                </Label>
+
                 <div className="relative">
                   <Input
-                    className="pr-10"
+                    id="password"
+                    className="border-border bg-surface pr-10 text-text-primary placeholder:text-text-muted focus-visible:border-brand-primary focus-visible:ring-brand-primary/30"
                     type={showPassword ? "text" : "password"}
                     placeholder="Nhập mật khẩu hiện tại"
                     {...register("password")}
                   />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-black"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-3 flex items-center text-text-secondary transition-colors hover:text-text-primary"
+                  >
+                    {showPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
+
                 {errors.password && (
-                  <p className="text-sm text-red-500 ">
+                  <p className="text-sm text-status-danger">
                     {errors.password.message}
                   </p>
                 )}
               </div>
 
+              {/* Mật khẩu mới */}
               <div className="space-y-1">
-                <Label htmlFor="newPassword">Mật khẩu mới</Label>
+                <Label
+                  htmlFor="newPassword"
+                  className="text-sm font-medium text-text-secondary"
+                >
+                  Mật khẩu mới
+                </Label>
+
                 <div className="relative">
                   <Input
+                    id="newPassword"
                     type={showNewPassword ? "text" : "password"}
                     placeholder="Nhập mật khẩu mới"
                     {...register("newPassword")}
+                    className="border-border bg-surface pr-10 text-text-primary placeholder:text-text-muted focus-visible:border-brand-primary focus-visible:ring-brand-primary/30"
                   />
+
                   <button
                     type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-black"
+                    onClick={() => setShowNewPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-3 flex items-center text-text-secondary transition-colors hover:text-text-primary"
                   >
-                    {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showNewPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
                   </button>
                 </div>
+
                 {errors.newPassword && (
-                  <p className="text-sm text-red-500 ">
+                  <p className="text-sm text-status-danger">
                     {errors.newPassword.message}
                   </p>
                 )}
               </div>
 
-              <div className="space-y-1 mb-5">
-                <Label htmlFor="confirmPassword">Xác nhận mật khẩu mới</Label>
+              {/* Xác nhận mật khẩu */}
+              <div className="mb-5 space-y-1">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="text-sm font-medium text-text-secondary"
+                >
+                  Xác nhận mật khẩu mới
+                </Label>
+
                 <div className="relative">
                   <Input
+                    id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Nhập lại mật khẩu mới"
                     {...register("confirmPassword")}
+                    className="border-border bg-surface pr-10 text-text-primary placeholder:text-text-muted focus-visible:border-brand-primary focus-visible:ring-brand-primary/30"
                   />
+
                   <button
                     type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-black"
+                    onClick={() =>
+                      setShowConfirmPassword((prev) => !prev)
+                    }
+                    className="absolute inset-y-0 right-3 flex items-center text-text-secondary transition-colors hover:text-text-primary"
                   >
-                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showConfirmPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
                   </button>
                 </div>
+
                 {errors.confirmPassword && (
-                  <p className="text-sm text-red-500 ">
+                  <p className="text-sm text-status-danger">
                     {errors.confirmPassword.message}
                   </p>
                 )}
@@ -183,14 +236,19 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
             </div>
           </CardContent>
 
-          <CardFooter className="border-t flex gap-2">
-            <Button type="submit" disabled={isSubmitting}>
+          <CardFooter className="flex gap-2 border-t border-border-subtle">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-brand-primary font-semibold text-white hover:bg-brand-primary-hover"
+            >
               {isSubmitting ? "Đang xử lý..." : "Lưu thay đổi"}
             </Button>
 
             <Button
               type="button"
               variant="outline"
+              className="border-border bg-transparent text-text-primary hover:bg-surface-hover hover:text-text-primary"
               onClick={() => {
                 reset();
                 setShowForm(false);
@@ -201,6 +259,6 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
           </CardFooter>
         </form>
       )}
-</Card>
+    </Card>
   );
 }

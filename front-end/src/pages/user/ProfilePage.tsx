@@ -16,7 +16,7 @@ const ProfilePage = () => {
   if (!user) {
     return (
       <div className="mx-auto flex max-w-2xl flex-col gap-4 px-4 py-8">
-        <p className="text-sm text-muted-foreground">Đang tải thông tin tài khoản...</p>
+        <p className="text-sm text-text-muted">Đang tải thông tin tài khoản...</p>
       </div>
     );
   }

@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import {
   Dialog,
   DialogContent,
@@ -28,7 +27,7 @@ import {
 import type {
   Match,
   CreateMatchPayload,
-  UpdateMatchPayload,  
+  UpdateMatchPayload,
 } from "@/types/match";
 
 interface MatchFormDialogProps {
@@ -40,16 +39,40 @@ interface MatchFormDialogProps {
   serverError?: string | null;
 }
 
-const emptyForm = {
+type MatchStatus =
+  | "OPEN"
+  | "MATCHED"
+  | "CANCELLED"
+  | "FINISHED";
+
+type CostRule =
+  | "SPLIT"
+  | "LOSER_PAYS"
+  | "WINNER_PAYS"
+  | "NEGOTIATE";
+
+interface FormState {
+  userId?: number;
+  fullName: string;
+  minAge: number;
+  maxAge: number;
+  fieldType: string;
+  timeNote: string;
+  description: string;
+  costRule: CostRule;
+  status: MatchStatus;
+}
+
+const emptyForm: FormState = {
   userId: 0,
   fullName: "",
   minAge: 0,
   maxAge: 0,
-  fieldType: "",
+  fieldType: "FIVE",
   timeNote: "",
   description: "",
-  costRule: "",
-  status: "OPEN" as "OPEN" | "MATCHED" | "CANCELLED" | "FINISHED",
+  costRule: "SPLIT",
+  status: "OPEN",
 };
 
 export function MatchFormDialog({
@@ -59,29 +82,40 @@ export function MatchFormDialog({
   onSubmit,
   isSubmitting = false,
   serverError,
-}: MatchFormDialogProps) { 
+}: MatchFormDialogProps) {
   const isEditing = !!initialData;
-  const defaultForm = initialData
-    ? {
-        fullName: initialData.user.fullName,
-        minAge: initialData.minAge,
-        maxAge: initialData.maxAge,
-        fieldType: initialData.fieldType,
-        timeNote: initialData.timeNote,
-        description: initialData.description,
-        costRule: initialData.costRule,
-        status: initialData.status as "OPEN" | "MATCHED" | "CANCELLED" | "FINISHED",
-      }
-    : emptyForm;
 
-const [form, setForm] = useState(defaultForm);
+  const getDefaultForm = (): FormState => {
+    if (!initialData) {
+      return emptyForm;
+    }
 
-const [error, setError] = useState<string | null>(null);
+    return {
+      fullName: initialData.user?.fullName ?? "",
+      minAge: initialData.minAge,
+      maxAge: initialData.maxAge,
+      fieldType: initialData.fieldType,
+      timeNote: initialData.timeNote ?? "",
+      description: initialData.description ?? "",
+      costRule: initialData.costRule as CostRule,
+      status: initialData.status as MatchStatus,
+    };
+  };
 
-  
-  const updateMatch = <K extends keyof typeof form>(
+  const [form, setForm] = useState<FormState>(getDefaultForm());
+  const [error, setError] = useState<string | null>(null);
+
+  // Khi mở dialog hoặc initialData thay đổi thì cập nhật lại form
+  // useEffect(() => {
+  //   if (open) {
+  //     setForm(getDefaultForm());
+  //     setError(null);
+  //   }
+  // }, [initialData, open]);
+
+  const updateMatch = <K extends keyof FormState>(
     key: K,
-    value: (typeof form)[K]
+    value: FormState[K]
   ) => {
     setForm((prev) => ({
       ...prev,
@@ -89,7 +123,31 @@ const [error, setError] = useState<string | null>(null);
     }));
   };
 
-  const validate = () => {
+  const validate = (): string | null => {
+    if (form.minAge < 0 || form.maxAge < 0) {
+      return "Tuổi không được nhỏ hơn 0.";
+    }
+
+    if (form.minAge > form.maxAge) {
+      return "Tuổi tối thiểu không được lớn hơn tuổi tối đa.";
+    }
+
+    if (!form.fieldType) {
+      return "Vui lòng chọn loại sân.";
+    }
+
+    if (!form.timeNote.trim()) {
+      return "Vui lòng nhập thời gian dự kiến.";
+    }
+
+    if (!form.description.trim()) {
+      return "Vui lòng nhập mô tả.";
+    }
+
+    if (!form.costRule) {
+      return "Vui lòng chọn hình thức trả tiền.";
+    }
+
     return null;
   };
 
@@ -107,147 +165,212 @@ const [error, setError] = useState<string | null>(null);
       minAge: form.minAge,
       maxAge: form.maxAge,
       fieldType: form.fieldType,
-      timeNote: form.timeNote,
-      description: form.description,
+      timeNote: form.timeNote.trim(),
+      description: form.description.trim(),
       costRule: form.costRule,
-      ...(isEditing ? { status: form.status } : {}),
+
+      ...(isEditing
+        ? {
+          status: form.status,
+        }
+        : {}),
     };
 
     onSubmit(payload);
   };
 
   const resetForm = () => {
-  setForm(initialData ? defaultForm : emptyForm);
-  setError(null);
-};
+    setForm(getDefaultForm());
+    setError(null);
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-xl border-border bg-elevated text-text-primary">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-text-primary">
             {isEditing ? "Sửa thông tin kèo đấu" : "Tạo kèo đấu"}
           </DialogTitle>
         </DialogHeader>
 
         <FieldGroup className="space-y-4">
-
+          {/* Tuổi */}
           <div className="grid grid-cols-2 gap-2">
             <FieldWrapper className="flex-1">
-              <FieldLabel>Tuổi (min)</FieldLabel>
+              <FieldLabel className="text-text-primary">
+                Tuổi (min)
+              </FieldLabel>
+
               <Input
+                type="number"
+                min={0}
                 value={form.minAge}
-                onChange={(e) => updateMatch("minAge", Number(e.target.value))}
+                onChange={(e) =>
+                  updateMatch("minAge", Number(e.target.value))
+                }
+                className="border-border bg-surface text-text-primary placeholder:text-text-muted"
               />
             </FieldWrapper>
 
             <FieldWrapper>
-              <FieldLabel>Tuổi (max)</FieldLabel>
+              <FieldLabel className="text-text-primary">
+                Tuổi (max)
+              </FieldLabel>
+
               <Input
+                type="number"
+                min={0}
                 value={form.maxAge}
-                onChange={(e) => updateMatch("maxAge", Number(e.target.value))}
+                onChange={(e) =>
+                  updateMatch("maxAge", Number(e.target.value))
+                }
+                className="border-border bg-surface text-text-primary placeholder:text-text-muted"
               />
-            </FieldWrapper>
-
-            <FieldWrapper>
-                <FieldLabel>Thời gian dự kiến</FieldLabel>
-                <Input
-                  value={form.timeNote}
-                  onChange={(e) => updateMatch("timeNote", e.target.value)}
-                  placeholder="Ex: 14h 22/7/2026"
-                />
             </FieldWrapper>
           </div>
 
+          {/* Thời gian */}
           <FieldWrapper>
-              <FieldLabel>Mô tả</FieldLabel>
-              <Input 
-                value={form.description}
-                onChange={(e) => updateMatch("description", e.target.value)}
-              />
+            <FieldLabel className="text-text-primary">
+              Thời gian dự kiến
+            </FieldLabel>
+
+            <Input
+              value={form.timeNote}
+              onChange={(e) =>
+                updateMatch("timeNote", e.target.value)
+              }
+              placeholder="Ví dụ: 14h 22/07/2026"
+              className="border-border bg-surface text-text-primary placeholder:text-text-muted"
+            />
           </FieldWrapper>
 
+          {/* Mô tả */}
+          <FieldWrapper>
+            <FieldLabel className="text-text-primary">
+              Mô tả
+            </FieldLabel>
+
+            <Input
+              value={form.description}
+              onChange={(e) =>
+                updateMatch("description", e.target.value)
+              }
+              placeholder="Nhập mô tả kèo đấu..."
+              className="border-border bg-surface text-text-primary placeholder:text-text-muted"
+            />
+          </FieldWrapper>
+
+          {/* Cost rule + Field type */}
           <div className="grid grid-cols-2 gap-2">
             <FieldWrapper>
-                <FieldLabel>Hình thức trả tiền</FieldLabel>
-                <Select   
-                  value={form.costRule}
-                  onValueChange={(value) =>
-                    updateMatch(
-                      "costRule",
-                      (value ?? "SPLIT") as "SPLIT" | "LOSER_PAYS" | "WINNER_PAYS" | "NEGOTIATE"
-                    )
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+              <FieldLabel className="text-text-primary">
+                Hình thức trả tiền
+              </FieldLabel>
 
-                  <SelectContent>
-                    <SelectItem value="SPLIT">Chia đều</SelectItem>
-                    <SelectItem value="LOSER_PAYS">Thua trả</SelectItem>
-                    <SelectItem value="WINNER_PAYS">Thắng trả</SelectItem>
-                    <SelectItem value="NEGOTIATE">Thương lượng</SelectItem>
-                  </SelectContent>
-                </Select>
+              <Select
+                value={form.costRule}
+                onValueChange={(value) =>
+                  updateMatch("costRule", value as CostRule)
+                }
+              >
+                <SelectTrigger className="border-border bg-surface text-text-primary">
+                  <SelectValue placeholder="Chọn hình thức" />
+                </SelectTrigger>
+
+                <SelectContent className="border-border bg-elevated text-text-primary">
+                  <SelectItem value="SPLIT">
+                    Chia đều
+                  </SelectItem>
+
+                  <SelectItem value="LOSER_PAYS">
+                    Thua trả
+                  </SelectItem>
+
+                  <SelectItem value="WINNER_PAYS">
+                    Thắng trả
+                  </SelectItem>
+
+                  <SelectItem value="NEGOTIATE">
+                    Thương lượng
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </FieldWrapper>
 
             <FieldWrapper>
-                <FieldLabel>Loại sân</FieldLabel>
+              <FieldLabel className="text-text-primary">
+                Loại sân
+              </FieldLabel>
 
-                <Select   
-                  value={form.fieldType}
-                  onValueChange={(value) =>
-                    updateMatch(
-                      "fieldType",
-                      (value ?? "FIVE") as "FIVE" | "SEVEN" | "ELEVEN"
-                    )
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+              <Select
+                value={form.fieldType}
+                onValueChange={(value) =>
+                  updateMatch("fieldType", value ?? "")
+                }
+              >
+                <SelectTrigger className="border-border bg-surface text-text-primary">
+                  <SelectValue placeholder="Chọn loại sân" />
+                </SelectTrigger>
 
-                  <SelectContent>
-                    <SelectItem value="FIVE">5-5</SelectItem>
-                    <SelectItem value="SEVEN">7-7</SelectItem>
-                    <SelectItem value="ELEVEN">11-11</SelectItem>
-                  </SelectContent>
-                </Select>
+                <SelectContent className="border-border bg-elevated text-text-primary">
+                  <SelectItem value="FIVE">
+                    5-5
+                  </SelectItem>
+
+                  <SelectItem value="SEVEN">
+                    7-7
+                  </SelectItem>
+
+                  <SelectItem value="ELEVEN">
+                    11-11
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </FieldWrapper>
           </div>
 
+          {/* Người tạo */}
           {isEditing && (
             <FieldWrapper>
-              <FieldLabel>Người tạo kèo</FieldLabel>
+              <FieldLabel className="text-text-primary">
+                Người tạo kèo
+              </FieldLabel>
+
               <Input
                 value={form.fullName}
                 disabled
+                className="border-border bg-surface text-text-primary disabled:opacity-70"
               />
             </FieldWrapper>
           )}
+
+          {/* Status */}
           {isEditing && (
             <FieldWrapper>
-              <FieldLabel>Trạng thái</FieldLabel>
+              <FieldLabel className="text-text-primary">
+                Trạng thái
+              </FieldLabel>
 
-              <Select   
+              <Select
                 value={form.status}
                 onValueChange={(value) =>
                   updateMatch(
                     "status",
-                    (value ?? "ACTIVE") as
-                      | "OPEN"
-                      | "MATCHED"
-                      | "CANCELLED"
-                      | "FINISHED"
+                    value as MatchStatus
                   )
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="border-border bg-surface text-text-primary">
                   <SelectValue />
                 </SelectTrigger>
 
-                <SelectContent>
+                <SelectContent className="border-border bg-elevated text-text-primary">
                   <SelectItem value="OPEN">
                     Đang mở
                   </SelectItem>
@@ -268,31 +391,36 @@ const [error, setError] = useState<string | null>(null);
             </FieldWrapper>
           )}
 
+          {/* Error */}
           {(error || serverError) && (
-            <p className="text-sm text-red-500">
+            <p className="text-sm text-status-danger">
               {error ?? serverError}
             </p>
           )}
-
         </FieldGroup>
 
         <DialogFooter>
           <Button
+            type="button"
             variant="outline"
-            onClick={() => {onOpenChange(false); resetForm();}}
+            onClick={handleClose}
+            disabled={isSubmitting}
+            className="border-border text-text-primary"
           >
             Hủy
           </Button>
 
           <Button
+            type="button"
             onClick={handleSubmit}
             disabled={isSubmitting}
+            className="bg-brand-primary text-white hover:bg-brand-primary-hover"
           >
             {isSubmitting
               ? "Đang lưu..."
               : isEditing
-              ? "Lưu thay đổi"
-              : "Tạo kèo đấu"}
+                ? "Lưu thay đổi"
+                : "Tạo kèo đấu"}
           </Button>
         </DialogFooter>
       </DialogContent>

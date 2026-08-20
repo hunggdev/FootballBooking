@@ -24,22 +24,41 @@ export function SlotGrid({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Sơ đồ khung giờ</h2>
-        {(isLoading || isMutating) && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+        <h2 className="text-lg font-semibold text-text-primary">
+          Sơ đồ khung giờ
+        </h2>
+
+        {(isLoading || isMutating) && (
+          <Loader2 className="h-4 w-4 animate-spin text-brand-primary" />
+        )}
       </div>
 
       {!isLoading && (!slots || slots.length === 0) ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">Chưa có khung giờ cho ngày này.</p>
+        <p className="py-8 text-center text-sm text-text-muted">
+          Chưa có khung giờ cho ngày này.
+        </p>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {(slots ?? []).map((slot) => {
             const isMine =
               Boolean(slot.isMyHold) ||
-              holds.some((h) => h.slotId === slot.slotId && h.bookingDate === selectedDate);
-            const isOtherHoldSlot = slot.status === "HOLD" && !isMine;
+              holds.some(
+                (h) =>
+                  h.slotId === slot.slotId &&
+                  h.bookingDate === selectedDate
+              );
+
+            const isOtherHoldSlot =
+              slot.status === "HOLD" && !isMine;
+
             const isBooked = slot.status === "BOOKED";
             const isMaintenance = slot.status === "MAINTENANCE";
-            const canSelect = (slot.status === "AVAILABLE" || isMine) && !isBooked && !isMaintenance && !isOtherHoldSlot;
+
+            const canSelect =
+              (slot.status === "AVAILABLE" || isMine) &&
+              !isBooked &&
+              !isMaintenance &&
+              !isOtherHoldSlot;
 
             return (
               <SlotButton

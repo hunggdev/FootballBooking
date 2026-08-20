@@ -7,17 +7,49 @@ interface GuideListProps {
 
 export function GuideList({ items }: GuideListProps) {
   return (
-    <Card>
+    <Card className="border-border bg-surface text-text-primary">
       <CardHeader>
-        <CardTitle className="text-sm">Hướng dẫn</CardTitle>
+        <CardTitle className="text-sm text-text-primary">
+          Hướng dẫn
+        </CardTitle>
       </CardHeader>
+
       <CardContent className="space-y-3">
         {items.map((item) => (
-          <div key={item.id} className="flex items-start gap-3 border-b pb-3 last:border-0 last:pb-0">
-            <div className="mt-0.5 h-5 w-5 shrink-0 rounded-full border" />
+          <div
+            key={item.id}
+            className="
+              flex
+              items-start
+              gap-3
+              border-b
+              border-border
+              pb-3
+              last:border-0
+              last:pb-0
+            "
+          >
+            <div
+              className="
+                mt-0.5
+                h-5
+                w-5
+                shrink-0
+                rounded-full
+                border-2
+                border-brand-primary
+                bg-brand-primary/10
+              "
+            />
+
             <div>
-              <p className="text-sm font-medium">{item.title}</p>
-              <p className="text-xs text-muted-foreground">{item.description}</p>
+              <p className="text-sm font-medium text-text-primary">
+                {item.title}
+              </p>
+
+              <p className="text-xs text-text-muted">
+                {item.description}
+              </p>
             </div>
           </div>
         ))}

@@ -18,8 +18,8 @@
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --sans: system-ui, "Segoe UI", Roboto, sans-serif;
+  --heading: system-ui, "Segoe UI", Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
   font: 15px/145% var(--sans);
@@ -94,7 +94,80 @@
 
   --sidebar-border: oklch(0.922 0 0);
 
-  --sidebar-ring: oklch(0.708 0 0)
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+/* =========================================================
+   NEW DESIGN TOKENS (dark redesign - admin/user)
+========================================================= */
+:root {
+  /* ---------- NỀN ---------- */
+  --token-bg-base: #0a0f1a;
+  --token-bg-deep: #050810;
+  --token-bg-surface: #141d2c;
+  --token-bg-surface-hover: #1b2536;
+  --token-bg-elevated: #19233a;
+
+  /* ---------- BORDER ---------- */
+  --token-border-default: #232f42;
+  --token-border-subtle: #1a2333;
+
+  /* ---------- BRAND ---------- */
+  --token-primary: #22a55a;
+  --token-primary-hover: #1c8a4b;
+  --token-primary-foreground: #ffffff;
+
+  --token-accent: #f5a623;
+  --token-accent-hover: #d98f16;
+  --token-accent-foreground: #111827;
+
+  /* ---------- STATUS ---------- */
+  --token-success: #22a55a;
+  --token-success-bg: rgba(34, 165, 90, 0.12);
+
+  --token-warning: #f5a623;
+  --token-warning-bg: rgba(245, 166, 35, 0.12);
+
+  --token-danger: #dd3b3b;
+  --token-danger-bg: rgba(221, 59, 59, 0.12);
+
+  --token-info: #3f7cba;
+  --token-info-bg: rgba(63, 124, 186, 0.12);
+
+  --token-star: #fbbf24;
+
+  --token-tag-orange: #c2501f;
+  --token-tag-indigo: #5c6fb0;
+
+  /* ---------- COUNTDOWN ---------- */
+  --token-danger-bright: #ff4127;
+
+  --token-bg-countdown: linear-gradient(
+    135deg,
+    rgba(221, 59, 59, 0.16) 0%,
+    rgba(20, 29, 44, 0.5) 100%
+  );
+
+  --token-border-countdown: rgba(221, 59, 59, 0.4);
+
+  --token-text-countdown-label: #f1b4ba;
+
+  --token-gradient-countdown-text: linear-gradient(
+    90deg,
+    #dd3b3b 0%,
+    #ff4127 100%
+  );
+
+  /* ---------- TEXT ---------- */
+  --token-text-primary: #f8fafc;
+  --token-text-secondary: #94a3b8;
+  --token-text-muted: #64748b;
+  --token-text-on-dark: #ffffff;
+
+  /* ---------- GRADIENT ---------- */
+  --token-gradient-brand: linear-gradient(135deg, #22a55a 0%, #f5a623 100%);
+
+  --token-gradient-hero-text: linear-gradient(90deg, #22a55a 0%, #ffffff 100%);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -137,7 +210,7 @@ h1,
 h2 {
   font-family: var(--heading);
   font-weight: 500;
-  color: var(--text-h);
+  /* color: var(--text-h); */
 }
 
 h1 {
@@ -179,7 +252,7 @@ code {
 
 @theme inline {
   --font-heading: var(--font-sans);
-  --font-sans: 'Geist Variable', sans-serif;
+  --font-sans: "Geist Variable", sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -220,6 +293,40 @@ code {
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+@theme {
+  --color-base: var(--token-bg-base);
+  --color-deep: var(--token-bg-deep);
+  --color-surface: var(--token-bg-surface);
+  --color-surface-hover: var(--token-bg-surface-hover);
+  --color-elevated: var(--token-bg-elevated);
+
+  --color-border: var(--token-border-default);
+  --color-border-subtle: var(--token-border-subtle);
+
+  --color-brand-primary: var(--token-primary);
+  --color-brand-primary-hover: var(--token-primary-hover);
+  --color-brand-accent: var(--token-accent);
+  --color-brand-accent-hover: var(--token-accent-hover);
+
+  --color-status-success: var(--token-success);
+  --color-status-success-bg: var(--token-success-bg);
+  --color-status-warning: var(--token-warning);
+  --color-status-warning-bg: var(--token-warning-bg);
+  --color-status-danger: var(--token-danger);
+  --color-status-danger-bg: var(--token-danger-bg);
+  --color-status-info: var(--token-info);
+  --color-status-info-bg: var(--token-info-bg);
+
+  --color-rating-star: var(--token-star);
+
+  --color-status-orange: var(--token-tag-orange);
+  --color-status-indigo: var(--token-tag-indigo);
+
+  --color-text-primary: var(--token-text-primary);
+  --color-text-secondary: var(--token-text-secondary);
+  --color-text-muted: var(--token-text-muted);
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -256,11 +363,15 @@ code {
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;}
+    @apply border-border outline-ring/50;
+  }
   body {
-    @apply bg-background text-foreground;}
+    @apply bg-background text-foreground;
+  }
   html {
-    @apply font-sans;}}
+    @apply font-sans;
+  }
+}
 
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;

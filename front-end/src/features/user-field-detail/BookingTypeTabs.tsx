@@ -12,9 +12,13 @@ interface BookingTypeTabsProps {
   disabled?: boolean;
 }
 
-export function BookingTypeTabs({ value, onChange, disabled }: BookingTypeTabsProps) {
+export function BookingTypeTabs({
+  value,
+  onChange,
+  disabled,
+}: BookingTypeTabsProps) {
   return (
-    <div className="flex gap-2 border-b">
+    <div className="flex gap-2 border-b border-border">
       {TABS.map((tab) => (
         <button
           key={tab.value}
@@ -22,10 +26,11 @@ export function BookingTypeTabs({ value, onChange, disabled }: BookingTypeTabsPr
           disabled={disabled}
           onClick={() => onChange(tab.value)}
           className={cn(
-            "-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors",
+            "-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-all duration-200",
             value === tab.value
-              ? "border-primary text-foreground"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border-brand-primary text-brand-primary"
+              : "border-transparent text-text-muted hover:border-brand-primary/40 hover:text-text-primary",
+            disabled && "cursor-not-allowed opacity-50"
           )}
         >
           {tab.label}

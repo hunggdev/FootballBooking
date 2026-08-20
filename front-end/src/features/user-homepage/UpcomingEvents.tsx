@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { EventListItem } from "./EventListItem";
 import type { EventItem } from "@/types/home.ts";
+import { CalendarDays, ArrowRight } from "lucide-react";
 
 const events: EventItem[] = [
   {
@@ -26,16 +27,73 @@ const events: EventItem[] = [
 
 export function UpcomingEvents() {
   return (
-    <div className="flex flex-col gap-4 border p-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold">Sự kiện & Giải đấu</h3>
-        <Button variant="link" className="text-sm">
-          Xem tất cả →
+    <div
+      className="
+        flex
+        h-full
+        flex-col
+        gap-4
+        rounded-xl
+        border
+        border-border
+        bg-surface
+        p-5
+        text-text-primary
+        shadow-sm
+        transition-all
+        duration-300
+        hover:border-brand-primary/30
+        hover:shadow-md
+      "
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <div className="mb-1 flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-brand-primary" />
+
+            <span
+              className="
+                text-xs
+                font-semibold
+                uppercase
+                tracking-wider
+                text-brand-primary
+              "
+            >
+              Sự kiện
+            </span>
+          </div>
+
+          <h3 className="text-lg font-bold text-text-primary">
+            Sự kiện & Giải đấu
+          </h3>
+        </div>
+
+        <Button
+          variant="ghost"
+          className="
+            shrink-0
+            px-2
+            text-xs
+            font-semibold
+            text-brand-primary
+            hover:bg-brand-primary/10
+            hover:text-brand-primary
+          "
+        >
+          Xem tất cả
+          <ArrowRight className="ml-1 h-3.5 w-3.5" />
         </Button>
       </div>
-      <div className="flex flex-col gap-3">
+
+      {/* Event list */}
+      <div className="flex flex-1 flex-col gap-3">
         {events.map((event) => (
-          <EventListItem key={event.id} event={event} />
+          <EventListItem
+            key={event.id}
+            event={event}
+          />
         ))}
       </div>
     </div>
