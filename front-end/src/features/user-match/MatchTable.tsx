@@ -12,6 +12,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
 import type { Match } from "@/types/match";
+import { fieldTypeBadge, fieldTypeLabel } from "@/types/field";
+
+const costRuleBadge: Record<string, string> = {
+  SPLIT: "border-amber-500/20 bg-amber-500/10 text-amber-400",
+  LOSER_PAYS: "border-orange-500/20 bg-orange-500/10 text-orange-400",
+  WINNER_PAYS: "border-indigo-500/20 bg-indigo-500/10 text-indigo-400",
+  NEGOTIATE: "border-slate-500/20 bg-slate-500/10 text-slate-300",
+};
 
 interface Props {
   matches: Match[];
@@ -25,8 +33,8 @@ interface Props {
   filter: string;
 }
 
-const statusLabel: Record<Match["status"], string> = {
-  OPEN: "Mở",
+const statusLabel: Record<string, string> = {
+  OPEN: "Đang tìm",
   MATCHED: "Đã ghép",
   FINISHED: "Đã kết thúc",
   CANCELLED: "Đã hủy",
@@ -47,12 +55,9 @@ const costRuleLabel: Record<Match["costRule"], string> = {
 
 const statusClass: Record<Match["status"], string> = {
   OPEN: "border-status-success/30 bg-status-success-bg text-status-success",
-  MATCHED:
-    "border-brand-primary/30 bg-brand-primary/10 text-brand-primary",
-  FINISHED:
-    "border-border bg-elevated text-text-secondary",
-  CANCELLED:
-    "border-status-danger/30 bg-status-danger-bg text-status-danger",
+  MATCHED: "border-brand-primary/30 bg-brand-primary/10 text-brand-primary",
+  FINISHED: "border-border bg-elevated text-text-secondary",
+  CANCELLED: "border-status-danger/30 bg-status-danger-bg text-status-danger",
 };
 
 // function formatDate(iso: string) {
@@ -75,46 +80,49 @@ export function MatchesTable({
 
   const currentMatches = matches.slice(startIndex, endIndex);
 
+  const getInitials = (name?: string) => {
+    if (!name) return "U";
+    const parts = name.trim().split(" ");
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
   return (
     <Card className="overflow-hidden border-border bg-surface text-text-primary">
       <CardContent className="p-0">
         <Table>
           <TableHeader>
-            <TableRow className="border-border bg-elevated hover:bg-elevated">
-              <TableHead className="font-semibold text-text-secondary">
-                No.
+            <TableRow className="border-border/60 bg-elevated/30 hover:bg-elevated/30">
+              <TableHead className="font-semibold uppercase text-text-secondary">
+                ID
               </TableHead>
 
-              <TableHead className="font-semibold text-text-secondary">
+              <TableHead className="font-semibold uppercase text-text-secondary">
                 Người tạo kèo
               </TableHead>
 
-              <TableHead className="font-semibold text-text-secondary">
-                Tuổi (min)
+              <TableHead className="font-semibold uppercase text-text-secondary">
+                Độ tuổi
               </TableHead>
 
-              <TableHead className="font-semibold text-text-secondary">
-                Tuổi (max)
-              </TableHead>
-
-              <TableHead className="font-semibold text-text-secondary">
+              <TableHead className="font-semibold uppercase text-text-secondary">
                 Loại sân
               </TableHead>
 
-              <TableHead className="font-semibold text-text-secondary">
+              <TableHead className="font-semibold uppercase text-text-secondary">
                 Thời gian dự kiến
               </TableHead>
 
-              <TableHead className="font-semibold text-text-secondary">
+              <TableHead className="font-semibold uppercase text-text-secondary">
                 Hình thức trả tiền
               </TableHead>
 
-              <TableHead className="font-semibold text-text-secondary">
+              <TableHead className="font-semibold uppercase text-text-secondary">
                 Trạng thái
               </TableHead>
 
-              <TableHead className="text-right font-semibold text-text-secondary">
-                Thao tác
+              <TableHead className="text-right font-semibold uppercase text-text-secondary">
+                Hành động
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -130,153 +138,160 @@ export function MatchesTable({
                 </TableCell>
               </TableRow>
             ) : (
-              currentMatches.map((match, index) => (
-                <TableRow
-                  key={match.matchId}
-                  className="border-border transition-colors hover:bg-surface-hover"
-                >
-                  {/* STT */}
-                  <TableCell className="font-medium text-text-secondary">
-                    {startIndex + index + 1}
-                  </TableCell>
+              currentMatches.map((match, index) => {
+                const upperStatus = (match.status || "").toUpperCase();
+                const upperType = (match.fieldType || "").toUpperCase();
+                const upperCost = (match.costRule || "").toUpperCase();
+                return (
+                  <TableRow
+                    key={match.matchId}
+                    className="border-border transition-colors hover:bg-surface-hover"
+                  >
+                    {/* STT */}
+                    <TableCell className="font-medium text-text-secondary">
+                      {startIndex + index + 1}
+                    </TableCell>
 
-                  {/* Người tạo */}
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8 border-2 border-border bg-elevated">
-                        <AvatarFallback className="bg-elevated text-xs font-semibold text-text-primary">
-                          {match.user.fullName
-                            ?.charAt(0)
-                            .toUpperCase() ?? "?"}
-                        </AvatarFallback>
-                      </Avatar>
+                    {/* Người tạo */}
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8 border border-border/60">
+                          <AvatarFallback className="bg-[image:var(--token-gradient-brand)] text-[11px] font-bold text-white">
+                            {getInitials(match.user?.fullName)}
+                          </AvatarFallback>
+                        </Avatar>
 
-                      <div className="min-w-0">
-                        <p className="font-medium text-text-primary">
-                          {match.user.fullName}
-                        </p>
+                        <div className="min-w-0">
+                          <p className="font-medium text-text-primary">
+                            {match.user.fullName}
+                          </p>
 
-                        <p className="text-xs text-text-muted">
-                          Người tạo kèo
-                        </p>
+                          {/* <p className="text-xs text-text-muted">Người tạo kèo</p> */}
+                        </div>
                       </div>
-                    </div>
-                  </TableCell>
+                    </TableCell>
 
-                  {/* Tuổi min */}
-                  <TableCell className="text-text-secondary">
-                    {match.minAge ?? "Chưa cập nhật"}
-                  </TableCell>
+                    {/* Độ tuổi */}
+                    <TableCell className="text-text-secondary">
+                      {match.minAge && match.maxAge
+                        ? `${match.minAge} - ${match.maxAge} tuổi`
+                        : match.minAge
+                          ? `Từ ${match.minAge}t`
+                          : "Bất kỳ"}
+                    </TableCell>
 
-                  {/* Tuổi max */}
-                  <TableCell className="text-text-secondary">
-                    {match.maxAge ?? "Chưa cập nhật"}
-                  </TableCell>
-
-                  {/* Loại sân */}
-                  <TableCell>
-                    <span className="font-medium text-text-primary">
-                      {typeLabel[match.fieldType] ??
-                        match.fieldType}
-                    </span>
-                  </TableCell>
-
-                  {/* Thời gian */}
-                  <TableCell className="text-text-secondary">
-                    {match.timeNote || "Chưa cập nhật"}
-                  </TableCell>
-
-                  {/* Hình thức trả tiền */}
-                  <TableCell>
-                    <span className="text-text-secondary">
-                      {costRuleLabel[match.costRule] ??
-                        match.costRule}
-                    </span>
-                  </TableCell>
-
-                  {/* Trạng thái */}
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={statusClass[match.status]}
-                    >
-                      {statusLabel[match.status] ??
-                        match.status}
-                    </Badge>
-                  </TableCell>
-
-                  {/* Thao tác */}
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      {/* Xem */}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onView?.(match)}
-                        className="border-border bg-elevated text-text-primary hover:bg-surface-hover hover:text-text-primary"
+                    {/* Loại sân */}
+                    <TableCell>
+                      <span
+                        className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-[11px] font-semibold ${
+                          fieldTypeBadge[upperType] ||
+                          "border-border bg-elevated text-text-secondary"
+                        }`}
                       >
-                        Xem
-                      </Button>
+                        {fieldTypeLabel[upperType] || match.fieldType}
+                      </span>
+                    </TableCell>
 
-                      {/* Tham gia */}
-                      {filter === "OPEN" && (
-                        <Button
-                          size="sm"
-                          onClick={() => onSelect?.(match.matchId)}
-                          className="bg-brand-primary text-white hover:bg-brand-primary-hover"
-                        >
-                          Tham gia
-                        </Button>
-                      )}
+                    {/* Thời gian */}
+                    <TableCell className="text-text-secondary">
+                      {match.timeNote || "Chưa cập nhật"}
+                    </TableCell>
 
-                      {/* Sửa */}
-                      {filter === "MINE" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onEdit?.(match)}
-                          disabled={match.status !== "OPEN"}
-                          className="border-brand-primary/40 bg-transparent text-brand-primary hover:bg-brand-primary/10 hover:text-brand-primary"
-                        >
-                          Sửa
-                        </Button>
-                      )}
+                    {/* Hình thức trả tiền */}
+                    <TableCell>
+                      <span
+                        className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold ${
+                          costRuleBadge[upperCost] ||
+                          "border-border bg-elevated text-text-secondary"
+                        }`}
+                      >
+                        {costRuleLabel[upperCost] || match.costRule}
+                      </span>
+                    </TableCell>
 
-                      {/* Xóa */}
-                      {filter === "MINE" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onDelete?.(match)}
-                          disabled={
-                            match.status === "FINISHED" ||
-                            match.status === "CANCELLED"
-                          }
-                          className="border-status-danger/40 bg-transparent text-status-danger hover:bg-status-danger-bg hover:text-status-danger"
-                        >
-                          Xóa
-                        </Button>
-                      )}
+                    {/* Trạng thái */}
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={statusClass[match.status]}
+                      >
+                        {statusLabel[match.status] ?? match.status}
+                      </Badge>
+                    </TableCell>
 
-                      {/* Hủy tham gia */}
-                      {filter === "JOINED" && (
+                    {/* Thao tác */}
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        {/* Xem */}
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => onCancel?.(match)}
-                          disabled={
-                            match.status === "FINISHED" ||
-                            match.status === "CANCELLED"
-                          }
-                          className="border-status-danger/40 bg-transparent text-status-danger hover:bg-status-danger-bg hover:text-status-danger"
+                          onClick={() => onView?.(match)}
+                          className="border-border bg-elevated text-text-primary hover:bg-surface-hover hover:text-text-primary"
                         >
-                          Hủy
+                          Xem
                         </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+
+                        {/* Tham gia */}
+                        {filter === "OPEN" && (
+                          <Button
+                            size="sm"
+                            onClick={() => onSelect?.(match.matchId)}
+                            className="bg-brand-primary text-white hover:bg-brand-primary-hover"
+                          >
+                            Tham gia
+                          </Button>
+                        )}
+
+                        {/* Sửa */}
+                        {filter === "MINE" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onEdit?.(match)}
+                            disabled={match.status !== "OPEN"}
+                            className="border-brand-primary/40 bg-transparent text-brand-primary hover:bg-brand-primary/10 hover:text-brand-primary"
+                          >
+                            Sửa
+                          </Button>
+                        )}
+
+                        {/* Xóa */}
+                        {filter === "MINE" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onDelete?.(match)}
+                            disabled={
+                              match.status === "FINISHED" ||
+                              match.status === "CANCELLED"
+                            }
+                            className="border-status-danger/40 bg-transparent text-status-danger hover:bg-status-danger-bg hover:text-status-danger"
+                          >
+                            Xóa
+                          </Button>
+                        )}
+
+                        {/* Hủy tham gia */}
+                        {filter === "JOINED" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onCancel?.(match)}
+                            disabled={
+                              match.status === "FINISHED" ||
+                              match.status === "CANCELLED"
+                            }
+                            className="border-status-danger/40 bg-transparent text-status-danger hover:bg-status-danger-bg hover:text-status-danger"
+                          >
+                            Hủy
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>

@@ -1,7 +1,6 @@
+// src/features/admin-dashboard/AnalyticsOverview.tsx
 import { useState } from "react";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import {
   Select,
   SelectContent,
@@ -9,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import {
   BarChart,
   Bar,
@@ -22,6 +20,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { BarChart3, PieChart as PieChartIcon } from "lucide-react";
 
 interface ChartStats {
   date: string;
@@ -38,7 +37,7 @@ interface BookingRateByTime {
 
 interface ChartStatsProps {
   chartStats: ChartStats[];
-  bookingRateByTime: BookingRateByTime;
+  bookingRateByTime: BookingRateByTime | null;
 }
 
 export function AnalyticsOverview({
@@ -47,250 +46,209 @@ export function AnalyticsOverview({
 }: ChartStatsProps) {
   const [range, setRange] = useState<"7d" | "30d">("7d");
 
-  /**
-   * Format ngày
-   *
-   * 7d  -> 16/08
-   * 30d -> 16
-   */
-  const formatDate = (
-    date: string,
-    range: "7d" | "30d"
-  ) => {
-    // Nếu backend trả YYYY-MM-DD
-    // dùng split để tránh lỗi timezone
+  const formatDate = (date: string, range: "7d" | "30d") => {
     const parts = date.split("-");
-
     if (parts.length === 3) {
       const day = parts[2];
       const month = parts[1];
-
-      return range === "7d"
-        ? `${day}/${month}`
-        : day;
+      return range === "7d" ? `${day}/${month}` : day;
     }
-
-    // Fallback nếu date không phải YYYY-MM-DD
     const d = new Date(date);
-
     const day = String(d.getDate()).padStart(2, "0");
     const month = String(d.getMonth() + 1).padStart(2, "0");
-
-    return range === "7d"
-      ? `${day}/${month}`
-      : day;
+    return range === "7d" ? `${day}/${month}` : day;
   };
 
-  /**
-   * Format doanh thu
-   *
-   * 500000  -> 500.000 ₫
-   * 1200000 -> 1.200.000 ₫
-   */
   const formatRevenue = (value: number) => {
     return new Intl.NumberFormat("vi-VN").format(value) + " ₫";
   };
 
-  /**
-   * Format số tiền trên Y-axis
-   *
-   * 1000      -> 1K
-   * 1000000   -> 1M
-   */
   const formatYAxis = (value: number) => {
     if (value >= 1_000_000) {
       return `${(value / 1_000_000).toFixed(1)}M`;
     }
-
     if (value >= 1_000) {
       return `${(value / 1_000).toFixed(0)}K`;
     }
-
     return value.toString();
   };
 
-  /**
-   * Đảm bảo dữ liệu được sắp xếp theo ngày
-   */
   const sortedChartStats = [...(chartStats ?? [])].sort(
-    (a, b) => {
-      return (
-        new Date(a.date).getTime() -
-        new Date(b.date).getTime()
-      );
-    }
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
   );
 
-  /**
-   * Lấy dữ liệu theo range
-   *
-   * 7d  -> 7 ngày cuối
-   * 30d -> toàn bộ 30 ngày
-   */
   const filteredChartStats =
-    range === "7d"
-      ? sortedChartStats.slice(-7)
-      : sortedChartStats;
+    range === "7d" ? sortedChartStats.slice(-7) : sortedChartStats;
 
-  /**
-   * Dữ liệu Pie Chart
-   */
+  const totalRevenue = filteredChartStats.reduce(
+    (acc, curr) => acc + Number(curr.revenue || 0),
+    0,
+  );
+
   const TimeSlotLabels = [
     {
       key: "morning",
-      label: "Sáng",
+      label: "Sáng (06:00 - 11:00)",
+      shortLabel: "Sáng",
       percent: bookingRateByTime?.morning || 0,
-      color: "#22c55e",
+      color: "#22a55a",
+      bgClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     },
     {
       key: "noon",
-      label: "Trưa",
+      label: "Trưa (11:00 - 14:00)",
+      shortLabel: "Trưa",
       percent: bookingRateByTime?.noon || 0,
-      color: "#f59e0b",
+      color: "#f5a623",
+      bgClass: "bg-amber-500/10 text-amber-400 border-amber-500/20",
     },
     {
       key: "afternoon",
-      label: "Chiều",
+      label: "Chiều (14:00 - 18:00)",
+      shortLabel: "Chiều",
       percent: bookingRateByTime?.afternoon || 0,
-      color: "#f0a35e",
+      color: "#38bdf8",
+      bgClass: "bg-sky-500/10 text-sky-400 border-sky-500/20",
     },
     {
       key: "evening",
-      label: "Tối",
+      label: "Tối (18:00 - 23:00)",
+      shortLabel: "Tối",
       percent: bookingRateByTime?.evening || 0,
-      color: "#ef4444",
+      color: "#a855f7",
+      bgClass: "bg-purple-500/10 text-purple-400 border-purple-500/20",
     },
   ];
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      {/* =====================================================
-          BIỂU ĐỒ DOANH THU
-      ===================================================== */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-sm">
-            Doanh thu{" "}
-            {range === "7d"
-              ? "7 ngày qua"
-              : "30 ngày qua"}
-          </CardTitle>
+      {/* ================= BIỂU ĐỒ DOANH THU ================= */}
+      <Card className="rounded-xl border border-border bg-surface shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/15 text-brand-primary border border-brand-primary/20">
+              <BarChart3 className="h-4 w-4" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold text-text-primary">
+                Biểu đồ doanh thu
+              </CardTitle>
+              <p className="text-[11px] text-text-muted mt-0.5">
+                Tổng:{" "}
+                <span className="font-semibold text-brand-accent">
+                  {formatRevenue(totalRevenue)}
+                </span>{" "}
+                ({range === "7d" ? "7 ngày gần nhất" : "30 ngày gần nhất"})
+              </p>
+            </div>
+          </div>
 
           <Select
             value={range}
-            onValueChange={(value) =>
-              setRange(value as "7d" | "30d")
-            }
+            onValueChange={(value) => setRange(value as "7d" | "30d")}
           >
-            <SelectTrigger className="h-8 w-32 text-xs">
+            <SelectTrigger className="h-8 w-32 border-border bg-elevated text-xs text-text-primary">
               <SelectValue />
             </SelectTrigger>
-
-            <SelectContent>
-              <SelectItem value="7d">
+            <SelectContent className="border-border bg-elevated text-text-primary">
+              <SelectItem
+                value="7d"
+                className="text-text-secondary focus:text-text-primary"
+              >
                 7 ngày qua
               </SelectItem>
-
-              <SelectItem value="30d">
+              <SelectItem
+                value="30d"
+                className="text-text-secondary focus:text-text-primary"
+              >
                 30 ngày qua
               </SelectItem>
             </SelectContent>
           </Select>
         </CardHeader>
 
-        <CardContent>
-          <div className="h-56 w-full">
+        <CardContent className="pt-5">
+          <div className="h-64 w-full">
             {filteredChartStats.length === 0 ? (
-              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                Chưa có dữ liệu doanh thu
+              <div className="flex h-full items-center justify-center text-sm text-text-muted">
+                Chưa có dữ liệu doanh thu trong khoảng thời gian này
               </div>
             ) : (
-              <ResponsiveContainer
-                width="100%"
-                height="100%"
-              >
+              <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={filteredChartStats}
-                  margin={{
-                    top: 10,
-                    right: 5,
-                    left: 0,
-                    bottom: 5,
-                  }}
-                  barCategoryGap={
-                    range === "30d"
-                      ? "15%"
-                      : "25%"
-                  }
+                  margin={{ top: 10, right: 10, left: -10, bottom: 5 }}
+                  barCategoryGap={range === "30d" ? "15%" : "25%"}
                 >
-                  {/* Grid ngang */}
+                  <defs>
+                    <linearGradient
+                      id="revenueGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="0%" stopColor="#22a55a" stopOpacity={0.9} />
+                      <stop
+                        offset="100%"
+                        stopColor="#22a55a"
+                        stopOpacity={0.3}
+                      />
+                    </linearGradient>
+                  </defs>
+
                   <CartesianGrid
                     vertical={false}
+                    stroke="rgba(255, 255, 255, 0.06)"
                     strokeDasharray="3 3"
                   />
 
-                  {/* Trục X */}
                   <XAxis
                     dataKey="date"
-                    tickFormatter={(date) =>
-                      formatDate(
-                        date,
-                        range
-                      )
-                    }
-                    tick={{
-                      fontSize: 10,
-                    }}
+                    tickFormatter={(date) => formatDate(date, range)}
+                    tick={{ fontSize: 11, fill: "#94a3b8" }}
                     tickLine={false}
-                    axisLine={false}
-                    interval={0}
+                    axisLine={{ stroke: "#232f42" }}
                   />
 
-                  {/* Trục Y */}
                   <YAxis
-                    tick={{
-                      fontSize: 10,
-                    }}
+                    tick={{ fontSize: 11, fill: "#94a3b8" }}
                     tickLine={false}
                     axisLine={false}
-                    width={45}
+                    width={50}
                     tickFormatter={formatYAxis}
                   />
 
-                  {/* Tooltip */}
                   <Tooltip
-                    cursor={{
-                      opacity: 0.08,
+                    cursor={{ fill: "rgba(255, 255, 255, 0.04)" }}
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="rounded-lg border border-border bg-elevated/95 p-3 shadow-xl backdrop-blur-md">
+                            <p className="text-xs font-semibold text-text-muted mb-1">
+                              Ngày: {formatDate(String(label), range)}
+                            </p>
+                            <p className="text-sm font-bold text-brand-accent">
+                              {formatRevenue(Number(payload[0].value))}
+                            </p>
+                            {/* {payload[0].payload?.bookings !== undefined && (
+                              <p className="text-[11px] text-text-secondary mt-0.5">
+                                Lượt đặt: {payload[0].payload.bookings} đơn
+                              </p>
+                            )} */}
+                          </div>
+                        );
+                      }
+                      return null;
                     }}
-                    formatter={(value) => [
-                      formatRevenue(
-                        Number(value)
-                      ),
-                      "Doanh thu",
-                    ]}
-                    labelFormatter={(date) =>
-                      formatDate(
-                        String(date),
-                        range
-                      )
-                    }
                   />
 
-                  {/* Cột doanh thu */}
                   <Bar
                     dataKey="revenue"
                     name="Doanh thu"
-                    radius={[
-                      4,
-                      4,
-                      0,
-                      0,
-                    ]}
-                    maxBarSize={
-                      range === "30d"
-                        ? 18
-                        : 40
-                    }
+                    fill="url(#revenueGradient)"
+                    radius={[6, 6, 0, 0]}
+                    maxBarSize={range === "30d" ? 18 : 36}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -299,79 +257,117 @@ export function AnalyticsOverview({
         </CardContent>
       </Card>
 
-      {/* =====================================================
-          TỶ LỆ ĐẶT SÂN THEO KHUNG GIỜ
-      ===================================================== */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">
-            Tỷ lệ đặt sân theo khung giờ
-          </CardTitle>
+      {/* ================= TỶ LỆ ĐẶT SÂN THEO KHUNG GIỜ ================= */}
+      <Card className="rounded-xl border border-border bg-surface shadow-sm">
+        <CardHeader className="border-b border-border/50 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-accent/15 text-brand-accent border border-brand-accent/20">
+              <PieChartIcon className="h-4 w-4" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold text-text-primary">
+                Tỷ lệ đặt sân theo khung giờ
+              </CardTitle>
+              <p className="text-[11px] text-text-muted mt-0.5">
+                Phân bố nhu cầu đặt sân trong ngày
+              </p>
+            </div>
+          </div>
         </CardHeader>
 
-        <CardContent className="flex items-center gap-4">
-          {/* Pie Chart */}
-          <div className="h-[220px] w-[220px]">
-            <ResponsiveContainer
-              width="100%"
-              height="100%"
-            >
-              <PieChart>
-                <Pie
-                  data={TimeSlotLabels}
-                  dataKey="percent"
-                  nameKey="label"
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={48}
-                  outerRadius={78}
-                  paddingAngle={0}
-                  stroke="none"
-                >
-                  {TimeSlotLabels.map(
-                    (item) => (
-                      <Cell
-                        key={item.key}
-                        fill={item.color}
-                      />
-                    )
-                  )}
-                </Pie>
+        <CardContent className="pt-5">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            {/* Pie Chart */}
+            <div className="relative h-56 w-56 shrink-0 flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={TimeSlotLabels}
+                    dataKey="percent"
+                    nameKey="label"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={56}
+                    outerRadius={84}
+                    paddingAngle={3}
+                    stroke="none"
+                  >
+                    {TimeSlotLabels.map((item) => (
+                      <Cell key={item.key} fill={item.color} />
+                    ))}
+                  </Pie>
 
-                <Tooltip
-                  formatter={(value) => [
-                    `${value}%`,
-                    "Tỷ lệ",
-                  ]}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Legend */}
-          <div className="flex-1 space-y-2">
-            {TimeSlotLabels.map((s) => (
-              <div
-                key={s.key}
-                className="flex items-center justify-between text-xs"
-              >
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  <span
-                    className="h-2 w-2 rounded-full border"
-                    style={{
-                      backgroundColor:
-                        s.color,
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className="rounded-lg border border-border bg-elevated/95 p-2.5 shadow-xl backdrop-blur-md">
+                            <p className="text-xs font-semibold text-text-primary">
+                              {data.label}
+                            </p>
+                            <p
+                              className="text-sm font-bold mt-0.5"
+                              style={{ color: data.color }}
+                            >
+                              Tỷ lệ: {data.percent}%
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
                     }}
                   />
+                </PieChart>
+              </ResponsiveContainer>
 
-                  {s.label}
+              {/* Center Text */}
+              <div className="pointer-events-none absolute flex flex-col items-center justify-center">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-text-muted">
+                  Khung giờ
                 </span>
-
-                <span className="font-medium">
-                  {s.percent}%
+                <span className="text-xs font-semibold text-text-primary">
+                  Sôi động
                 </span>
               </div>
-            ))}
+            </div>
+
+            {/* Legend & Breakdown Bars */}
+            <div className="flex-1 w-full space-y-3">
+              {TimeSlotLabels.map((s) => (
+                <div
+                  key={s.key}
+                  className="flex flex-col gap-1 rounded-lg border border-border/50 bg-elevated/40 p-2.5 transition-colors hover:border-border"
+                >
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-2 font-medium text-text-primary">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: s.color }}
+                      />
+                      {s.label}
+                    </span>
+                    <span
+                      className="font-bold text-xs"
+                      style={{ color: s.color }}
+                    >
+                      {s.percent}%
+                    </span>
+                  </div>
+
+                  {/* Progress track */}
+                  <div className="h-1.5 w-full rounded-full bg-border/80 overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${s.percent}%`,
+                        backgroundColor: s.color,
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>

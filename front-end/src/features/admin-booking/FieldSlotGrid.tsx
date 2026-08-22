@@ -5,19 +5,11 @@ import { ChevronLeft, ChevronRight, Clock, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { useFields } from "@/stores/useFieldStore";
 
-import {
-  FIELD_TYPE_LABEL,
-  FIELD_TYPE_SLUG,
-} from "@/types/field";
+import { FIELD_TYPE_LABEL, FIELD_TYPE_SLUG } from "@/types/field";
 
 import type { FieldType } from "@/types/field";
 
@@ -37,54 +29,41 @@ export default function FieldSlotGrid() {
   const navigate = useNavigate();
 
   const [selectedDate, setSelectedDate] = useState(() =>
-    dayjs().format("YYYY-MM-DD")
+    dayjs().format("YYYY-MM-DD"),
   );
 
-  const [selectedType, setSelectedType] =
-    useState<FieldType | "ALL">("ALL");
+  const [selectedType, setSelectedType] = useState<FieldType | "ALL">("ALL");
 
   const [currentPage, setCurrentPage] = useState(1);
 
   const pageSize = 4;
 
-  const filterType =
-    selectedType === "ALL" ? undefined : selectedType;
+  const filterType = selectedType === "ALL" ? undefined : selectedType;
 
-  const {
-    data: fields = [],
-    isLoading,
-    error,
-  } = useFields(filterType);
+  const { data: fields = [], isLoading, error } = useFields(filterType);
 
   const dateObj = dayjs(selectedDate);
 
-  const dateLabel = `${WEEKDAY_LABEL[dateObj.day()]
-    }, ${dateObj.format("DD/MM/YYYY")}`;
+  const dateLabel = `${
+    WEEKDAY_LABEL[dateObj.day()]
+  }, ${dateObj.format("DD/MM/YYYY")}`;
 
   const totalItems = fields.length;
 
-  const totalPages = Math.ceil(
-    totalItems / pageSize
-  );
+  const totalPages = Math.ceil(totalItems / pageSize);
 
   const paginatedFields = fields.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
 
   const changeDate = (days: number) => {
-    setSelectedDate(
-      dayjs(selectedDate)
-        .add(days, "day")
-        .format("YYYY-MM-DD")
-    );
+    setSelectedDate(dayjs(selectedDate).add(days, "day").format("YYYY-MM-DD"));
 
     setCurrentPage(1);
   };
 
-  const handleTypeChange = (
-    type: FieldType | "ALL"
-  ) => {
+  const handleTypeChange = (type: FieldType | "ALL") => {
     setSelectedType(type);
     setCurrentPage(1);
   };
@@ -96,13 +75,12 @@ export default function FieldSlotGrid() {
         <div>
           <h2 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-text-primary">
             <Sparkles className="h-6 w-6 text-brand-primary" />
-
             Khung lưới giờ đặt sân
           </h2>
 
           <p className="mt-1 text-sm text-text-secondary">
-            Theo dõi danh sách khung giờ trống của từng
-            loại sân và chọn suất đá phù hợp.
+            Theo dõi danh sách khung giờ trống của từng loại sân và chọn suất đá
+            phù hợp.
           </p>
         </div>
 
@@ -146,9 +124,7 @@ export default function FieldSlotGrid() {
             variant="secondary"
             size="sm"
             onClick={() => {
-              setSelectedDate(
-                dayjs().format("YYYY-MM-DD")
-              );
+              setSelectedDate(dayjs().format("YYYY-MM-DD"));
               setCurrentPage(1);
             }}
             className="h-9 border border-border bg-surface-hover text-xs text-text-primary hover:bg-surface-hover/80"
@@ -181,13 +157,12 @@ export default function FieldSlotGrid() {
             <button
               key={tab.value}
               type="button"
-              onClick={() =>
-                handleTypeChange(tab.value)
-              }
-              className={`rounded-md px-3.5 py-1.5 text-xs font-medium transition-all ${selectedType === tab.value
+              onClick={() => handleTypeChange(tab.value)}
+              className={`rounded-md px-3.5 py-1.5 text-xs font-medium transition-all ${
+                selectedType === tab.value
                   ? "bg-brand-primary text-white shadow-sm"
                   : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
-                }`}
+              }`}
             >
               {tab.label}
             </button>
@@ -221,16 +196,13 @@ export default function FieldSlotGrid() {
       {/* ================= SELECTED DATE ================= */}
       <div className="text-sm font-semibold text-text-secondary">
         Lịch đặt sân cho ngày:{" "}
-        <span className="font-bold text-text-primary">
-          {dateLabel}
-        </span>
+        <span className="font-bold text-text-primary">{dateLabel}</span>
       </div>
 
       {/* ================= LOADING ================= */}
       {isLoading && (
         <div className="flex items-center justify-center py-16 text-text-secondary">
           <Clock className="mr-2 h-5 w-5 animate-spin text-brand-primary" />
-
           Đang tải sơ đồ khung giờ các sân...
         </div>
       )}
@@ -238,19 +210,15 @@ export default function FieldSlotGrid() {
       {/* ================= ERROR ================= */}
       {error && (
         <div className="rounded-xl border border-status-danger/20 bg-status-danger/10 p-6 text-center text-sm text-status-danger">
-          Không thể tải thông tin khung giờ sân.
-          Vui lòng kiểm tra lại kết nối.
+          Không thể tải thông tin khung giờ sân. Vui lòng kiểm tra lại kết nối.
         </div>
       )}
 
       {/* ================= EMPTY ================= */}
-      {!isLoading &&
-        !error &&
-        fields.length === 0 ? (
+      {!isLoading && !error && fields.length === 0 ? (
         <Card className="border-border bg-surface py-12 text-center">
           <CardContent className="text-text-secondary">
-            Chưa có sân bóng hoặc khung giờ nào
-            trong hệ thống cho ngày này.
+            Chưa có sân bóng hoặc khung giờ nào trong hệ thống cho ngày này.
           </CardContent>
         </Card>
       ) : (
@@ -297,11 +265,7 @@ export default function FieldSlotGrid() {
                         variant="outline"
                         className="border-brand-primary/40 bg-brand-primary/10 font-medium text-brand-primary"
                       >
-                        {
-                          FIELD_TYPE_LABEL[
-                          field.fieldType
-                          ]
-                        }
+                        {FIELD_TYPE_LABEL[field.fieldType]}
                       </Badge>
 
                       <Button
@@ -309,19 +273,16 @@ export default function FieldSlotGrid() {
                         size="sm"
                         onClick={() =>
                           navigate(
-                            `/user/booking/${FIELD_TYPE_SLUG[
-                            field.fieldType
-                            ] ||
-                            field.fieldType.toLowerCase()
+                            `/user/booking/${
+                              FIELD_TYPE_SLUG[field.fieldType] ||
+                              field.fieldType.toLowerCase()
                             }/${field.fieldId}?date=${selectedDate}`,
                             {
                               state: {
-                                fieldId:
-                                  field.fieldId,
-                                bookingDate:
-                                  selectedDate,
+                                fieldId: field.fieldId,
+                                bookingDate: selectedDate,
                               },
-                            }
+                            },
                           )
                         }
                         className="border-border bg-surface text-xs text-text-primary hover:bg-surface-hover hover:text-brand-primary"

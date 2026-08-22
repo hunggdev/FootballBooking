@@ -53,9 +53,6 @@ export const getSlots = async (req, res) => {
         },
       }),
 
-      // ĐỔI: booking không còn slotId/bookingDate trực tiếp -> query qua BookingSlot.
-      // Chỉ tính là "đã đặt" khi booking cha đang CONFIRMED (HOLD/CANCELLED không chặn slot ở đây,
-      // HOLD được xử lý riêng qua Redis ở dưới).
       prisma.bookingSlot.findMany({
         where: {
           bookingDate,
@@ -502,7 +499,6 @@ export const createBooking = async (req, res) => {
           throw new Error(`Khung giờ ${s.slotId} không thuộc sân đã chọn.`);
       }
 
-      // Chốt chặn sớm cho lỗi rõ ràng (chốt chặn cuối cùng vẫn là unique index ở DB).
       const existedBookingSlots = await tx.bookingSlot.findMany({
         where: {
           OR: normalizedSlots.map((s) => ({
@@ -581,6 +577,7 @@ export const createBooking = async (req, res) => {
       // ĐỔI: Invoice không còn field bookingId -> tạo Invoice trước, gắn ngược invoiceId vào Booking.
       const invoice = await tx.invoice.create({
         data: {
+          bookingId: newBooking.bookingId,
           userId,
           fieldAmount,
           serviceAmount: servicesTotal,
@@ -635,7 +632,7 @@ export const createBooking = async (req, res) => {
           ttl: null,
         });
 
-        io.emit("user:cart_updated", {
+        io.to(`user:${userId}`).emit("user:cart_updated", {
           fieldId: s.fieldId,
           slotId: s.slotId,
           bookingDate: s.dateKey,
@@ -646,6 +643,7 @@ export const createBooking = async (req, res) => {
       }),
     );
     // io.to(`user:${userId}`).emit("user:cart_updated", { action: "CLEAR" });
+
     await createNotification({
       recipientId: 1,
       actorId: userId,
@@ -654,10 +652,9 @@ export const createBooking = async (req, res) => {
       message: `${req.user.fullName} vừa đặt sân`,
       entityType: "BOOKING",
       entityId: booking.bookingId,
-    }).then(() =>{
-      io.to("user:1").emit("user:notification", {userId: 1});
-    })
-
+    }).then(() => {
+      io.to("user:1").emit("user:notification", { userId: 1 });
+    });
 
     return res.status(201).json({ message: "Đặt sân thành công.", booking });
   } catch (error) {
@@ -678,7 +675,7 @@ export const getBookings = async (req, res) => {
           include: {
             service: true,
           },
-        }, 
+        },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -741,25 +738,59 @@ export const cancelBooking = async (req, res) => {
     const bookingId = Number(req.params.id);
     const { cancelReason } = req.body;
 
-    const booking = await prisma.booking.findUnique({ where: { bookingId } });
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Tìm booking
+      const booking = await tx.booking.findUnique({
+        where: { bookingId },
+      });
 
-    if (!booking) {
-      return res.status(404).json({ message: "Không tìm thấy booking." });
-    }
+      if (!booking) {
+        throw new Error("Không tìm thấy booking này.");
+      }
 
-    if (booking.status === "CANCELLED") {
-      return res.status(400).json({ message: "Booking đã được hủy trước đó." });
-    }
+      if (booking.status === "CANCELLED") {
+        throw new Error("Booking này đã được hủy trước đó.");
+      }
 
-    const updated = await prisma.booking.update({
-      where: { bookingId },
-      data: { status: "CANCELLED", cancelledAt: new Date(), cancelReason },
-      include: { bookingSlots: { include: { fieldSlot: true } } },
+      // 2. Update Booking
+      const updatedBooking = await tx.booking.update({
+        where: { bookingId },
+        data: {
+          status: "CANCELLED",
+          cancelledAt: new Date(),
+          cancelReason,
+        },
+        include: {
+          bookingSlots: {
+            include: {
+              fieldSlot: true,
+            },
+          },
+        },
+      });
+
+      // 3. Update Invoice tương ứng với booking
+      const updatedInvoice = await tx.invoice.updateMany({
+        where: {
+          bookingId,
+        },
+        data: {
+          status: "CANCELLED",
+        },
+      });
+
+      return {
+        booking: updatedBooking,
+        invoice: updatedInvoice,
+      };
     });
 
+    // Transaction thành công thì mới emit Socket
     const io = req.app.get("io");
-    updated.bookingSlots.forEach((bs) => {
+
+    result.booking.bookingSlots.forEach((bs) => {
       const dateKey = bs.bookingDate.toISOString().split("T")[0];
+
       io.to(`schedule:${bs.fieldSlot.fieldId}:${dateKey}`).emit(
         "schedule:updated",
         {
@@ -771,12 +802,40 @@ export const cancelBooking = async (req, res) => {
       );
     });
 
-    return res
-      .status(200)
-      .json({ message: "Hủy booking thành công.", booking: updated });
+    await createNotification({
+      recipientId: 1,
+      actorId: req.user.userId,
+      type: "BOOKING_CANCELLED",
+      title: "Hủy Booking",
+      message: `${req.user.fullName} vừa hủy đặt sân`,
+      entityType: "BOOKING",
+      entityId: bookingId,
+    }).then(() => {
+      io.to("user:1").emit("user:notification", { userId: 1 });
+    });
+
+    return res.status(200).json({
+      message: "Hủy booking thành công.",
+      booking: result.booking,
+    });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Lỗi hệ thống." });
+
+    if (error.message === "BOOKING_NOT_FOUND") {
+      return res.status(404).json({
+        message: "Không tìm thấy booking.",
+      });
+    }
+
+    if (error.message === "BOOKING_ALREADY_CANCELLED") {
+      return res.status(400).json({
+        message: "Booking đã được hủy trước đó.",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Lỗi hệ thống.",
+    });
   }
 };
 
@@ -793,7 +852,7 @@ export const updateBooking = async (req, res) => {
 
     const invoiceId = await prisma.booking.findFirst({
       where: { bookingId },
-      select: { invoiceId: true }, 
+      select: { invoiceId: true },
     });
 
     const dataToUpdate = {};
@@ -813,17 +872,17 @@ export const updateBooking = async (req, res) => {
       },
     });
 
-    if(dataToUpdate.status === "COMPLETED"){
+    if (dataToUpdate.status === "COMPLETED") {
       await prisma.invoice.update({
         where: { invoiceId: invoiceId.invoiceId },
         data: { status: "PAID" },
       });
     }
-    
-    if(dataToUpdate.status === "CANCELLED"){
+
+    if (dataToUpdate.status === "CANCELLED") {
       await prisma.invoice.update({
         where: { invoiceId: invoiceId.invoiceId },
-        data: { status: "CANCELLED" }, 
+        data: { status: "CANCELLED" },
       });
     }
 

@@ -14,8 +14,8 @@ import type { FieldType } from "@/types/field";
 interface FieldFilterBarProps {
   search: string;
   onSearchChange: (value: string) => void;
-  fieldType: FieldType | "all";
-  onFieldTypeChange: (value: FieldType | "all") => void;
+  fieldType: FieldType | "ALL";
+  onFieldTypeChange: (value: FieldType | "ALL") => void;
   onClick: () => void;
 }
 
@@ -42,15 +42,23 @@ export function FieldFilterBar({
         <Select
           value={fieldType}
           onValueChange={(value) =>
-            onFieldTypeChange((value ?? "all") as FieldType | "all")
+            onFieldTypeChange((value ?? "ALL") as FieldType | "ALL")
           }
         >
           <SelectTrigger className="w-44 border-border bg-elevated text-text-primary data-placeholder:text-text-muted">
-            <SelectValue placeholder="Lọc theo loại sân" />
+            <SelectValue>
+              {fieldType === "ALL"
+                ? "Tất cả loại sân"
+                : fieldType === "FIVE"
+                ? "Sân 5"
+                : fieldType === "SEVEN"
+                ? "Sân 7"
+                : "Sân 11"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent className="border-border bg-elevated text-text-primary">
             <SelectItem
-              value="all"
+              value="ALL"
               className="text-text-secondary  focus:text-text-primary"
             >
               Tất cả loại sân

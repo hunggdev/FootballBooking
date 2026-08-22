@@ -73,12 +73,12 @@ export function ServiceTable({
                   Số lượng
                 </TableHead>
 
-                <TableHead className="w-[12%] text-left text-[11px] font-bold uppercase tracking-wider text-text-muted">
-                  Trạng thái
-                </TableHead>
-
                 <TableHead className="w-[11%] text-left text-[11px] font-bold uppercase tracking-wider text-text-muted">
                   Ngày tạo
+                </TableHead>
+
+                <TableHead className="w-[12%] text-left text-[11px] font-bold uppercase tracking-wider text-text-muted">
+                  Trạng thái
                 </TableHead>
 
                 <TableHead className="w-[14%] text-right text-[11px] font-bold uppercase tracking-wider text-text-muted">
@@ -235,6 +235,13 @@ export function ServiceTable({
                     </span>
                   </TableCell>
 
+                  {/* ================= NGÀY TẠO ================= */}
+                  <TableCell>
+                    <span className="text-xs text-text-secondary">
+                      {new Date(service.createdAt).toLocaleDateString("vi-VN")}
+                    </span>
+                  </TableCell>
+
                   {/* ================= TRẠNG THÁI ================= */}
                   <TableCell>
                     {service.status === "ACTIVE" ? (
@@ -276,13 +283,6 @@ export function ServiceTable({
                     )}
                   </TableCell>
 
-                  {/* ================= NGÀY TẠO ================= */}
-                  <TableCell>
-                    <span className="text-xs text-text-secondary">
-                      {new Date(service.createdAt).toLocaleDateString("vi-VN")}
-                    </span>
-                  </TableCell>
-
                   {/* ================= HÀNH ĐỘNG ================= */}
                   <TableCell>
                     <div className="flex items-center justify-end gap-2">
@@ -314,6 +314,7 @@ export function ServiceTable({
                         size="sm"
                         variant="outline"
                         onClick={() => onEdit(service)}
+                        disabled={service.status === "INACTIVE"}
                         className="
                           h-8
                           border-border
@@ -338,6 +339,7 @@ export function ServiceTable({
                       <Button
                         size="sm"
                         onClick={() => onDelete(service)}
+                        disabled={service.status === "INACTIVE"}
                         className="
                           h-8
                           border

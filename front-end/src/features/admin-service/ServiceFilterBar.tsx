@@ -47,7 +47,13 @@ export function ServiceFilterBar({
           }
         >
           <SelectTrigger className="w-44 border-border bg-elevated text-text-primary data-placeholder:text-text-muted">
-            <SelectValue placeholder="Lọc theo trạng thái" />
+            <SelectValue>
+              {status === "all"
+                ? "Tất cả trạng thái" 
+                : status === "ACTIVE"
+                ? "Đang kinh doanh"
+                : "Ngừng kinh doanh"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent className="border-border bg-elevated text-text-primary">
             <SelectItem

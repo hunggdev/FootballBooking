@@ -8,15 +8,15 @@ import { useAuthStore } from "@/stores/useAuthStore";
 
 // Dữ liệu mẫu - thực tế sẽ lấy từ API/context người dùng đang đăng nhập
 
-
-
 const ProfilePage = () => {
-  const user = useAuthStore((s)=>s.user);
+  const user = useAuthStore((s) => s.user);
 
   if (!user) {
     return (
       <div className="mx-auto flex max-w-2xl flex-col gap-4 px-4 py-8">
-        <p className="text-sm text-text-muted">Đang tải thông tin tài khoản...</p>
+        <p className="text-sm text-text-muted">
+          Đang tải thông tin tài khoản...
+        </p>
       </div>
     );
   }
@@ -30,6 +30,7 @@ const ProfilePage = () => {
     status: user.status,
     createdAt: user.createdAt,
   };
+
   return (
     <div>
       <div className="mx-auto flex max-w-2xl flex-col gap-4 px-4 py-8">
@@ -39,9 +40,8 @@ const ProfilePage = () => {
         <EditAccountForm user={mockUser} />
         <ChangePasswordSection />
       </div>
-      
     </div>
   );
-}
+};
 
 export default ProfilePage;

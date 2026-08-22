@@ -104,7 +104,7 @@ export function ChangePasswordSection() {
             </p>
           </CardContent>
 
-          <CardFooter className="border-t border-border-subtle">
+          <CardFooter className="border-t border-border-subtle bg-elevated/50">
             <Button
               type="button"
               className="bg-brand-primary font-semibold text-white hover:bg-brand-primary-hover"
@@ -141,7 +141,7 @@ export function ChangePasswordSection() {
                     onClick={() => setShowPassword((prev) => !prev)}
                     className="absolute inset-y-0 right-3 flex items-center text-text-secondary transition-colors hover:text-text-primary"
                   >
-                    {showPassword ? (
+                    {!showPassword ? (
                       <EyeOff size={18} />
                     ) : (
                       <Eye size={18} />
@@ -179,7 +179,7 @@ export function ChangePasswordSection() {
                     onClick={() => setShowNewPassword((prev) => !prev)}
                     className="absolute inset-y-0 right-3 flex items-center text-text-secondary transition-colors hover:text-text-primary"
                   >
-                    {showNewPassword ? (
+                    {!showNewPassword ? (
                       <EyeOff size={18} />
                     ) : (
                       <Eye size={18} />
@@ -219,7 +219,7 @@ export function ChangePasswordSection() {
                     }
                     className="absolute inset-y-0 right-3 flex items-center text-text-secondary transition-colors hover:text-text-primary"
                   >
-                    {showConfirmPassword ? (
+                    {!showConfirmPassword ? (
                       <EyeOff size={18} />
                     ) : (
                       <Eye size={18} />
@@ -236,7 +236,7 @@ export function ChangePasswordSection() {
             </div>
           </CardContent>
 
-          <CardFooter className="flex gap-2 border-t border-border-subtle">
+          <CardFooter className="flex flex-row justify-between border-t border-border-subtle bg-elevated/50"> 
             <Button
               type="submit"
               disabled={isSubmitting}

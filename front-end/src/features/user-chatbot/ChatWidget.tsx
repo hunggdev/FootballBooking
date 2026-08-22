@@ -17,7 +17,7 @@ export function ChatWidget() {
           onClose={() => setIsOpen(false)}
         />
       )}
-      <ChatToggleButton isOpen={isOpen} onToggle={() => setIsOpen((v) => !v)} />
+      <ChatToggleButton isOpen={isOpen} onToggle={() => setIsOpen((v) => !v)} /> 
     </div>
   );
 }

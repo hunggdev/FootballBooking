@@ -14,10 +14,13 @@ const STORAGE_KEY = "chatbot_messages";
 
 export function useChatbot() {
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
-    const savedMessages = localStorage.getItem(STORAGE_KEY);
-
-    if (savedMessages) {
-      return JSON.parse(savedMessages);
+    try {
+      const savedMessages = localStorage.getItem(STORAGE_KEY);
+      if (savedMessages) {
+        return JSON.parse(savedMessages);
+      }
+    } catch {
+      // ignore parse error and fallback
     }
 
     return [WELCOME_MESSAGE];

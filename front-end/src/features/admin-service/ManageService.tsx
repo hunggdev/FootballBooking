@@ -73,7 +73,10 @@ export function ManageService() {
     });
   }, [services, search, status]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredServices.length / PAGE_SIZE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredServices.length / PAGE_SIZE),
+  );
 
   const handleAdd = () => {
     setEditingService(null);
@@ -105,7 +108,9 @@ export function ManageService() {
     });
   };
 
-  const handleSubmit = (values: CreateServicePayload | UpdateServicePayload) => {
+  const handleSubmit = (
+    values: CreateServicePayload | UpdateServicePayload,
+  ) => {
     setFormError(null);
 
     if (editingService) {
@@ -122,7 +127,7 @@ export function ManageService() {
           onError(error) {
             setFormError(getErrorMessage(error, "Cập nhật dịch vụ thất bại."));
           },
-        }
+        },
       );
       return;
     }
@@ -181,6 +186,8 @@ export function ManageService() {
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={setCurrentPage}
+        totalItems={services.length}
+        pageSize={PAGE_SIZE}
       />
 
       <ServiceFormDialog

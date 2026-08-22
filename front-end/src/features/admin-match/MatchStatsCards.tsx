@@ -32,77 +32,77 @@ export function MatchStatsCards({
       label: "Tổng kèo đấu",
       value: matches,
       icon: Users,
-      iconClass: "bg-brand-primary/10 text-brand-primary",
+      iconClass: "bg-brand-primary/15 text-brand-primary border border-brand-primary/20",
       valueClass: "text-text-primary",
-      hoverClass: "hover:border-brand-primary/40",
+      hoverClass: "hover:border-brand-primary/50 hover:shadow-[0_4px_20px_rgba(34,165,90,0.12)]",
     },
     {
       id: "2",
       label: "Kèo đấu trong tháng",
       value: totalMatchInThisMonth,
       icon: UserPlus,
-      iconClass: "bg-brand-accent/10 text-brand-accent",
+      iconClass: "bg-brand-accent/15 text-brand-accent border border-brand-accent/20",
       valueClass: "text-text-primary",
-      hoverClass: "hover:border-brand-accent/40",
+      hoverClass: "hover:border-brand-accent/50 hover:shadow-[0_4px_20px_rgba(245,166,35,0.12)]",
     },
     {
       id: "3",
-      label: "Đang mở",
+      label: "Đang mở (tìm đối)",
       value: open,
       icon: CircleDot,
-      iconClass: "bg-status-success-bg text-status-success",
+      iconClass: "bg-status-success-bg text-status-success border border-status-success/20",
       valueClass: "text-status-success",
-      hoverClass: "hover:border-status-success/40",
+      hoverClass: "hover:border-status-success/50 hover:shadow-[0_4px_20px_rgba(34,165,90,0.12)]",
     },
     {
       id: "4",
       label: "Đã ghép đối",
       value: matched,
       icon: Swords,
-      iconClass: "bg-status-warning-bg text-status-warning",
+      iconClass: "bg-status-warning-bg text-status-warning border border-status-warning/20",
       valueClass: "text-status-warning",
-      hoverClass: "hover:border-status-warning/40",
+      hoverClass: "hover:border-status-warning/50 hover:shadow-[0_4px_20px_rgba(245,166,35,0.12)]",
     },
     {
       id: "5",
       label: "Đã kết thúc",
       value: finished,
       icon: CheckCircle2,
-      iconClass: "bg-status-info-bg text-status-info",
+      iconClass: "bg-status-info-bg text-status-info border border-status-info/20",
       valueClass: "text-status-info",
-      hoverClass: "hover:border-status-info/40",
+      hoverClass: "hover:border-status-info/50 hover:shadow-[0_4px_20px_rgba(63,124,186,0.12)]",
     },
     {
       id: "6",
-      label: "Đã hủy",
+      label: "Đã hủy kèo",
       value: cancelled,
       icon: XCircle,
-      iconClass: "bg-status-danger-bg text-status-danger",
+      iconClass: "bg-status-danger-bg text-status-danger border border-status-danger/20",
       valueClass: "text-status-danger",
-      hoverClass: "hover:border-status-danger/40",
+      hoverClass: "hover:border-status-danger/50 hover:shadow-[0_4px_20px_rgba(221,59,59,0.12)]",
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 xl:grid-cols-6">
       {data.map((stat) => {
         const Icon = stat.icon;
 
         return (
           <Card
             key={stat.id}
-            className={`group border-border bg-surface transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${stat.hoverClass}`}
+            className={`group rounded-xl border border-border/80 bg-surface transition-all duration-300 hover:-translate-y-1 ${stat.hoverClass}`}
           >
-            <CardContent className="flex flex-col gap-3 p-4">
+            <CardContent className="flex flex-col gap-2.5 p-4">
               {/* Icon */}
               <div
-                className={`flex h-10 w-10 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-105 ${stat.iconClass}`}
+                className={`flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 ${stat.iconClass}`}
               >
                 <Icon className="h-5 w-5" />
               </div>
 
               {/* Label */}
-              <p className="text-xs font-medium text-text-muted">
+              <p className="text-[11px] font-medium text-text-muted truncate">
                 {stat.label}
               </p>
 
@@ -119,4 +119,3 @@ export function MatchStatsCards({
     </div>
   );
 }
-

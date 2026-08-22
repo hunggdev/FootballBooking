@@ -5,7 +5,7 @@ import type { Field } from "./field";
 export interface Bookings {
   bookingId: number;
   bookingDate: string;
-  status: "HOLD" | "CONFIRMED" | "CANCELLED";
+  status: "COMPLETED" | "CONFIRMED" | "CANCELLED" ;
   createdAt: string;
   updatedAt: string;
   user: {
@@ -34,11 +34,6 @@ export interface Bookings {
   } | null;
 }
 
-// Payload khi tạo mới booking (legacy - removed, see CreateBookingPayload below)
-
-// ---- Luồng đặt sân thực tế (khớp back-end bookingController.js) ----
-
-// Giữ chỗ tạm thời (POST /bookings/hold)
 export interface HoldSlotPayload {
   fieldId: number;
   slotId: number;
@@ -85,7 +80,6 @@ export interface CreateBookingPayload {
   services?: Array<{ serviceId: number; quantity: number }>;
 }
 
-// Xác nhận đặt sân sau khi đã giữ chỗ (POST /bookings)
 export interface ConfirmBookingSlotPayload {
   fieldId: number;
   slotId: number;
@@ -119,28 +113,6 @@ export interface BookingSlotResult {
   };
 }
 
-// export interface BookingResult {
-//   bookingId: number;
-//   userId: number;
-//   status: "HOLD" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
-//   type: "ONE_TIME" | "LONG_TERM";
-//   depositAmount: number;
-//   totalPrice: number;
-//   paidAmount: number;
-//   note: string | null;
-//   createdAt: string;
-//   bookingSlots: BookingSlotResult[];
-//   invoice: InvoiceResult | null;
-//   bookingServices: Array<{
-//     bookingServiceId: number;
-//     serviceId: number;
-//     quantity: number;
-//     price: number;
-//     service: { serviceId: number; name: string };
-//   }>;
-// }
-
-// Payload khi cập nhật booking
 export interface UpdateBookingPayload {
   fieldId?: number;
   starttime?: string;
@@ -195,7 +167,7 @@ export interface BookingServiceItem {
 export interface Booking {
   bookingId: number;
   userId: number;
-  status: "HOLD" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
+  status: "CONFIRMED" | "CANCELLED" | "COMPLETED";
   type: "ONE_TIME" | "LONG_TERM";
   depositAmount: number;
   totalPrice: number;
@@ -244,3 +216,20 @@ export interface StatusRange {
   expiresAt?: Date;
   ttl?: number;
 }
+
+export const statusBadge: Record<string, string> = {
+  CONFIRMED:
+    "border-status-success/20 bg-status-success-bg text-status-success",
+  COMPLETED: "border-status-info/20 bg-status-info-bg text-status-info",
+  HOLD: "border-status-warning/20 bg-status-warning-bg text-status-warning",
+  PENDING: "border-status-warning/20 bg-status-warning-bg text-status-warning",
+  CANCELLED: "border-status-danger/20 bg-status-danger-bg text-status-danger",
+};
+
+export const statusLabel: Record<string, string> = {
+  CONFIRMED: "Đã xác nhận",
+  COMPLETED: "Đã hoàn thành",
+  HOLD: "Đang giữ chỗ",
+  PENDING: "Chờ xử lý",
+  CANCELLED: "Đã hủy",
+};

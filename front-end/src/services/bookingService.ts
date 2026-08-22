@@ -69,8 +69,8 @@ export const bookingService = {
   },
 
   // Hủy booking
-  cancelBooking: async (bookingId: number): Promise<Booking> => {
-    const res = await api.put(`/bookings/${bookingId}/cancel`);
+  cancelBooking: async (bookingId: number, cancelReason?: string): Promise<Booking> => {
+    const res = await api.put(`/bookings/${bookingId}/cancel`, { cancelReason });
     return res.data.booking;
   },
 

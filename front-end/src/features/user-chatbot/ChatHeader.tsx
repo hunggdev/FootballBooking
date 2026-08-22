@@ -16,12 +16,16 @@ export function ChatHeader({
   return (
     <div className="flex items-center justify-between border-b p-3">
       <div className="flex items-center gap-2">
-        <Avatar className="h-8 w-8 border">
-          <AvatarFallback className="text-xs">AI</AvatarFallback>
+        <Avatar className="h-8 w-8 border border-border/60">
+          <AvatarFallback className="bg-[image:var(--token-gradient-brand)] text-[11px] font-bold text-white">
+            AI
+          </AvatarFallback>
         </Avatar>
         <div>
-          <p className="text-sm font-medium leading-none">{botName}</p>
-          <p className="text-xs text-text-muted">
+          <p className="text-sm font-medium leading-none uppercase text-white">
+            {botName}
+          </p>
+          <p className="text-xs text-text-muted text-green">
             {isOnline ? "Đang hoạt động" : "Ngoại tuyến"}
           </p>
         </div>
@@ -33,8 +37,8 @@ export function ChatHeader({
         onClick={onClose}
         aria-label="Đóng chat"
       >
-        <X className="h-4 w-4" />
+        <X className="h-4 w-4 text-green-500" />
       </Button>
     </div>
-  );  
+  );
 }

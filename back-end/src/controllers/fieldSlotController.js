@@ -1,8 +1,12 @@
 import { prisma } from "../config/database.js";
 
-import { VALID_STATUSES, parseTimeStringToDate, formatSlotTime, checkSlotTimeOverlap, validateFieldSlot } from "../utils/validateFieldSlots.js";
-
-
+import {
+  VALID_STATUSES,
+  parseTimeStringToDate,
+  formatSlotTime,
+  checkSlotTimeOverlap,
+  validateFieldSlot,
+} from "../utils/validateFieldSlots.js";
 
 export const createFieldSlot = async (req, res) => {
   try {
@@ -39,7 +43,11 @@ export const createFieldSlot = async (req, res) => {
     }
 
     // Kiểm tra chồng chéo thời gian
-    const overlapError = await checkSlotTimeOverlap(fieldId, starttime, endtime);
+    const overlapError = await checkSlotTimeOverlap(
+      fieldId,
+      starttime,
+      endtime,
+    );
     if (overlapError) {
       return res.status(400).json({ message: overlapError });
     }
@@ -54,7 +62,7 @@ export const createFieldSlot = async (req, res) => {
 
     if (status && VALID_STATUSES.includes(status)) {
       slotData.status = status;
-    } 
+    }
 
     const slot = await prisma.fieldSlot.create({
       data: slotData,
@@ -129,7 +137,12 @@ export const updateFieldSlot = async (req, res) => {
     }
 
     // Kiểm tra chồng chéo thời gian ngoại trừ khung giờ hiện tại
-    const overlapError = await checkSlotTimeOverlap(currentSlot.fieldId, starttime, endtime, slotId);
+    const overlapError = await checkSlotTimeOverlap(
+      currentSlot.fieldId,
+      starttime,
+      endtime,
+      slotId,
+    );
     if (overlapError) {
       return res.status(400).json({ message: overlapError });
     }
@@ -175,19 +188,19 @@ export const deleteFieldSlot = async (req, res) => {
     const existedSlot = await prisma.fieldSlot.findUnique({
       where: { slotId },
     });
-    
+
     const now = new Date();
     const hasBookings = await prisma.bookingSlot.findMany({
       take: 1,
-      where: { 
+      where: {
         slotId,
         bookingDate: {
           gte: now,
-        }
-       },
-    }); 
+        },
+      },
+    });
 
-    if(hasBookings.length > 0 ) {
+    if (hasBookings.length > 0) {
       return res.status(400).json({
         message: "Khung giờ này đã có đơn đặt sân, không thể xóa.",
       });

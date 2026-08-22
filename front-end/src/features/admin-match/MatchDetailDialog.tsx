@@ -25,59 +25,11 @@ import {
   Loader2,
 } from "lucide-react";
 
-const statusConfig: Record<
-  string,
-  { label: string; className: string }
-> = {
-  OPEN: {
-    label: "Đang tìm đối (Mở)",
-    className: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800",
-  },
-  MATCHED: {
-    label: "Đã ghép đối",
-    className: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800",
-  },
-  FINISHED: {
-    label: "Đã kết thúc",
-    className: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-800",
-  },
-  CANCELLED: {
-    label: "Đã hủy kèo",
-    className: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800",
-  },
-};
-
-const typeLabel: Record<string, { title: string; subtitle: string }> = {
-  FIVE: { title: "Sân 5 người", subtitle: "5 vs 5" },
-  SEVEN: { title: "Sân 7 người", subtitle: "7 vs 7" },
-  ELEVEN: { title: "Sân 11 người", subtitle: "11 vs 11" },
-};
-
-const costRuleConfig: Record<
-  string,
-  { label: string; desc: string; badgeClass: string }
-> = {
-  SPLIT: {
-    label: "Chia đều tiền sân",
-    desc: "Mỗi bên 50% chi phí",
-    badgeClass: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400",
-  },
-  LOSER_PAYS: {
-    label: "Thua trả toàn bộ",
-    desc: "Đội thua trả 100% tiền sân",
-    badgeClass: "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/40 dark:text-orange-400",
-  },
-  WINNER_PAYS: {
-    label: "Thắng trả toàn bộ",
-    desc: "Đội thắng khao tiền sân",
-    badgeClass: "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-400",
-  },
-  NEGOTIATE: {
-    label: "Thương lượng",
-    desc: "Thỏa thuận khi gặp mặt",
-    badgeClass: "bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-900 dark:text-slate-300",
-  },
-};
+import {
+  statusConfig,
+  typeLabel,
+  costRuleConfig,
+} from "@/types/match";
 
 interface MatchDetailDialogProps {
   matchId: number | null;
@@ -100,27 +52,40 @@ export function MatchDetailDialog({
     return "Mọi lứa tuổi";
   };
 
-  const currentStatus = match?.status ? statusConfig[match.status] : null;
-  const currentCostRule = match?.costRule ? costRuleConfig[match.costRule] : null;
-  const currentFieldType = match?.fieldType ? typeLabel[match.fieldType] : null;
+  const currentStatus = match?.status
+    ? statusConfig[match.status.toUpperCase()]
+    : null;
+  const currentCostRule = match?.costRule
+    ? costRuleConfig[match.costRule.toUpperCase()]
+    : null;
+  const currentFieldType = match?.fieldType
+    ? typeLabel[match.fieldType.toUpperCase()]
+    : null;
+
+  const getInitials = (name?: string) => {
+    if (!name) return "U";
+    const parts = name.trim().split(" ");
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl sm:max-w-3xl p-0 overflow-hidden gap-0">
+      <DialogContent className="max-w-2xl sm:max-w-3xl p-0 overflow-hidden border-border bg-surface text-text-primary">
         {/* Header Section */}
-        <div className="bg-gradient-to-r from-emerald-600/10 via-primary/5 to-transparent p-6 border-b">
+        <div className="bg-elevated/80 p-6 border-b border-border">
           <DialogHeader className="space-y-1">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/15 text-brand-primary border border-brand-primary/20">
                   <Swords className="h-5 w-5" />
                 </div>
                 <div>
-                  <DialogTitle className="text-xl font-bold tracking-tight">
+                  <DialogTitle className="text-xl font-bold tracking-tight text-text-primary">
                     Chi tiết kèo đấu #{matchId}
                   </DialogTitle>
                   {match?.createdAt && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                    <p className="text-xs text-text-muted flex items-center gap-1 mt-0.5">
                       <CalendarDays className="h-3.5 w-3.5" />
                       Tạo ngày {formatDateTime(match.createdAt)}
                     </p>
@@ -141,44 +106,51 @@ export function MatchDetailDialog({
         </div>
 
         {/* Body Content */}
-        <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
           {isLoading && (
-            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-3">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm font-medium">Đang tải thông tin trận đấu...</p>
+            <div className="flex flex-col items-center justify-center py-12 text-text-muted gap-3">
+              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
+              <p className="text-sm font-medium">
+                Đang tải thông tin kèo đấu...
+              </p>
             </div>
           )}
 
           {error && (
-            <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
+            <div className="flex items-center gap-3 rounded-xl border border-status-danger/30 bg-status-danger-bg p-4 text-status-danger">
               <AlertCircle className="h-5 w-5 shrink-0" />
-              <p className="text-sm font-medium">Không thể tải thông tin trận đấu này. Vui lòng thử lại sau.</p>
+              <p className="text-sm font-medium">
+                Không thể tải thông tin kèo đấu này. Vui lòng thử lại sau.
+              </p>
             </div>
           )}
 
           {match && (
             <div className="space-y-6">
               {/* Creator Information Card */}
-              <div className="rounded-2xl border bg-card/60 backdrop-blur-sm p-4 shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                  Người tạo kèo / Đội trưởng
+              <div className="rounded-xl border border-border bg-elevated/50 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted mb-3">
+                  Thông tin chủ kèo
                 </p>
                 <div className="flex flex-wrap items-center gap-4">
-                  <Avatar className="h-12 w-12 border-2 border-primary/20 shadow-sm">
-                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-base">
-                      {match.user?.fullName?.charAt(0)?.toUpperCase() || "U"}
+                  <Avatar className="h-12 w-12 border border-border">
+                    <AvatarFallback className="bg-[image:var(--token-gradient-brand)] text-white font-bold text-base">
+                      {getInitials(match.user?.fullName)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-[200px]">
                     <div className="flex items-center gap-2">
-                      <p className="text-base font-semibold text-foreground">
+                      <p className="text-sm font-semibold text-text-primary">
                         {match.user?.fullName || "Chưa có tên"}
                       </p>
-                      <Badge variant="secondary" className="text-[10px] px-2 py-0 font-normal">
-                        Chủ phòng
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] px-2 py-0 font-medium border-brand-accent/30 bg-brand-accent/10 text-brand-accent"
+                      >
+                        Chủ kèo
                       </Badge>
                     </div>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-text-muted">
                       {match.user?.email && (
                         <span className="flex items-center gap-1">
                           <Mail className="h-3.5 w-3.5 opacity-70" />
@@ -196,67 +168,126 @@ export function MatchDetailDialog({
                 </div>
               </div>
 
+              {/* Participant Information Card (if matched) */}
+              {match.isJoined && match.participants?.user && (
+                <div className="rounded-xl border border-border bg-elevated/50 p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted mb-3">
+                    Thông tin đội tham gia
+                  </p>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <Avatar className="h-12 w-12 border border-border">
+                      <AvatarFallback className="bg-[image:var(--token-gradient-brand)] text-white font-bold text-base">
+                        {getInitials(match.participants.user.fullName)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-[200px]">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold text-text-primary">
+                          {match.participants.user.fullName || "Chưa có tên"}
+                        </p>
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] px-2 py-0 font-medium border-status-info/30 bg-status-info-bg text-status-info"
+                        >
+                          Đối thủ
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-text-muted">
+                        {match.participants.user.email && (
+                          <span className="flex items-center gap-1">
+                            <Mail className="h-3.5 w-3.5 opacity-70" />
+                            {match.participants.user.email}
+                          </span>
+                        )}
+                        {match.participants.user.phone && (
+                          <span className="flex items-center gap-1">
+                            <Phone className="h-3.5 w-3.5 opacity-70" />
+                            {match.participants.user.phone}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Match Criteria & Specs */}
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted mb-3">
                   Thông số & Điều kiện kèo đấu
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {/* Field Type */}
-                  <div className="flex items-start gap-3.5 rounded-xl border bg-card p-3.5 shadow-sm hover:border-primary/30 transition-colors">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  <div className="flex items-start gap-3.5 rounded-xl border border-border bg-elevated/40 p-3.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-status-success-bg text-status-success">
                       <Users className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-muted-foreground font-medium">Quy mô sân</p>
-                      <p className="text-sm font-semibold text-foreground mt-0.5">
+                      <p className="text-xs text-text-muted font-medium">
+                        Quy mô sân
+                      </p>
+                      <p className="text-sm font-semibold text-text-primary mt-0.5">
                         {currentFieldType?.title || "Chưa xác định"}
                       </p>
-                      <p className="text-xs text-muted-foreground">{currentFieldType?.subtitle || "--"}</p>
+                      <p className="text-xs text-text-muted">
+                        {currentFieldType?.subtitle || "--"}
+                      </p>
                     </div>
                   </div>
 
                   {/* Age Requirement */}
-                  <div className="flex items-start gap-3.5 rounded-xl border bg-card p-3.5 shadow-sm hover:border-primary/30 transition-colors">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                  <div className="flex items-start gap-3.5 rounded-xl border border-border bg-elevated/40 p-3.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-status-info-bg text-status-info">
                       <UserCheck className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-muted-foreground font-medium">Độ tuổi yêu cầu</p>
-                      <p className="text-sm font-semibold text-foreground mt-0.5">
+                      <p className="text-xs text-text-muted font-medium">
+                        Độ tuổi yêu cầu
+                      </p>
+                      <p className="text-sm font-semibold text-text-primary mt-0.5">
                         {getAgeDisplay(match.minAge, match.maxAge)}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        {match.minAge && match.maxAge ? "Khoảng độ tuổi phù hợp" : "Linh hoạt"}
+                      <p className="text-xs text-text-muted">
+                        {match.minAge && match.maxAge
+                          ? "Khoảng độ tuổi phù hợp"
+                          : "Linh hoạt"}
                       </p>
                     </div>
                   </div>
 
                   {/* Cost Rule */}
-                  <div className="flex items-start gap-3.5 rounded-xl border bg-card p-3.5 shadow-sm hover:border-primary/30 transition-colors">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                  <div className="flex items-start gap-3.5 rounded-xl border border-border bg-elevated/40 p-3.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/15 text-amber-400">
                       <Coins className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-muted-foreground font-medium">Hình thức trả tiền sân</p>
-                      <p className="text-sm font-semibold text-foreground mt-0.5">
+                      <p className="text-xs text-text-muted font-medium">
+                        Hình thức trả tiền sân
+                      </p>
+                      <p className="text-sm font-semibold text-text-primary mt-0.5">
                         {currentCostRule?.label || "Thương lượng"}
                       </p>
-                      <p className="text-xs text-muted-foreground">{currentCostRule?.desc || "--"}</p>
+                      <p className="text-xs text-text-muted">
+                        {currentCostRule?.desc || "--"}
+                      </p>
                     </div>
                   </div>
 
                   {/* Time Note */}
-                  <div className="flex items-start gap-3.5 rounded-xl border bg-card p-3.5 shadow-sm hover:border-primary/30 transition-colors">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                  <div className="flex items-start gap-3.5 rounded-xl border border-border bg-elevated/40 p-3.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-primary/15 text-brand-primary">
                       <Clock className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-muted-foreground font-medium">Thời gian dự kiến</p>
-                      <p className="text-sm font-semibold text-foreground mt-0.5">
+                      <p className="text-xs text-text-muted font-medium">
+                        Thời gian dự kiến
+                      </p>
+                      <p className="text-sm font-semibold text-text-primary mt-0.5">
                         {match.timeNote || "Chưa cập nhật thời gian"}
                       </p>
-                      <p className="text-xs text-muted-foreground">Theo ghi chú của chủ kèo</p>
+                      <p className="text-xs text-text-muted">
+                        Theo ghi chú của chủ kèo
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -264,15 +295,15 @@ export function MatchDetailDialog({
 
               {/* Description / Additional Notes */}
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted mb-2 flex items-center gap-1.5">
                   <FileText className="h-3.5 w-3.5" />
                   Mô tả & Lời nhắn
                 </p>
-                <div className="rounded-xl border bg-muted/40 p-4 text-sm leading-relaxed text-foreground">
+                <div className="rounded-xl border border-border bg-elevated/30 p-4 text-sm leading-relaxed text-text-secondary">
                   {match.description ? (
                     <p className="whitespace-pre-line">{match.description}</p>
                   ) : (
-                    <p className="italic text-muted-foreground text-xs">
+                    <p className="italic text-text-muted text-xs">
                       Không có ghi chú bổ sung nào từ chủ kèo.
                     </p>
                   )}
@@ -283,14 +314,15 @@ export function MatchDetailDialog({
         </div>
 
         {/* Footer Actions */}
-        <Separator />
-        <div className="flex items-center justify-between p-4 bg-muted/20">
-          <p className="text-xs text-muted-foreground">
-            {match?.updatedAt && `Cập nhật lần cuối: ${formatDateTime(match.updatedAt)}`}
+        <Separator className="bg-border" />
+        <div className="flex items-center justify-between p-4 bg-elevated/40">
+          <p className="text-xs text-text-muted">
+            {match?.updatedAt &&
+              `Cập nhật lần cuối: ${formatDateTime(match.updatedAt)}`}
           </p>
           <Button
             variant="outline"
-            className="px-5 font-medium"
+            className="border-border bg-transparent text-text-secondary hover:bg-surface-hover hover:text-text-primary cursor-pointer px-6"
             onClick={() => onOpenChange(false)}
           >
             Đóng
@@ -300,4 +332,3 @@ export function MatchDetailDialog({
     </Dialog>
   );
 }
-

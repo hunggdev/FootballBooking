@@ -35,7 +35,7 @@ export default function AppRoutes() {
       <Toaster richColors />
       {routes}
 
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+      <ReactQueryDevtools initialIsOpen={false} />
     </>
   );
 }

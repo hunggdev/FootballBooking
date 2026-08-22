@@ -12,18 +12,15 @@ export function CartHoldItem({ hold, onRemove }: CartHoldItemProps) {
   return (
     <div className="flex items-center justify-between">
       <div>
-        <p className="font-medium text-text-primary">
-          Slot {hold.slotId}
-        </p>
+        <p className="font-medium text-text-primary">Slot {hold.slotId}</p>
 
-        <p className="text-sm text-text-secondary">
-          {hold.bookingDate} ·{" "}
-          {formatTimeRange(hold.starttime, hold.endtime)}
+        <p className="text-xs text-text-secondary">
+          {hold.bookingDate} · {formatTimeRange(hold.starttime, hold.endtime)}
         </p>
       </div>
 
       <span className="ml-2 text-sm font-semibold text-status-warning">
-        {formatCountdown(hold.ttl ?? "0")}
+        {formatCountdown(hold.ttl ?? 0)}
       </span>
 
       <button

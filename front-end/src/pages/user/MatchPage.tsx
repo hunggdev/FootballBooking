@@ -1,18 +1,13 @@
 import ManageMatch from "@/features/user-match/ManageMatch";
 
 const MatchPage = () => {
-
   return (
-    <div>
-      <div className="flex min-h-screen flex-col w-full">
-        <main className="flex-1">
-          <ManageMatch />
-        </main>
+    <div className="w-full">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
+        <ManageMatch />
       </div>
-      
     </div>
-    
-  )
-}
+  );
+};
 
-export default MatchPage
+export default MatchPage;

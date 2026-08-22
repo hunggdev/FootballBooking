@@ -1,19 +1,10 @@
 import { prisma } from "../config/database.js";
 import { validateField, checkFieldConflict } from "../utils/validateFields.js";
-import {
-  parseTimeStringToDate,
-} from "../utils/validateFieldSlots.js";
+import { parseTimeStringToDate } from "../utils/validateFieldSlots.js";
 
 export const getFields = async (req, res) => {
   try {
-    const role = req.user?.role;
     const { type } = req.query;
-
-    if (role !== "ADMIN") {
-      return res.status(403).json({
-        message: "Không có quyền truy cập",
-      });
-    }
 
     const fields = await prisma.field.findMany({
       where: type
@@ -81,7 +72,6 @@ export const createField = async (req, res) => {
       selectedFieldSlots,
     } = req.body;
 
-    
     const error = validateField({
       name,
       fieldType,
@@ -112,6 +102,7 @@ export const createField = async (req, res) => {
         description: description?.trim() || null,
         image: image?.trim() || null,
         fieldType,
+        status: "ACTIVE",
       },
     });
 
@@ -127,7 +118,6 @@ export const createField = async (req, res) => {
       data: data,
       skipDuplicates: true, // Tùy chọn: Bỏ qua nếu bị trùng lặp trường Unique (ví dụ trùng email)
     });
-
 
     return res.status(201).json({
       message: "Tạo sân thành công",
@@ -237,9 +227,12 @@ export const deleteField = async (req, res) => {
       });
     }
 
-    await prisma.field.delete({
+    await prisma.field.update({
       where: {
         fieldId,
+      },
+      data: {
+        status: "INACTIVE",
       },
     });
 

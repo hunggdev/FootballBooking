@@ -22,8 +22,8 @@
   --heading: system-ui, "Segoe UI", Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
-  font: 15px/145% var(--sans);
-  letter-spacing: 0.18px;
+  font: 16px/150% var(--sans);
+  letter-spacing: 0.12px;
   color-scheme: light dark;
   color: var(--text);
   background: var(--bg);
@@ -33,7 +33,7 @@
   -moz-osx-font-smoothing: grayscale;
 
   @media (max-width: 1024px) {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   --background: oklch(1 0 0);
@@ -244,7 +244,7 @@ code,
 }
 
 code {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);

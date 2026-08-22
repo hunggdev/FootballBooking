@@ -12,10 +12,31 @@ export function ChatToggleButton({ isOpen, onToggle }: ChatToggleButtonProps) {
       onClick={onToggle}
       variant="outline"
       size="icon"
-      className="h-14 w-14 rounded-full border shadow-sm"
+      className="
+    h-12
+    w-12
+    rounded-full
+    border
+    border-brand-primary/20
+    bg-brand-primary
+    text-white
+    shadow-lg
+    shadow-brand-primary/20
+    transition-all
+    duration-200
+    hover:scale-105
+    hover:bg-brand-primary/90
+    hover:shadow-xl
+    hover:shadow-brand-primary/30
+    active:scale-95
+  "
       aria-label={isOpen ? "Đóng chat" : "Mở chat"}
     >
-      {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
+      {isOpen ? (
+        <X className="h-6 w-6" />
+      ) : (
+        <MessageCircle className="h-6 w-6" />
+      )}
     </Button>
   );
 }

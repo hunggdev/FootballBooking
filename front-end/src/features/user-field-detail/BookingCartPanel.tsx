@@ -56,9 +56,7 @@ export function BookingCartPanel({
           Vé đặt sân
         </p>
 
-        <h3 className="text-xl font-bold text-text-primary">
-          {fieldName}
-        </h3>
+        <h3 className="text-xl font-bold text-text-primary">{fieldName}</h3>
       </div>
 
       {holds.length === 0 ? (
@@ -71,8 +69,9 @@ export function BookingCartPanel({
             Đặt sân thành công cho {dateLabel} ·{" "}
             {formatTimeRange(
               holds[0].starttime,
-              holds[holds.length - 1].endtime
-            )}.
+              holds[holds.length - 1].endtime,
+            )}
+            .
           </p>
 
           <Button
@@ -90,6 +89,13 @@ export function BookingCartPanel({
             onRemove={onRemoveHold}
           />
 
+          <ServiceSelector
+            services={services}
+            cartItems={cartItems}
+            onAdd={onAddService}
+            onChangeQuantity={onChangeQuantity}
+            onRemove={onRemoveService}
+          />
           <BookingSummary
             bookingType={bookingType}
             totalPrice={totalPrice}
@@ -98,14 +104,6 @@ export function BookingCartPanel({
             canConfirm={holds.length > 0}
             isConfirming={isConfirming}
             onConfirm={onConfirm}
-          />
-
-          <ServiceSelector
-            services={services}
-            cartItems={cartItems}
-            onAdd={onAddService}
-            onChangeQuantity={onChangeQuantity}
-            onRemove={onRemoveService}
           />
         </>
       )}

@@ -7,7 +7,7 @@ import {
   validateUser,
   duplicateUser,
   validateEmail,
-  validatePassword,  
+  validatePassword,
 } from "../utils/validateUsers.js";
 
 const ACCESS_TOKEN_TTL = 1 * 24 * 60 * 60 * 1000;

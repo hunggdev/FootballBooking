@@ -68,6 +68,7 @@ model Field {
   fieldSlots  FieldSlot[]
   reviews     Review[]
   bookings    Booking[]
+  status      FieldStatus @default(ACTIVE)
 
   @@map("field")
 }
@@ -88,19 +89,19 @@ model Service {
 }
 
 model Match {
-  matchId      Int                @id @default(autoincrement()) @map("match_id")
-  userId       Int                @map("user_id")
-  minAge       Int?               @map("min_age")
-  maxAge       Int?               @map("max_age")
-  fieldType    FieldType          @map("field_type")
-  timeNote     String?            @map("time_note")
+  matchId      Int               @id @default(autoincrement()) @map("match_id")
+  userId       Int               @map("user_id")
+  minAge       Int?              @map("min_age")
+  maxAge       Int?              @map("max_age")
+  fieldType    FieldType         @map("field_type")
+  timeNote     String?           @map("time_note")
   description  String?
-  costRule     CostRule           @map("cost_rule")
-  status       MatchStatus        @default(OPEN)
-  createdAt    DateTime           @default(now()) @map("created_at")
-  updatedAt    DateTime           @updatedAt @map("updated_at")
-  user         User               @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  participants MatchParticipant[]
+  costRule     CostRule          @map("cost_rule")
+  status       MatchStatus       @default(OPEN)
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+  user         User              @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  participants MatchParticipant?
 
   @@index([userId])
   @@map("match")
@@ -109,17 +110,15 @@ model Match {
 model MatchParticipant {
   participantId Int      @id @default(autoincrement()) @map("participant_id")
   userId        Int      @map("user_id")
-  matchId       Int      @map("match_id")
+  matchId       Int      @unique @map("match_id")
   joinedAt      DateTime @default(now()) @map("joined_at")
   match         Match    @relation(fields: [matchId], references: [matchId], onDelete: Cascade)
   user          User     @relation(fields: [userId], references: [userId])
 
-  @@unique([matchId, userId])
   @@index([userId])
   @@map("match_participant")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model BookingServices {
   bookingServiceId Int      @id @default(autoincrement()) @map("booking_service_id")
   bookingId        Int      @map("booking_id")
@@ -135,12 +134,11 @@ model BookingServices {
   @@map("booking_services")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Booking {
   bookingId Int @id @default(autoincrement()) @map("booking_id")
   userId    Int @map("user_id")
 
-  status        BookingStatus @default(HOLD)
+  status        BookingStatus @default(CONFIRMED)
   type          BookingType   @default(ONE_TIME)
   depositAmount Decimal       @default(0) @map("deposit_amount") @db.Decimal(10, 2)
   totalPrice    Decimal       @map("total_price") @db.Decimal(10, 2)
@@ -151,14 +149,13 @@ model Booking {
   cancelledAt  DateTime? @map("cancelled_at") @db.Timestamp(6)
   cancelReason String?   @map("cancel_reason")
   note         String?
-  invoiceId    Int?      @map("invoice_id")
+  invoiceId    Int?      @unique @map("invoice_id")
 
   bookingSlots    BookingSlot[]
   bookingServices BookingServices[]
   user            User              @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "bookings_user_fk")
-  invoice         Invoice?          @relation(fields: [invoiceId], references: [invoiceId])
+  invoice         Invoice?          @relation(fields: [invoiceId], references: [invoiceId], onDelete: Cascade)
   review          Review?
-  // fieldSlot       FieldSlot?        @relation(fields: [fieldId], references: [slotId])
   fieldId         Int?
   field           Field?            @relation(fields: [fieldId], references: [fieldId])
 
@@ -173,8 +170,6 @@ model BookingSlot {
   fieldId       Int?     @map("field_id")
   bookingDate   DateTime @map("booking_date") @db.Date
 
-  // Snapshot giá tại thời điểm đặt — KHÔNG lấy giá hiện tại của FieldSlot khi hiển thị lịch sử,
-  // vì giá sân có thể đổi sau này, đơn cũ phải giữ nguyên giá đã tính.
   price Decimal @db.Decimal(10, 2)
 
   booking   Booking   @relation(fields: [bookingId], references: [bookingId], onDelete: Cascade, map: "booking_slots_booking_fk")
@@ -186,16 +181,14 @@ model BookingSlot {
   @@map("booking_slots")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model FieldSlot {
-  slotId       Int           @id @default(autoincrement()) @map("slot_id")
-  fieldId      Int           @map("field_id")
-  starttime    DateTime      @db.Time(6)
-  endtime      DateTime      @db.Time(6)
-  price        Decimal       @db.Decimal(10, 2)
+  slotId       Int             @id @default(autoincrement()) @map("slot_id")
+  fieldId      Int             @map("field_id")
+  starttime    DateTime        @db.Time(6)
+  endtime      DateTime        @db.Time(6)
+  price        Decimal         @db.Decimal(10, 2)
   status       FieldSlotStatus @default(AVAILABLE)
-  // bookings     Booking[]
-  field        Field         @relation(fields: [fieldId], references: [fieldId], onDelete: Cascade, onUpdate: NoAction, map: "fk_field")
+  field        Field           @relation(fields: [fieldId], references: [fieldId], onDelete: Cascade, onUpdate: NoAction, map: "fk_field")
   slotHolds    SlotHold[]
   slotBlocks   BlockedSlot[]
   bookingSlots BookingSlot[]
@@ -205,7 +198,6 @@ model FieldSlot {
   @@map("field_slots")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Invoice {
   invoiceId     Int           @id @default(autoincrement()) @map("invoice_id")
   userId        Int           @map("user_id")
@@ -218,14 +210,13 @@ model Invoice {
   remainAmount  Decimal       @default(0) @map("remain_amount") @db.Decimal(10, 2)
   paymentMethod String?       @map("payment_method")
   paidAt        DateTime?     @map("paid_at") @db.Timestamp(6)
-  bookings      Booking[]
+  bookingId     Int?          @unique @map("booking_id")
+  booking       Booking?
   user          User          @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "invoice_user_fk")
 
   @@map("invoices")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Review {
   reviewId  Int       @id @default(autoincrement()) @map("review_id")
   bookingId Int       @unique @map("booking_id")
@@ -243,7 +234,6 @@ model Review {
   @@map("reviews")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model SlotHold {
   holdId      Int       @id @default(autoincrement()) @map("hold_id")
   userId      Int       @map("user_id")
@@ -293,7 +283,6 @@ model Notification {
   @@index([recipientId, isRead])
   @@index([recipientId, createdAt])
   @@index([entityType, entityId])
-
   @@map("notifications")
 }
 
@@ -356,7 +345,6 @@ enum MatchStatus {
 }
 
 enum BookingStatus {
-  HOLD
   CONFIRMED
   CANCELLED
   COMPLETED
@@ -370,8 +358,8 @@ enum BookingType {
 
 enum InvoiceStatus {
   PENDING
-  PAID 
-  DEPOSITED 
+  PAID
+  DEPOSITED
   CANCELLED
 }
 

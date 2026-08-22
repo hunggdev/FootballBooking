@@ -41,7 +41,7 @@ export function HeroSection() {
         "
       />
 
-      <div className="relative mx-auto max-w-7xl px-4 py-10 md:py-14 lg:py-16">
+      <div className="relative mx-auto max-w-7xl px-10 py-10 md:py-14 lg:py-16 bg-[linear-gradient(90deg,rgba(0,0,0,0.85)_0%,transparent_80%,transparent_20%,rgba(0,0,0,0.85)_100%),url('/images/bg.png')] bg-cover bg-center bg-no-repeat">
         <div
           className="
             grid
@@ -53,7 +53,7 @@ export function HeroSection() {
           "
         >
           {/* ================= LEFT ================= */}
-          <div className="space-y-6 lg:col-span-7">
+          <div className="space-y-6 lg:col-span-7 "> 
             {/* Badge */}
             <div
               className="
@@ -72,7 +72,6 @@ export function HeroSection() {
               "
             >
               <Zap className="h-3.5 w-3.5" />
-
               Hệ thống đặt sân bóng đá trực tuyến
             </div>
 
@@ -92,7 +91,6 @@ export function HeroSection() {
               >
                 Đặt sân cực nhanh,
                 <br />
-
                 <span
                   className="
                     bg-gradient-to-r
@@ -117,9 +115,9 @@ export function HeroSection() {
                 sm:text-base
               "
             >
-              Tìm kiếm sân bóng phù hợp, chọn khung giờ lý tưởng
-              và dịch vụ đi kèm. Hệ thống hỗ trợ tạm giữ chỗ
-              10 phút giúp bạn hoàn tất xác nhận nhanh chóng.
+              Tìm kiếm sân bóng phù hợp, chọn khung giờ lý tưởng và dịch vụ đi
+              kèm. Hệ thống hỗ trợ tạm giữ chỗ 10 phút giúp bạn hoàn tất xác
+              nhận nhanh chóng.
             </p>
 
             {/* Highlights */}

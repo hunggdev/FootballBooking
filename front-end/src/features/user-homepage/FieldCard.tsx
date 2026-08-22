@@ -9,8 +9,7 @@ export function FieldCard({ field }: { field: Field }) {
   const navigate = useNavigate();
 
   const slug =
-    FIELD_TYPE_SLUG[field.fieldType] ||
-    field.fieldType.toLowerCase();
+    FIELD_TYPE_SLUG[field.fieldType] || field.fieldType.toLowerCase();
 
   const minPrice = field.fieldSlots?.length
     ? Math.min(...field.fieldSlots.map((s) => Number(s.price)))
@@ -23,6 +22,7 @@ export function FieldCard({ field }: { field: Field }) {
   return (
     <Card
       className="
+        p-0
         group
         cursor-pointer
         overflow-hidden
@@ -48,6 +48,9 @@ export function FieldCard({ field }: { field: Field }) {
             src={field.image}
             alt={field.name}
             className="
+              absolute
+              inset-0
+              block
               h-full
               w-full
               object-cover
@@ -164,9 +167,7 @@ export function FieldCard({ field }: { field: Field }) {
             pt-3
           "
         >
-          <span className="text-xs text-text-muted">
-            Giá từ
-          </span>
+          <span className="text-xs text-text-muted">Giá từ</span>
 
           <span className="text-sm font-bold text-brand-accent">
             {minPrice.toLocaleString("vi-VN")}đ
@@ -208,9 +209,7 @@ export function FieldCard({ field }: { field: Field }) {
           }}
         >
           Xem chi tiết & Đặt sân
-          <span className="ml-1.5 text-brand-accent">
-            →
-          </span>
+          <span className="ml-1.5 text-brand-accent">→</span>
         </Button>
       </CardFooter>
     </Card>

@@ -169,9 +169,9 @@ const getReviewStats = async () => {
  * Lấy doanh thu từng ngày trong 7 ngày.
  */
 const getRevenue7Days = async (start, end) => {
-  start = addVietnamDays(start, -28)
-  end = addVietnamDays(end, 0) 
-  
+  start = addVietnamDays(start, -28);
+  end = addVietnamDays(end, 0);
+
   const invoices = await prisma.invoice.findMany({
     where: {
       status: "PAID",
@@ -220,7 +220,6 @@ const getRevenue7Days = async (start, end) => {
       item.revenue += Number(invoice.totalAmount || 0);
     }
   }
-
 
   return result;
 };
@@ -401,7 +400,7 @@ const getBookingRateByTime = async (start, end) => {
 
 const getRecentBookings = async () => {
   const bookings = await prisma.booking.findMany({
-    take: 10,
+    take: 12,
 
     orderBy: {
       createdAt: "desc",
@@ -560,19 +559,11 @@ const getFeaturedMatches = async () => {
           fullName: true,
         },
       },
-
-      _count: {
-        select: {
-          participants: true,
-        },
-      },
     },
   });
 
   return matches.map((match) => ({
     ...match,
-
-    participantCount: match._count.participants,
   }));
 };
 

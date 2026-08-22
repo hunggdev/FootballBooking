@@ -1,32 +1,34 @@
-import { useState } from "react";
-import { toast } from "sonner";
-import { isAxiosError } from "axios";
-import { Plus, Trash2, Clock, DollarSign, AlertCircle } from "lucide-react";
+// src/features/admin-field/FieldDetailDialog.tsx
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-
-import { useField, useCreateSlot, useDeleteSlot } from "@/stores/useFieldStore";
+import { Separator } from "@/components/ui/separator";
+import { useField } from "@/stores/useFieldStore";
 import type { FieldType, FieldSlot } from "@/types/field";
 import { formatDateTime, formatTimeRange } from "@/lib/utils";
+import {
+  Layers,
+  Clock,
+  Coins,
+  Calendar,
+  AlertCircle,
+  Loader2,
+  AlertTriangle,
+  ImageIcon,
+} from "lucide-react";
+
+import { fieldTypeConfig, slotStatusConfig } from "@/types/field";
 
 interface FieldDetailDialogProps {
   fieldId: number | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const fieldTypeLabel: Record<FieldType, string> = {
-  FIVE: "Sân 5 người",
-  SEVEN: "Sân 7 người",
-  ELEVEN: "Sân 11 người",
-};
 
 export function FieldDetailDialog({
   fieldId,
@@ -35,289 +37,192 @@ export function FieldDetailDialog({
 }: FieldDetailDialogProps) {
   const numericFieldId = fieldId ?? 0;
   const { data: field, isLoading, error } = useField(numericFieldId);
-  const createSlotMutation = useCreateSlot();
-  const deleteSlotMutation = useDeleteSlot();
 
-  const [starttime, setStarttime] = useState("07:00");
-  const [endtime, setEndtime] = useState("08:00");
-  const [price, setPrice] = useState("200000");
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-
-  const getErrorMessage = (err: unknown, defaultMsg: string) => {
-    if (isAxiosError(err) && err.response?.data?.message) {
-      return err.response.data.message;
-    }
-    if (err instanceof Error) {
-      return err.message;
-    }
-    return defaultMsg;
-  };
-
-  const handleCreateSlot = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError(null);
-
-    if (!numericFieldId) return;
-
-    if (!starttime || !endtime) {
-      const msg = "Vui lòng nhập giờ bắt đầu và giờ kết thúc.";
-      setFormError(msg);
-      toast.error(msg);
-      return;
-    }
-
-    if (Number(price) <= 0) {
-      const msg = "Giá tiền phải lớn hơn 0.";
-      setFormError(msg);
-      toast.error(msg);
-      return;
-    }
-
-    try {
-      await createSlotMutation.mutateAsync({
-        fieldId: numericFieldId,
-        payload: {
-          starttime,
-          endtime,
-          price: Number(price),
-          status: "AVAILABLE",
-        },
-      });
-      toast.success("Thêm khung giờ thành công!");
-      setFormError(null);
-      setShowAddForm(false);
-    } catch (err: unknown) {
-      const msg = getErrorMessage(err, "Thêm khung giờ thất bại.");
-      setFormError(msg);
-      toast.error(msg);
-    }
-  };
-
-  const handleDeleteSlot = async (slotId: number) => {
-    if (!confirm("Bạn có chắc muốn xóa khung giờ này?")) return;
-
-    try {
-      await deleteSlotMutation.mutateAsync(slotId);
-      toast.success("Xóa khung giờ thành công!");
-    } catch (err: unknown) {
-      const msg = getErrorMessage(err, "Xóa khung giờ thất bại.");
-      toast.error(msg);
-    }
-  };
+  const currentType = field?.fieldType
+    ? fieldTypeConfig[field.fieldType as FieldType]
+    : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            Chi tiết & Quản lý khung giờ sân
-          </DialogTitle>
-        </DialogHeader>
-
-        {isLoading && (
-          <p className="py-4 text-center text-sm text-muted-foreground">
-            Đang tải dữ liệu...
-          </p>
-        )}
-
-        {error && (
-          <p className="py-4 text-center text-sm text-red-500">
-            Không thể tải thông tin sân.
-          </p>
-        )}
-
-        {field && (
-          <div className="space-y-5 pt-2">
-            {field.image && (
-              <img
-                src={field.image}
-                alt={field.name}
-                className="h-48 w-full rounded-lg object-cover border"
-              />
-            )}
-
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold">{field.name}</h2>
-                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                  {fieldTypeLabel[field.fieldType as FieldType] ||
-                    field.fieldType}
-                </p>
+      <DialogContent className="max-w-2xl sm:max-w-3xl p-0 overflow-hidden border-border bg-surface text-text-primary">
+        {/* Header Section */}
+        <div className="bg-elevated/80 p-6 border-b border-border">
+          <DialogHeader className="space-y-1">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/15 text-brand-primary border border-brand-primary/20">
+                  <Layers className="h-5 w-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-bold tracking-tight text-text-primary">
+                    Chi tiết sân #{fieldId}
+                  </DialogTitle>
+                  {field?.createdAt && (
+                    <p className="text-xs text-text-muted flex items-center gap-1 mt-0.5">
+                      <Calendar className="h-3.5 w-3.5" />
+                      Tạo ngày {formatDateTime(field.createdAt)}
+                    </p>
+                  )}
+                </div>
               </div>
-              <span className="text-xs text-muted-foreground">
-                Tạo ngày: {formatDateTime(field.createdAt)}
-              </span>
+
+              {currentType && (
+                <Badge
+                  variant="outline"
+                  className={`px-3 py-1 text-xs font-semibold rounded-full border ${currentType.badgeClass}`}
+                >
+                  {currentType.label}
+                </Badge>
+              )}
             </div>
+          </DialogHeader>
+        </div>
 
-            <Separator />
-
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                Mô tả sân
+        {/* Body Content */}
+        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          {isLoading && (
+            <div className="flex flex-col items-center justify-center py-12 text-text-muted gap-3">
+              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
+              <p className="text-sm font-medium">
+                Đang tải thông tin sân bóng...
               </p>
-              <p className="text-sm">{field.description || "Chưa có mô tả."}</p>
             </div>
+          )}
 
-            <Separator />
+          {error && (
+            <div className="flex items-center gap-3 rounded-xl border border-status-danger/30 bg-status-danger-bg p-4 text-status-danger">
+              <AlertCircle className="h-5 w-5 shrink-0" />
+              <p className="text-sm font-medium">
+                Không thể tải thông tin sân bóng. Vui lòng thử lại sau.
+              </p>
+            </div>
+          )}
 
-            {/* Manage Time Slots Section */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold flex items-center gap-1.5">
-                  <Clock className="h-4 w-4 text-emerald-500" />
-                  Danh sách khung giờ của sân
-                </h3>
-                <Button
-                  size="sm"
-                  variant={showAddForm ? "secondary" : "default"}
-                  onClick={() => {
-                    setShowAddForm(!showAddForm);
-                    setFormError(null);
-                  }}
-                  className="h-8 text-xs font-bold gap-1"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  {showAddForm ? "Đóng form" : "Thêm khung giờ"}
-                </Button>
-              </div>
-
-              {/* Form Add New Slot */}
-              {showAddForm && (
-                <form
-                  onSubmit={handleCreateSlot}
-                  className="rounded-lg border bg-muted/30 p-4 space-y-3"
-                >
-                  <p className="text-xs font-bold text-foreground">
-                    Tạo khung giờ mới cho sân này:
-                  </p>
-
-                  {formError && (
-                    <div className="flex items-center gap-2 rounded-md bg-red-500/10 border border-red-500/30 p-2.5 text-xs text-red-600 dark:text-red-400 font-medium">
-                      <AlertCircle className="h-4 w-4 shrink-0" />
-                      <span>{formError}</span>
+          {field && (
+            <div className="space-y-6">
+              {/* Field Media & Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 rounded-xl border border-border bg-elevated/40 p-4">
+                {/* Field Image */}
+                <div className="md:col-span-5 h-44 rounded-lg overflow-hidden border border-border bg-surface flex items-center justify-center">
+                  {field.image ? (
+                    <img
+                      src={field.image}
+                      alt={field.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-2 text-text-muted p-4">
+                      <ImageIcon className="h-8 w-8 opacity-40" />
+                      <span className="text-xs">Chưa cập nhật hình ảnh</span>
                     </div>
                   )}
-
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                        Bắt đầu
-                      </label>
-                      <Input
-                        type="time"
-                        value={starttime}
-                        onChange={(e) => {
-                          setStarttime(e.target.value);
-                          setFormError(null);
-                        }}
-                        className="h-8 text-xs"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                        Kết thúc
-                      </label>
-                      <Input
-                        type="time"
-                        value={endtime}
-                        onChange={(e) => {
-                          setEndtime(e.target.value);
-                          setFormError(null);
-                        }}
-                        className="h-8 text-xs"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                        Giá (VNĐ)
-                      </label>
-                      <Input
-                        type="number"
-                        step="10000"
-                        value={price}
-                        onChange={(e) => {
-                          setPrice(e.target.value);
-                          setFormError(null);
-                        }}
-                        className="h-8 text-xs"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <Button
-                    type="submit"
-                    size="sm"
-                    disabled={createSlotMutation.isPending}
-                    className="w-full h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer"
-                  >
-                    {createSlotMutation.isPending
-                      ? "Đang lưu..."
-                      : "Lưu khung giờ này →"}
-                  </Button>
-                </form>
-              )}
-
-              {/* List of slots */}
-              {!field.fieldSlots || field.fieldSlots.length === 0 ? (
-                <p className="py-4 text-center text-xs text-muted-foreground border border-dashed rounded-lg">
-                  Sân này chưa có khung giờ nào. Vui lòng bấm "Thêm khung giờ"
-                  để tạo.
-                </p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {field?.fieldSlots
-                    ?.filter((slot) => slot.status === "AVAILABLE")
-                    .map((slot: FieldSlot) =>
-                      slot.status === "AVAILABLE" ? (
-                        <div
-                          key={slot.slotId}
-                          className="flex items-center justify-between rounded-lg border p-2.5 bg-card text-xs shadow-xs"
-                        >
-                          <div className="space-y-0.5">
-                            <span className="font-semibold text-foreground block">
-                              {formatTimeRange(slot.starttime, slot.endtime)}
-                            </span>
-                            <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-0.5">
-                              <DollarSign className="h-3 w-3" />
-                              {Number(slot.price).toLocaleString("vi-VN")} đ
-                            </span>
-                          </div>
-                          <Button
-                            size="icon-sm"
-                            variant="ghost"
-                            onClick={() => handleDeleteSlot(slot.slotId)}
-                            disabled={deleteSlotMutation.isPending}
-                            className="h-7 w-7 text-red-500 hover:bg-red-500/10 hover:text-red-600 cursor-pointer"
-                            title="Xóa khung giờ"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div
-                          key={slot.slotId}
-                          className="flex items-center justify-between rounded-lg border p-2.5 bg-card text-xs shadow-xs"
-                        >
-                          <div className="space-y-0.5">
-                            <span className="font-semibold text-foreground block">
-                              {formatTimeRange(slot.starttime, slot.endtime)}
-                            </span>
-                            <span className="text-red-600 dark:text-red-400 font-bold flex items-center gap-0.5">
-                              <DollarSign className="h-3 w-3" />
-                              {Number(slot.price).toLocaleString("vi-VN")} đ
-                            </span>
-                          </div>
-                        </div>
-                      ),
-                    )}
                 </div>
-              )}
+
+                {/* Field Details */}
+                <div className="md:col-span-7 flex flex-col justify-between space-y-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-bold text-text-primary">
+                        {field.name}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-brand-primary font-medium mt-0.5">
+                      {currentType?.label || field.fieldType} •{" "}
+                      {currentType?.sub || ""}
+                    </p>
+                    <p className="text-xs text-text-secondary mt-2 leading-relaxed">
+                      {field.description ||
+                        "Chưa có mô tả chi tiết cho sân bóng này."}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/60">
+                    <span className="text-xs text-text-muted">
+                      Tổng số khung giờ:
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className="border-border bg-surface text-text-primary font-mono text-xs"
+                    >
+                      {field.fieldSlots?.length || 0} khung giờ
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Time Slots Section */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5" />
+                    Danh sách khung giờ ({field.fieldSlots?.length || 0})
+                  </p>
+                </div>
+
+                {!field.fieldSlots || field.fieldSlots.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-border bg-elevated/20 p-8 text-center text-text-muted">
+                    <AlertTriangle className="h-6 w-6 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm font-medium">
+                      Sân này hiện chưa có khung giờ hoạt động.
+                    </p>
+                    <p className="text-xs text-text-muted mt-0.5">
+                      Vui lòng cập nhật thêm khung giờ trong cài đặt sân.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {field.fieldSlots.map((slot: FieldSlot) => {
+                      const st = slotStatusConfig[slot.status] || {
+                        label: slot.status,
+                        className: "border-border bg-elevated text-text-muted",
+                      };
+                      return (
+                        <div
+                          key={slot.slotId}
+                          className="rounded-xl border border-border bg-elevated/40 p-3.5 flex flex-col justify-between hover:border-brand-primary/40 transition-colors"
+                        >
+                          <div className="flex items-center justify-between gap-2 mb-2">
+                            <span className="text-xs font-semibold text-text-primary flex items-center gap-1.5">
+                              <Clock className="h-3.5 w-3.5 text-text-muted" />
+                              {formatTimeRange(slot.starttime, slot.endtime)}
+                            </span>
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] px-2 py-0 font-medium rounded-full border ${st.className}`}
+                            >
+                              {st.label}
+                            </Badge>
+                          </div>
+
+                          <div className="flex items-center justify-between text-xs pt-2 border-t border-border/40">
+                            <span className="text-text-muted">Giá thuê:</span>
+                            <span className="font-bold text-brand-primary flex items-center gap-0.5">
+                              <Coins className="h-3 w-3" />
+                              {Number(slot.price || 0).toLocaleString("vi-VN")}
+                              &nbsp;đ
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* Footer Actions */}
+        <Separator className="bg-border" />
+        <div className="flex items-center justify-end p-4 bg-elevated/40">
+          <Button
+            variant="outline"
+            className="border-border bg-transparent text-text-secondary hover:bg-surface-hover hover:text-text-primary cursor-pointer px-6"
+            onClick={() => onOpenChange(false)}
+          >
+            Đóng
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

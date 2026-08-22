@@ -13,12 +13,7 @@ import {
 import { formatTimeRange } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/common/Pagination";
 
 export default function FieldList() {
@@ -26,69 +21,52 @@ export default function FieldList() {
   const navigate = useNavigate();
 
   const [selectedDate, setSelectedDate] = useState(() =>
-    dayjs().format("YYYY-MM-DD")
+    dayjs().format("YYYY-MM-DD"),
   );
   const [currentPage, setCurrentPage] = useState(1);
 
   const pageSize = 4;
 
-  const fieldType = typeSlug
-    ? SLUG_TO_FIELD_TYPE[typeSlug]
-    : undefined;
+  const fieldType = typeSlug ? SLUG_TO_FIELD_TYPE[typeSlug] : undefined;
 
-  const {
-    data: fieldsWithSlots = [],
-    isLoading,
-  } = useAllFieldSlotsByDate(selectedDate, fieldType);
+  const { data: fieldsWithSlots = [], isLoading } = useAllFieldSlotsByDate(
+    selectedDate,
+    fieldType,
+  );
 
   const totalItems = fieldsWithSlots.length;
   const totalPages = Math.ceil(totalItems / pageSize);
 
   const paginatedFields = fieldsWithSlots.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
 
   const changeDate = (days: number) => {
-    setSelectedDate(
-      dayjs(selectedDate)
-        .add(days, "day")
-        .format("YYYY-MM-DD")
-    );
+    setSelectedDate(dayjs(selectedDate).add(days, "day").format("YYYY-MM-DD"));
     setCurrentPage(1);
   };
 
-  const handleSlotClick = (
-    fId: number,
-    slotId: number
-  ) => {
-    const slug =
-      typeSlug ||
-      (fieldType
-        ? FIELD_TYPE_SLUG[fieldType]
-        : "san-5");
+  const handleSlotClick = (fId: number, slotId: number) => {
+    const slug = typeSlug || (fieldType ? FIELD_TYPE_SLUG[fieldType] : "san-5");
 
     navigate(
-      `/user/booking/${slug}/${fId}?slotId=${slotId}&date=${selectedDate}`
+      `/user/booking/${slug}/${fId}?slotId=${slotId}&date=${selectedDate}`,
     );
   };
 
   return (
     <div className="min-h-screen bg-background text-text-primary">
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-6">
-
         {/* Header */}
         <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5 shadow-sm md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-text-primary">
-              {fieldType
-                ? FIELD_TYPE_LABEL[fieldType]
-                : "Danh sách sân bóng"}
+              {fieldType ? FIELD_TYPE_LABEL[fieldType] : "Danh sách sân bóng"}
             </h1>
 
             <p className="mt-1 text-sm text-text-secondary">
-              Chọn khung giờ trống trực tiếp trên sơ đồ
-              để tiến hành đặt sân.
+              Chọn khung giờ trống trực tiếp trên sơ đồ để tiến hành đặt sân.
             </p>
           </div>
 
@@ -202,23 +180,17 @@ export default function FieldList() {
 
                   <CardContent className="p-4">
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                      {field.slots?.map(
-                        (slot: FieldSlot) => {
-                          const isAvailable =
-                            slot.status === "AVAILABLE";
+                      {field.slots?.map((slot: FieldSlot) => {
+                        const isAvailable = slot.status === "AVAILABLE";
 
-                          const isMyHold =
-                            Boolean(slot.isMyHold);
+                        const isMyHold = Boolean(slot.isMyHold);
 
-                          const canClick =
-                            isAvailable || isMyHold;
+                        const canClick = isAvailable || isMyHold;
 
-                          let badgeText = isAvailable
-                            ? "Còn trống"
-                            : "Đã đặt";
+                        let badgeText = isAvailable ? "Còn trống" : "Đã đặt";
 
-                          let styleClasses = isAvailable
-                            ? `
+                        let styleClasses = isAvailable
+                          ? `
                               border-brand-primary/40
                               bg-brand-primary/5
                               text-text-primary
@@ -226,7 +198,7 @@ export default function FieldList() {
                               hover:border-brand-primary/70
                               cursor-pointer
                             `
-                            : `
+                          : `
                               border-border
                               bg-surface-hover/40
                               text-text-secondary
@@ -234,10 +206,10 @@ export default function FieldList() {
                               cursor-not-allowed
                             `;
 
-                          if (isMyHold) {
-                            badgeText = "Bạn đang giữ";
+                        if (isMyHold) {
+                          badgeText = "Bạn đang giữ";
 
-                            styleClasses = `
+                          styleClasses = `
                               border-brand-primary
                               bg-brand-primary/15
                               text-brand-primary
@@ -248,32 +220,17 @@ export default function FieldList() {
                               ring-brand-primary/30
                               shadow-sm
                             `;
-                          } else if (
-                            slot.status === "HOLD"
-                          ) {
-                            badgeText = "Đang giữ";
+                        }
 
-                            styleClasses = `
-                              border-status-warning/40
-                              bg-status-warning/10
-                              text-status-warning
-                              cursor-not-allowed
-                              opacity-80
-                            `;
-                          }
-
-                          return (
-                            <button
-                              key={slot.slotId}
-                              type="button"
-                              disabled={!canClick}
-                              onClick={() =>
-                                handleSlotClick(
-                                  field.fieldId,
-                                  slot.slotId
-                                )
-                              }
-                              className={`
+                        return (
+                          <button
+                            key={slot.slotId}
+                            type="button"
+                            disabled={!canClick}
+                            onClick={() =>
+                              handleSlotClick(field.fieldId, slot.slotId)
+                            }
+                            className={`
                                 flex
                                 flex-col
                                 items-center
@@ -285,30 +242,21 @@ export default function FieldList() {
                                 transition-all
                                 ${styleClasses}
                               `}
-                            >
-                              <span className="text-xs font-semibold text-text-primary">
-                                {formatTimeRange(
-                                  slot.starttime,
-                                  slot.endtime
-                                )}
-                              </span>
+                          >
+                            <span className="text-xs font-semibold text-text-primary">
+                              {formatTimeRange(slot.starttime, slot.endtime)}
+                            </span>
 
-                              <span className="mt-1 text-xs font-bold text-brand-primary">
-                                {Number(
-                                  slot.price
-                                ).toLocaleString(
-                                  "vi-VN"
-                                )}{" "}
-                                đ
-                              </span>
+                            <span className="mt-1 text-xs font-bold text-brand-primary">
+                              {Number(slot.price).toLocaleString("vi-VN")} đ
+                            </span>
 
-                              <span className="mt-1 text-[10px] font-medium uppercase text-text-secondary">
-                                {badgeText}
-                              </span>
-                            </button>
-                          );
-                        }
-                      )}
+                            <span className="mt-1 text-[10px] font-medium uppercase text-text-secondary">
+                              {badgeText}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>

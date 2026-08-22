@@ -15,7 +15,7 @@ import type {
 import type { AxiosError } from "axios";
 import { MatchDetailDialog } from "./MatchDetailDialog";
 
-const PAGE_SIZE = 4;
+const PAGE_SIZE = 10;
 
 interface ErrorResponse {
   message?: string;
@@ -221,7 +221,7 @@ export default function ManageMatch() {
 
   return (
 
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 w-full">
       <PageIntro />
 
       <div className="grid grid-cols-1 gap-6 ">
@@ -258,7 +258,7 @@ export default function ManageMatch() {
             matchId={detailMatchId}
           />
 
-          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filteredMatches.length} pageSize={PAGE_SIZE} />
           <JoinMatchDialog
             open={dialogJoinOpen}
             onOpenChange={setDialogJoinOpen}

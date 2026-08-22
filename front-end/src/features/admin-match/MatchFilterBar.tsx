@@ -62,7 +62,17 @@ export function MatchFilterBar({
         {/* Select Lọc trạng thái kèo */}
         <Select value={status} onValueChange={handleStatusChange}>
           <SelectTrigger className="w-44 border-border bg-elevated text-text-primary data-placeholder:text-text-muted">
-            <SelectValue placeholder="Trạng thái" />
+            <SelectValue>
+              {status === "all"
+                ? "Tất cả trạng thái"
+                : status === "OPEN"
+                ? "Đang tìm"
+                : status === "MATCHED"
+                ? "Đã ghép"
+                : status === "FINISHED"
+                ? "Đã kết thúc"
+                : "Đã hủy"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent className="border-border bg-elevated text-text-primary">
             <SelectItem
@@ -75,13 +85,13 @@ export function MatchFilterBar({
               value="OPEN"
               className="text-text-secondary  focus:text-text-primary"
             >
-              Đang tìm đối (Mở)
+              Đang tìm
             </SelectItem>
             <SelectItem
               value="MATCHED"
               className="text-text-secondary  focus:text-text-primary"
             >
-              Đã ghép đối
+              Đã ghép
             </SelectItem>
             <SelectItem
               value="FINISHED"

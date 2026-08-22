@@ -1,4 +1,3 @@
-
 import { Search, UserPlus } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -57,7 +56,15 @@ export function CustomerFilterBar({
           }}
         >
           <SelectTrigger className="w-44 border-border bg-elevated text-text-primary data-placeholder:text-text-muted">
-            <SelectValue placeholder="Trạng thái" />
+            <SelectValue>
+              {status === "all"
+                ? "Tất cả trạng thái"
+                : status === "ACTIVE"
+                  ? "Đã kích hoạt"
+                  : status === "INACTIVE"
+                    ? "Chưa kích hoạt"
+                    : "Đã khóa"}
+            </SelectValue>
           </SelectTrigger>
 
           <SelectContent className="border-border bg-elevated text-text-primary">

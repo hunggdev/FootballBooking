@@ -3,394 +3,648 @@ import {
   Calendar,
   Clock,
   Star,
-  ShieldCheck,
   MessageSquarePlus,
   History,
   Loader2,
   CheckCircle2,
   XCircle,
-  FileText,
   Receipt,
   DollarSign,
+  ChevronDown,
+  ChevronUp,
+  CalendarCheck,
+  Layers,
+  Package,
+  CreditCard,
+  AlertCircle,
 } from "lucide-react";
 import dayjs from "dayjs";
 
-import { useMyBookings } from "@/stores/useBookingStore";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMyBookings, useCancelBooking } from "@/stores/useBookingStore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import FeedbackForm from "@/features/user-review/FeedbackForm";
-import type { Booking } from "@/types/booking";
+import { CancelBookingDialog } from "@/features/user-booking/CancelBookingDialog";
+import type { Booking, BookingSlot } from "@/types/booking";
 import { formatTimeRange } from "@/lib/utils";
 
 function formatCurrency(value: number | string) {
-  return `${Math.round(Number(value)).toLocaleString("vi-VN")}đ`;
+  return `${Math.round(Number(value)).toLocaleString("vi-VN")} đ`;
 }
 
-const statusBadge: Record<
-  Booking["status"],
-  { label: string; className: string; icon: React.ElementType }
+// ── Status config uses existing design tokens ──────────────────────────────
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; badgeClass: string; icon: React.ElementType }
 > = {
   CONFIRMED: {
     label: "Đã xác nhận",
-    className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-500",
+    badgeClass:
+      "border-status-success/25 bg-status-success-bg text-status-success",
     icon: CheckCircle2,
-  },
-  HOLD: {
-    label: "Đang tạm giữ",
-    className: "border-amber-500/30 bg-amber-500/10 text-amber-500",
-    icon: Clock,
-  },
-  CANCELLED: {
-    label: "Đã hủy",
-    className: "border-red-500/30 bg-red-500/10 text-red-500",
-    icon: XCircle,
   },
   COMPLETED: {
     label: "Đã hoàn thành",
-    className: "border-green-500/30 bg-green-500/10 text-green-500",
-    icon: CheckCircle2,
+    badgeClass: "border-status-info/25 bg-status-info-bg text-status-info",
+    icon: CalendarCheck,
   },
+  CANCELLED: {
+    label: "Đã hủy",
+    badgeClass:
+      "border-status-danger/25 bg-status-danger-bg text-status-danger",
+    icon: XCircle,
+  }
 };
 
-export default function UserHistoryPage() {
-  const { data: bookings = [], isLoading, error } = useMyBookings();
-  const [selectedBookingForReview, setSelectedBookingForReview] =
-    useState<Booking | null>(null);
-  const [selectedBookingForInvoice, setSelectedBookingForInvoice] =
-    useState<Booking | null>(null);
+// ── Single Booking Card ────────────────────────────────────────────────────
+function BookingCard({
+  booking,
+  onReview,
+  onViewInvoice,
+  onCancel,
+}: {
+  booking: Booking;
+  onReview: (b: Booking) => void;
+  onViewInvoice: (b: Booking) => void;
+  onCancel: (b: Booking) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  const firstSlot = booking.bookingSlots[0];
+  const fieldName = firstSlot?.fieldSlot?.field?.name ?? `Sân #${booking.bookingId}`; 
+  const fieldType = firstSlot?.fieldSlot?.field?.fieldType;
+  const cfg = STATUS_CONFIG[booking.status] ?? STATUS_CONFIG.CONFIRMED;
+  const StatusIcon = cfg.icon;
+  const isConfirmed = booking.status === "CONFIRMED";
+  const isCancellable = booking.status === "CONFIRMED";
+
+  const fieldTypeLabel: Record<string, string> = {
+    FIVE: "Sân 5",
+    SEVEN: "Sân 7",
+    ELEVEN: "Sân 11",
+  };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
-      {/* Header */}
-      <div className="rounded-xl border bg-card p-6 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-emerald-500/10 p-3 text-emerald-500">
-            <History className="h-6 w-6" />
+    <div className="rounded-xl border border-border bg-surface overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.2)] transition-all duration-200 hover:border-border hover:shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+      {/* ── Card Header ── */}
+      <div className="bg-elevated/60 px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+        {/* Left: Field info */}
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/15 text-brand-primary border border-brand-primary/20">
+            <Layers className="h-5 w-5" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Lịch sử đặt sân của bạn
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Theo dõi danh sách sân đã đặt, xem hóa đơn tự động và gửi đánh giá
-              chất lượng sân.
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm font-bold text-text-primary truncate">{fieldName}</p>
+              {fieldType && (
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md border border-brand-primary/20 bg-brand-primary/10 text-brand-primary shrink-0">
+                  {fieldTypeLabel[fieldType] ?? fieldType}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-text-muted mt-0.5">
+              Mã đặt sân:{" "}
+              <span className="font-mono font-semibold text-text-secondary">
+                #{booking.bookingId}
+              </span>
+              {" · "}
+              <span>{dayjs(booking.createdAt).format("DD/MM/YYYY HH:mm")}</span>
             </p>
+          </div>
+        </div>
+
+        {/* Right: status badge + invoice button */}
+        <div className="flex items-center gap-2 shrink-0">
+          <Badge variant="outline" className={`gap-1 px-2.5 py-1 text-xs font-semibold ${cfg.badgeClass}`}>
+            <StatusIcon className="h-3.5 w-3.5" />
+            {cfg.label}
+          </Badge>
+
+          <div className="flex items-center gap-2">
+            {booking.invoice && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onViewInvoice(booking)}
+                className="h-8 gap-1.5 border-border bg-elevated text-text-secondary text-xs hover:border-brand-primary/40 hover:text-brand-primary hover:bg-brand-primary/10 transition-all cursor-pointer"
+              >
+                <Receipt className="h-3.5 w-3.5" />
+                Hóa đơn
+              </Button>
+            )}
+
+            {isCancellable && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onCancel(booking)}
+                className="h-8 gap-1.5 border-status-danger/25 bg-status-danger-bg text-status-danger text-xs hover:border-status-danger/40 hover:bg-status-danger/20 transition-all cursor-pointer"
+              >
+                <XCircle className="h-3.5 w-3.5" />
+                Hủy đặt sân
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Loading */}
-      {isLoading && (
-        <div className="flex items-center justify-center py-16 text-muted-foreground">
-          <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Đang tải lịch sử đặt
-          sân...
+      {/* ── Slot summary strip ── */}
+      <div className="px-5 py-3 flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-border/50 bg-surface">
+        {/* First slot quick info */}
+        <div className="flex items-center gap-1.5 text-xs text-text-secondary">
+          <Calendar className="h-3.5 w-3.5 text-brand-primary shrink-0" />
+          <span>{dayjs(firstSlot?.bookingDate).format("DD/MM/YYYY")}</span>
         </div>
-      )}
-
-      {/* Error */}
-      {error && (
-        <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-6 text-center text-sm text-red-500">
-          Không thể tải lịch sử đặt sân. Vui lòng thử lại sau.
+        <div className="flex items-center gap-1.5 text-xs text-text-secondary">
+          <Clock className="h-3.5 w-3.5 text-brand-primary shrink-0" />
+          <span>
+            {formatTimeRange(firstSlot?.fieldSlot?.starttime, firstSlot?.fieldSlot?.endtime)}
+          </span>
         </div>
-      )}
+        {booking.bookingSlots.length > 1 && (
+          <span className="text-xs text-text-muted">
+            +{booking.bookingSlots.length - 1} khung giờ khác
+          </span>
+        )}
 
-      {/* List */}
-      {!isLoading && !error && bookings.length === 0 ? (
-        <Card className="py-12 text-center">
-          <CardContent className="text-muted-foreground">
-            Bạn chưa có đơn đặt sân nào. Hãy đặt sân ngay để bắt đầu trận đấu!
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {bookings.map((booking) => {
-            const fieldName =
-              booking.bookingSlots[0].fieldSlot.field.name ||
-              `Sân #${booking.bookingId}`;
-            const statusInfo =
-              statusBadge[booking.status] || statusBadge.CONFIRMED;
-            const StatusIcon = statusInfo.icon;
+        <div className="ml-auto flex items-center gap-4">
+          <div className="flex items-center gap-1.5 text-xs">
+            <DollarSign className="h-3.5 w-3.5 text-brand-accent shrink-0" />
+            <span className="text-text-muted">Tổng:</span>
+            <span className="font-bold text-brand-accent">
+              {formatCurrency(booking.totalPrice)}
+            </span>
+          </div>
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="flex items-center gap-1 text-xs text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+          >
+            {expanded ? (
+              <>
+                <ChevronUp className="h-3.5 w-3.5" />
+                Thu gọn
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-3.5 w-3.5" />
+                Chi tiết
+              </>
+            )}
+          </button>
+        </div>
+      </div>
 
-            return (
-              <Card
-                key={booking.bookingId}
-                className="border shadow-sm transition-all hover:border-border/80"
-              >
-                <CardHeader className="pb-3 border-b bg-muted/10">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <CardTitle className="text-base font-bold">
-                        {fieldName}
-                      </CardTitle>
-                      <Badge variant="outline" className={statusInfo.className}>
-                        <StatusIcon className="mr-1 h-3.5 w-3.5" />
-                        {statusInfo.label}
-                      </Badge>
-                    </div>
+      {/* ── Expanded detail section ── */}
+      {expanded && (
+        <div className="px-5 py-4 space-y-4 bg-base/30">
+          {/* Booking Slots table */}
+          <div>
+            <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+              Danh sách khung giờ đặt
+            </p>
+            <div className="rounded-lg border border-border overflow-hidden">
+              <div className="grid grid-cols-3 bg-elevated/60 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+                <span>Ngày đá</span>
+                <span className="text-center">Khung giờ</span>
+                <span className="text-right">Giá thuê</span>
+              </div>
+              <div className="divide-y divide-border/40 max-h-[200px] overflow-y-auto custom-scrollbar">
+                {booking.bookingSlots.map((slot) => (
+                  <div
+                    key={slot.bookingSlotId}
+                    className="grid grid-cols-3 px-3 py-2.5 text-xs bg-surface hover:bg-surface-hover transition-colors"
+                  >
+                    <span className="text-text-secondary font-medium">
+                      {dayjs(slot.bookingDate).format("DD/MM/YYYY")}
+                    </span>
+                    <span className="text-center text-text-secondary">
+                      {formatTimeRange(slot.fieldSlot?.starttime, slot.fieldSlot?.endtime)}
+                    </span>
+                    <span className="text-right font-semibold text-brand-accent">
+                      {formatCurrency(slot.price)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
 
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="text-muted-foreground">
-                        Mã đơn:{" "}
-                        <span className="font-mono font-semibold text-foreground">
-                          #{booking.bookingId}
+          {/* Services */}
+          {booking.bookingServices.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+                Dịch vụ kèm theo
+              </p>
+              <div className="rounded-lg border border-border overflow-hidden">
+                <div className="grid grid-cols-3 bg-elevated/60 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+                  <span className="col-span-1">Dịch vụ</span>
+                  <span className="text-center">Số lượng</span>
+                  <span className="text-right">Thành tiền</span>
+                </div>
+                <div className="divide-y divide-border/40">
+                  {booking.bookingServices.map((svc) => (
+                    <div
+                      key={svc.bookingServiceId}
+                      className="grid grid-cols-3 px-3 py-2.5 text-xs bg-surface hover:bg-surface-hover transition-colors"
+                    >
+                      <div className="flex items-center gap-1.5 col-span-1">
+                        <Package className="h-3 w-3 text-brand-accent shrink-0" />
+                        <span className="text-text-secondary font-medium truncate">
+                          {svc.service?.name}
                         </span>
+                      </div>
+                      <span className="text-center text-text-secondary">x{svc.quantity}</span>
+                      <span className="text-right font-semibold text-text-primary">
+                        {formatCurrency(svc.price * svc.quantity)}
                       </span>
-
-                      {booking.invoice && (
-                        <Button
-                          variant="outline"
-                          size="xs"
-                          className="h-7 gap-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
-                          onClick={() => setSelectedBookingForInvoice(booking)}
-                        >
-                          <Receipt className="h-3.5 w-3.5" />
-                          Hóa đơn #{booking.invoice.invoiceId}
-                        </Button>
-                      )}
                     </div>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="pt-4 space-y-4">
-                  <div className="overflow-y-auto max-h-[100px] custom-scrollbar">
-                    {booking.bookingSlots.map((slot) => (
-                      <div
-                        key={slot.bookingSlotId}
-                        className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm  "
-                      >
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Calendar className="h-4 w-4 text-emerald-500" />
-                          <span>Ngày đá:</span>
-                          <span className="font-semibold text-foreground">
-                            {dayjs(slot.bookingDate).format("DD/MM/YYYY")}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Clock className="h-4 w-4 text-emerald-500" />
-                          <span>Khung giờ:</span>
-                          <span className="font-semibold text-foreground">
-                            {formatTimeRange(
-                              slot.fieldSlot?.starttime,
-                              slot.fieldSlot?.endtime,
-                            )}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <DollarSign className="h-4 w-4 text-emerald-500" />
-                          <span>Số tiền:</span>
-                          <span className="font-semibold text-foreground">
-                            {slot.price}VNĐ
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Review Section */}
-                  {booking.status === "CONFIRMED" && (
-                    <div className="rounded-lg border bg-muted/20 p-4 space-y-3">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div>
-                          <p className="text-xs font-semibold text-foreground">
-                            Đánh giá chất lượng sân bóng
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Chia sẻ trải nghiệm mặt sân, hệ thống chiếu sáng &
-                            phục vụ để hỗ trợ quản lý sân.
-                          </p>
-                        </div>
-                        <Button
-                          size="sm"
-                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-sm shrink-0"
-                          onClick={() => setSelectedBookingForReview(booking)}
-                        >
-                          <MessageSquarePlus className="mr-1.5 h-4 w-4" />
-                          Đánh giá chất lượng sân
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Review Dialog */}
-      <Dialog
-        open={!!selectedBookingForReview}
-        onOpenChange={(open) => {
-          if (!open) setSelectedBookingForReview(null);
-        }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg font-bold">
-              <Star className="h-5 w-5 text-amber-400 fill-amber-400" />
-              Đánh giá chất lượng sân
-            </DialogTitle>
-            <DialogDescription>
-              {selectedBookingForReview?.bookingSlots[0].fieldSlot.field.name}
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedBookingForReview && (
-            <FeedbackForm
-              bookingId={selectedBookingForReview.bookingId}
-              onSuccess={() => setSelectedBookingForReview(null)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Invoice Detail Dialog */}
-      <Dialog
-        open={!!selectedBookingForInvoice}
-        onOpenChange={(open) => {
-          if (!open) setSelectedBookingForInvoice(null);
-        }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg font-bold">
-              <FileText className="h-5 w-5 text-emerald-500" />
-              Hóa đơn thanh toán #
-              {selectedBookingForInvoice?.invoice?.invoiceId}
-            </DialogTitle>
-            <DialogDescription>
-              Hóa đơn tự động được tạo cho đơn đặt{" "}
-              {
-                selectedBookingForInvoice?.bookingSlots[0].fieldSlot?.field
-                  ?.name
-              }
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedBookingForInvoice?.invoice && (
-            <div className="space-y-4 text-sm">
-              <div className="rounded-lg border p-3 bg-muted/20 space-y-2">
-                {selectedBookingForInvoice.bookingSlots.length > 0 && (
-                  <div className="overflow-y-auto max-h-[100px] text-[10px] custom-scrollbar">
-                    {selectedBookingForInvoice.bookingSlots.map((slot) => (
-                      <div
-                        key={slot.bookingSlotId}
-                        className="flex flex-row justify-between items-center gap-2 text-muted-foreground"
-                      >
-                        <span className="text-foreground">
-                          {dayjs(slot.bookingDate).format("DD/MM/YYYY")}
-                        </span>
-                        <span className="text-foreground">
-                          {formatTimeRange(
-                            slot.fieldSlot?.starttime,
-                            slot.fieldSlot?.endtime,
-                          )}
-                        </span>
-                        <span className="text-foreground">{slot.price}đ</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tiền thuê sân:</span>
-                  <span className="font-semibold">
-                    {formatCurrency(
-                      selectedBookingForInvoice.invoice.fieldAmount ||
-                        selectedBookingForInvoice.totalPrice,
-                    )}
-                  </span>
+                  ))}
                 </div>
-                {selectedBookingForInvoice.bookingServices.length > 0 && (
-                  <div className="overflow-y-auto max-h-[100px] text-[10px] custom-scrollbar">
-                    {selectedBookingForInvoice.bookingServices.map(
-                      (service) => (
-                        <div
-                          key={service.bookingServiceId}
-                          className="flex flex-row justify-between items-center gap-2 text-muted-foreground"
-                        >
-                          <span className="text-foreground min-w-[100px]">
-                            {service.service?.name}
-                          </span>
-                          <span className="text-foreground">
-                            x{service.quantity}
-                          </span>
-                          <span className="text-foreground min-w-[100px] text-right">
-                            {formatCurrency(service.price * service.quantity)}đ
-                          </span>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                )}
-
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    Tiền dịch vụ thêm:
-                  </span>
-                  <span className="font-semibold">
-                    {formatCurrency(
-                      selectedBookingForInvoice.invoice.serviceAmount || 0,
-                    )}
-                  </span>
-                </div>
-                <div className="border-t pt-2 flex justify-between font-bold">
-                  <span>Tổng cộng:</span>
-                  <span className="text-base text-emerald-500">
-                    {formatCurrency(
-                      selectedBookingForInvoice.invoice.totalAmount ||
-                        selectedBookingForInvoice.totalPrice,
-                    )}
-                  </span>
-                </div>
-              </div>
-
-              <div className="rounded-lg border p-3 space-y-2 bg-emerald-500/5">
-                <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
-                  <span>Đã đặt cọc (30%):</span>
-                  <span className="font-bold">
-                    {formatCurrency(
-                      selectedBookingForInvoice.invoice.deposit || 0,
-                    )}
-                  </span>
-                </div>
-                <div className="flex justify-between text-amber-500">
-                  <span>Còn lại thanh toán tại sân:</span>
-                  <span className="font-bold">
-                    {formatCurrency(
-                      selectedBookingForInvoice.invoice.remainAmount || 0,
-                    )}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
-                <span>
-                  Trạng thái:{" "}
-                  <Badge variant="outline" className="ml-1 uppercase">
-                    {selectedBookingForInvoice.invoice.status}
-                  </Badge>
-                </span>
-                <span>
-                  Ngày tạo:{" "}
-                  {dayjs(selectedBookingForInvoice.invoice.createdAt).format(
-                    "DD/MM/YYYY HH:mm",
-                  )}
-                </span>
               </div>
             </div>
           )}
+
+          {/* Financial summary */}
+          <div className="rounded-lg border border-border bg-elevated/40 px-4 py-3 space-y-2">
+            <div className="flex justify-between text-xs text-text-secondary">
+              <span>Tiền thuê sân</span>
+              <span className="font-semibold text-text-primary">
+                {formatCurrency(booking.invoice?.fieldAmount ?? booking.totalPrice)}
+              </span>
+            </div>
+            {booking.bookingServices.length > 0 && (
+              <div className="flex justify-between text-xs text-text-secondary">
+                <span>Tiền dịch vụ thêm</span>
+                <span className="font-semibold text-text-primary">
+                  {formatCurrency(booking.invoice?.serviceAmount ?? 0)}
+                </span>
+              </div>
+            )}
+            <Separator className="bg-border/50" />
+            <div className="flex justify-between text-sm font-bold">
+              <span className="text-text-primary">Tổng cộng</span>
+              <span className="text-brand-accent text-base">
+                {formatCurrency(booking.invoice?.totalAmount ?? booking.totalPrice)}
+              </span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-text-muted">Đã đặt cọc (30%)</span>
+              <span className="font-semibold text-status-success">
+                {formatCurrency(booking.depositAmount)}
+              </span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-text-muted">Còn thanh toán tại sân</span>
+              <span className="font-semibold text-status-warning">
+                {formatCurrency(booking.invoice?.remainAmount ?? (booking.totalPrice - booking.depositAmount))}
+              </span>
+            </div>
+          </div>
+
+          {/* Review CTA */}
+          {isConfirmed && (
+            <div className="flex items-center justify-between rounded-xl border border-brand-primary/20 bg-brand-primary/5 px-4 py-3 gap-3">
+              <div>
+                <p className="text-xs font-semibold text-text-primary">
+                  Đánh giá chất lượng sân bóng
+                </p>
+                <p className="text-xs text-text-muted mt-0.5">
+                  Chia sẻ trải nghiệm mặt sân, ánh sáng và chất lượng phục vụ.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => onReview(booking)}
+                className="bg-brand-primary hover:bg-brand-primary-hover text-white font-semibold shrink-0 shadow-[0_2px_8px_rgba(34,165,90,0.3)] cursor-pointer"
+              >
+                <MessageSquarePlus className="h-4 w-4 mr-1.5" />
+                Đánh giá
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Invoice Dialog ─────────────────────────────────────────────────────────
+function InvoiceDialog({
+  booking,
+  open,
+  onClose,
+}: {
+  booking: Booking | null;
+  open: boolean;
+  onClose: () => void;
+}) {
+  if (!booking?.invoice) return null;
+  const inv = booking.invoice;
+
+  const invoiceStatusConfig: Record<string, { label: string; cls: string }> = {
+    PAID: { label: "Đã thanh toán", cls: "border-status-success/25 bg-status-success-bg text-status-success" },
+    PENDING: { label: "Chờ thanh toán", cls: "border-status-warning/25 bg-status-warning-bg text-status-warning" },
+    DEPOSITED: { label: "Đã đặt cọc", cls: "border-status-warning/25 bg-status-warning-bg text-status-warning" },
+    CANCELLED: { label: "Đã hủy", cls: "border-status-danger/25 bg-status-danger-bg text-status-danger" },
+  };
+  const invStatus = invoiceStatusConfig[inv.status] ?? invoiceStatusConfig.PENDING;
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-md p-0 overflow-hidden border-border bg-surface text-text-primary">
+        {/* Header */}
+        <div className="bg-elevated/80 p-5 border-b border-border">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/15 text-brand-primary border border-brand-primary/20">
+                <Receipt className="h-5 w-5" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-bold text-text-primary">
+                  Hóa đơn #{inv.invoiceId}
+                </DialogTitle>
+                <p className="text-xs text-text-muted mt-0.5">
+                  {booking.bookingSlots[0]?.fieldSlot?.field?.name}
+                </p>
+              </div>
+            </div>
+          </DialogHeader>
+        </div>
+
+        {/* Body */}
+        <div className="p-5 space-y-4">
+          {/* Slots */}
+          <div>
+            <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+              Khung giờ đặt sân
+            </p>
+            <div className="rounded-lg border border-border overflow-hidden">
+              <div className="divide-y divide-border/40 max-h-[150px] overflow-y-auto custom-scrollbar">
+                {booking.bookingSlots.map((slot) => (
+                  <div
+                    key={slot.bookingSlotId}
+                    className="flex items-center justify-between px-3 py-2 text-xs bg-surface hover:bg-surface-hover"
+                  >
+                    <span className="text-text-secondary">
+                      {dayjs(slot.bookingDate).format("DD/MM/YYYY")}
+                    </span>
+                    <span className="text-text-secondary">
+                      {formatTimeRange(slot.fieldSlot?.starttime, slot.fieldSlot?.endtime)}
+                    </span>
+                    <span className="font-semibold text-text-primary">
+                      {formatCurrency(slot.price)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Services */}
+          {booking.bookingServices.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+                Dịch vụ kèm
+              </p>
+              <div className="rounded-lg border border-border overflow-hidden">
+                <div className="divide-y divide-border/40 max-h-[120px] overflow-y-auto custom-scrollbar">
+                  {booking.bookingServices.map((svc) => (
+                    <div
+                      key={svc.bookingServiceId}
+                      className="flex items-center justify-between px-3 py-2 text-xs bg-surface hover:bg-surface-hover"
+                    >
+                      <span className="text-text-secondary font-medium">{svc.service?.name}</span>
+                      <span className="text-text-muted">x{svc.quantity}</span>
+                      <span className="font-semibold text-text-primary">
+                        {formatCurrency(svc.price * svc.quantity)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Totals */}
+          <div className="rounded-lg border border-border bg-elevated/40 px-4 py-3 space-y-2.5">
+            <div className="flex justify-between text-xs text-text-secondary">
+              <span>Tiền thuê sân</span>
+              <span className="font-semibold text-text-primary">{formatCurrency(inv.fieldAmount)}</span>
+            </div>
+            <div className="flex justify-between text-xs text-text-secondary">
+              <span>Tiền dịch vụ</span>
+              <span className="font-semibold text-text-primary">{formatCurrency(inv.serviceAmount)}</span>
+            </div>
+            <Separator className="bg-border/50" />
+            <div className="flex justify-between text-sm font-bold">
+              <span className="text-text-primary">Tổng cộng</span>
+              <span className="text-brand-accent text-base">{formatCurrency(inv.totalAmount)}</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-text-muted">Đã đặt cọc</span>
+              <span className="font-semibold text-status-success">{formatCurrency(inv.deposit)}</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-text-muted">Còn lại thanh toán tại sân</span>
+              <span className="font-semibold text-status-warning">{formatCurrency(inv.remainAmount)}</span>
+            </div>
+          </div>
+
+          {/* Invoice meta */}
+          <div className="flex items-center justify-between pt-1">
+            <Badge variant="outline" className={`text-xs ${invStatus.cls}`}>
+              <CreditCard className="h-3 w-3 mr-1" />
+              {invStatus.label}
+            </Badge>
+            <span className="text-xs text-text-muted">
+              {inv.createdAt ? dayjs(inv.createdAt).format("DD/MM/YYYY HH:mm") : "—"}
+            </span>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Main Page ──────────────────────────────────────────────────────────────
+export default function UserHistoryPage() {
+  const { data: bookings = [], isLoading, error } = useMyBookings();
+  const cancelBookingMutation = useCancelBooking();
+
+  const [selectedForReview, setSelectedForReview] = useState<Booking | null>(null);
+  const [selectedForInvoice, setSelectedForInvoice] = useState<Booking | null>(null);
+  const [selectedForCancel, setSelectedForCancel] = useState<Booking | null>(null);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+
+  const confirmedCount = bookings.filter((b) => b.status === "CONFIRMED").length;
+  const completedCount = bookings.filter((b) => b.status === "COMPLETED").length;
+  const cancelledCount = bookings.filter((b) => b.status === "CANCELLED").length;
+
+  const handleCancelConfirm = (cancelReason: string) => {
+    if (!selectedForCancel) return;
+    setCancelError(null);
+    cancelBookingMutation.mutate(
+      { bookingId: selectedForCancel.bookingId, cancelReason },
+      {
+        onSuccess: () => {
+          setSelectedForCancel(null);
+        },
+        onError: (err: unknown) => {
+          const msg =
+            (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+            "Hủy booking thất bại. Vui lòng thử lại.";
+          setCancelError(msg);
+        },
+      }
+    );
+  };
+  return (
+    <div className="mx-auto max-w-5xl space-y-6 px-4 sm:px-6 py-8">
+      {/* ── Page Header ── */}
+      <div className="rounded-xl border border-border bg-surface overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.2)]">
+        <div className="bg-elevated/80 p-6 border-b border-border">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-primary/15 text-brand-primary border border-brand-primary/20">
+              <History className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-text-primary">
+                Lịch sử đặt sân
+              </h1>
+              <p className="text-sm text-text-muted mt-0.5">
+                Xem lại các đơn đặt sân, hóa đơn và gửi đánh giá chất lượng.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats strip */}
+        {!isLoading && !error && bookings.length > 0 && (
+          <div className="grid grid-cols-3 divide-x divide-border/50 bg-base/30">
+            <div className="flex flex-col items-center py-4 px-2">
+              <p className="text-2xl font-bold text-text-primary">{bookings.length}</p>
+              <p className="text-xs text-text-muted mt-0.5">Tổng đặt sân</p>
+            </div>
+            <div className="flex flex-col items-center py-4 px-2">
+              <p className="text-2xl font-bold text-status-success">{confirmedCount}</p>
+              <p className="text-xs text-text-muted mt-0.5">Đang xác nhận</p>
+            </div>
+            <div className="flex flex-col items-center py-4 px-2">
+              <p className="text-2xl font-bold text-status-info">{completedCount}</p>
+              <p className="text-xs text-text-muted mt-0.5">Hoàn thành</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Loading ── */}
+      {isLoading && (
+        <div className="flex flex-col items-center justify-center py-20 gap-3 text-text-muted rounded-xl border border-border bg-surface">
+          <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
+          <p className="text-sm">Đang tải lịch sử đặt sân...</p>
+        </div>
+      )}
+
+      {/* ── Error ── */}
+      {error && (
+        <div className="flex items-center gap-3 rounded-xl border border-status-danger/30 bg-status-danger-bg p-5 text-status-danger">
+          <AlertCircle className="h-5 w-5 shrink-0" />
+          <p className="text-sm">Không thể tải lịch sử đặt sân. Vui lòng thử lại sau.</p>
+        </div>
+      )}
+
+      {/* ── Empty state ── */}
+      {!isLoading && !error && bookings.length === 0 && (
+        <div className="flex flex-col items-center gap-4 rounded-xl border border-border bg-surface py-16 px-4 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary">
+            <CalendarCheck className="h-8 w-8" />
+          </div>
+          <div>
+            <p className="text-base font-semibold text-text-primary">Chưa có đơn đặt sân nào</p>
+            <p className="text-sm text-text-muted mt-1">
+              Hãy đặt sân ngay để bắt đầu trận đấu!
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Booking list ── */}
+      {!isLoading && !error && bookings.length > 0 && (
+        <div className="space-y-4">
+          {bookings.map((booking) => (
+            <BookingCard
+              key={booking.bookingId}
+              booking={booking}
+              onReview={setSelectedForReview}
+              onViewInvoice={setSelectedForInvoice}
+              onCancel={(b) => { setSelectedForCancel(b); setCancelError(null); }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* ── Review Dialog ── */}
+      <Dialog
+        open={!!selectedForReview}
+        onOpenChange={(open) => {
+          if (!open) setSelectedForReview(null);
+        }}
+      >
+        <DialogContent className="max-w-md p-0 overflow-hidden border-border bg-surface text-text-primary">
+          <div className="bg-elevated/80 p-5 border-b border-border">
+            <DialogHeader>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-accent/15 text-brand-accent border border-brand-accent/20">
+                  <Star className="h-5 w-5 fill-brand-accent" />
+                </div>
+                <div>
+                  <DialogTitle className="text-lg font-bold text-text-primary">
+                    Đánh giá chất lượng sân
+                  </DialogTitle>
+                  <p className="text-xs text-text-muted mt-0.5">
+                    {selectedForReview?.bookingSlots[0]?.fieldSlot?.field?.name}
+                  </p>
+                </div>
+              </div>
+            </DialogHeader>
+          </div>
+          <div className="p-5">
+            {selectedForReview && (
+              <FeedbackForm
+                bookingId={selectedForReview.bookingId}
+                onSuccess={() => setSelectedForReview(null)}
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
+
+      {/* ── Invoice Dialog ── */}
+      <InvoiceDialog
+        booking={selectedForInvoice}
+        open={!!selectedForInvoice}
+        onClose={() => setSelectedForInvoice(null)}
+      />
+
+      {/* ── Cancel Booking Dialog ── */}
+      <CancelBookingDialog
+        open={!!selectedForCancel}
+        onOpenChange={(open) => {
+          if (!open) { setSelectedForCancel(null); setCancelError(null); }
+        }}
+        bookingId={selectedForCancel?.bookingId ?? null}
+        fieldName={selectedForCancel?.bookingSlots[0]?.fieldSlot?.field?.name}
+        onConfirm={handleCancelConfirm}
+        isSubmitting={cancelBookingMutation.isPending}
+        serverError={cancelError}
+      />
     </div>
   );
 }

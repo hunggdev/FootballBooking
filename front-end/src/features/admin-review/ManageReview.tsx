@@ -30,8 +30,7 @@ export function ManageReview() {
   const [openReply, setOpenReply] = useState(false);
   const [openDetail, setOpenDetail] = useState(false);
 
-  const [selectedReview, setSelectedReview] =
-    useState<Review | null>(null);
+  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
 
   const [search, setSearch] = useState("");
   const [replyError, setReplyError] = useState<string | null>(null);
@@ -46,24 +45,14 @@ export function ManageReview() {
     return reviews.filter((review) => {
       return (
         review.reviewId.toString().includes(keyword) ||
-        (review.user?.fullName ?? "")
-          .toLowerCase()
-          .includes(keyword) ||
-        (review.comment ?? "")
-          .toLowerCase()
-          .includes(keyword)
+        (review.user?.fullName ?? "").toLowerCase().includes(keyword) ||
+        (review.comment ?? "").toLowerCase().includes(keyword)
       );
     });
   }, [reviews, search]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredReviews.length / PAGE_SIZE)
-  );
-  const safeCurrentPage = Math.min(
-    currentPage,
-    totalPages
-  );
+  const totalPages = Math.max(1, Math.ceil(filteredReviews.length / PAGE_SIZE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
 
   const handleReplySubmit = (reply: string) => {
     if (!selectedReview) return;
@@ -82,23 +71,14 @@ export function ManageReview() {
         },
 
         onError: (error) => {
-          setReplyError(
-            getErrorMessage(
-              error,
-              "Phản hồi đánh giá thất bại."
-            )
-          );
+          setReplyError(getErrorMessage(error, "Phản hồi đánh giá thất bại."));
         },
-      }
+      },
     );
   };
 
   if (isLoading) {
-    return (
-      <div className="p-8 text-text-secondary">
-        Đang tải...
-      </div>
-    );
+    return <div className="p-8 text-text-secondary">Đang tải...</div>;
   }
 
   if (error) {
@@ -138,6 +118,8 @@ export function ManageReview() {
         currentPage={safeCurrentPage}
         totalPages={totalPages}
         onPageChange={setCurrentPage}
+        totalItems={reviews.length}
+        pageSize={PAGE_SIZE}
       />
       <ReviewReplyDialog
         open={openReply}

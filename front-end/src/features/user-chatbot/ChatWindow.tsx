@@ -18,12 +18,10 @@ export function ChatWindow({ messages, isLoading, onSend, onClose }: ChatWindowP
   };
   
   return (
-    <div>
-          <Card className="flex h-[480px] w-[380px] flex-col overflow-hidden border shadow-sm sm:w-[380px] fixed bottom-10 right-10 bg-surface">
-            <ChatHeader onClose={onClose}/>
-            <ChatMessageList messages={messages} isLoading={isLoading} />
-            <ChatInput onSend={handleSend} isLoading={isLoading} />
-          </Card>
-    </div>
+    <Card className="flex h-[480px] w-[340px] sm:w-[380px] flex-col overflow-hidden border shadow-xl bg-surface rounded-2xl">
+      <ChatHeader onClose={onClose} />
+      <ChatMessageList messages={messages} isLoading={isLoading} />
+      <ChatInput onSend={handleSend} isLoading={isLoading} />
+    </Card>
   );
 }

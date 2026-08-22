@@ -16,11 +16,11 @@ import { useUserStore } from "@/stores/useUserStore";
 
 const updateSchema = z.object({
   fullName: z.string().min(1, "Họ tên không được để trống"),
+
   phone: z
     .string()
     .min(10, "Số điện thoại phải có ít nhất 10 số")
-    .max(10, "Số điện thoại chỉ có tối đa 10 số")
-    .min(1, "Số điện thoại không được để trống"),
+    .max(10, "Số điện thoại chỉ có tối đa 10 số"),
 });
 
 type UpdateFormValues = z.infer<typeof updateSchema>;
@@ -31,19 +31,26 @@ export function EditAccountForm({ user }: { user: User }) {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    reset,
+    formState: { errors, isSubmitting, isDirty },
   } = useForm<UpdateFormValues>({
     resolver: zodResolver(updateSchema),
     defaultValues: {
-      fullName: user.fullName,
+      fullName: user.fullName ?? "",
       phone: user.phone ?? "",
     },
   });
 
   const onSubmit = async (data: UpdateFormValues) => {
-    const { fullName, phone } = data;
+    try {
+      await updateMe(data.fullName, data.phone);
 
-    await updateMe(fullName, phone);
+      // Sau khi cập nhật thành công,
+      // đưa form về trạng thái "chưa thay đổi"
+      reset(data);
+    } catch (error) {
+      console.error("Cập nhật thông tin thất bại:", error);
+    }
   };
 
   return (
@@ -91,7 +98,7 @@ export function EditAccountForm({ user }: { user: User }) {
               id="email"
               className="border-border-subtle bg-elevated text-text-muted"
               value={user.email}
-              disabled
+              readOnly
             />
           </div>
 
@@ -119,11 +126,11 @@ export function EditAccountForm({ user }: { user: User }) {
           </div>
         </CardContent>
 
-        <CardFooter className="border-t border-border-subtle">
+        <CardFooter className="border-t border-border-subtle bg-elevated/50">
           <Button
             type="submit"
-            className="bg-brand-primary font-semibold text-white hover:bg-brand-primary-hover"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isDirty}
+            className="bg-brand-primary font-semibold text-white hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? "Đang lưu..." : "Lưu thay đổi"}
           </Button>

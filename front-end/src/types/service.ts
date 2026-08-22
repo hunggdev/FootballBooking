@@ -14,26 +14,17 @@ export interface Service {
 
 export interface CreateServicePayload {
     name: string;
-
     description?: string;
-
     image?: string;
-
     price: number;
-
     quantity: number;
 }
 
 export interface UpdateServicePayload {
     name?: string;
-
     description?: string;
-
     image?: string;
-
     price?: number;
-
     quantity: number;
-
     status?: "ACTIVE" | "INACTIVE";
 }

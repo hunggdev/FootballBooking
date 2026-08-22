@@ -1,8 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock3, Tag } from "lucide-react";
+import { useNavigate } from "react-router";
 
 export function PromotionBanner() {
+  const navigate = useNavigate();
   return (
     <Card
       className="
@@ -145,6 +147,7 @@ export function PromotionBanner() {
             hover:bg-brand-accent
             hover:text-accent-foreground
           "
+          onClick={() => navigate("/user/booking")}
         >
           Đặt ngay
           <span className="ml-1.5">→</span>

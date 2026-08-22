@@ -1,7 +1,9 @@
-import { Eye, RotateCcw } from "lucide-react";
+// src/features/admin-dashboard/BookingsAndHighlights.tsx
+import { Swords, CalendarCheck, Star, ArrowRight, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Table,
   TableBody,
@@ -10,164 +12,329 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-// import type { Booking, HighlightMatch, SystemAlert } from "@/types/dashboard";
 import type { Booking } from "@/types/booking";
-import { formatDate } from "@/lib/utils";
 import type { Match } from "@/types/match";
 import type { Review } from "@/types/review";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
+import { formatDateTime } from "@/lib/utils";
 
 interface BookingsAndHighlightsProps {
-  // bookings: Booking[];
-  // highlightMatches: HighlightMatch[];
-  // systemAlerts: SystemAlert[];
   bookings: Booking[];
   matchs: Match[];
   reviews: Review[];
 }
 
+const statusBadge: Record<string, string> = {
+  CONFIRMED:
+    "border-status-success/20 bg-status-success-bg text-status-success",
+  COMPLETED: "border-status-info/20 bg-status-info-bg text-status-info",
+  DEPOSITED:
+    "border-status-warning/20 bg-status-warning-bg text-status-warning",
+  PENDING: "border-status-warning/20 bg-status-warning-bg text-status-warning",
+  CANCELLED: "border-status-danger/20 bg-status-danger-bg text-status-danger",
+  OPEN: "border-status-success/20 bg-status-success-bg text-status-success",
+  MATCHED: "border-status-warning/20 bg-status-warning-bg text-status-warning",
+};
+
+const statusLabel: Record<string, string> = {
+  CONFIRMED: "Đã xác nhận",
+  COMPLETED: "Đã hoàn tất",
+  DEPOSITED: "Đã đặt cọc",
+  PENDING: "Chờ xử lý",
+  CANCELLED: "Đã hủy",
+  OPEN: "Đang mở",
+  MATCHED: "Đã ghép",
+};
+
 export function BookingsAndHighlights({
   bookings,
   matchs,
   reviews,
-  // highlightMatches,
-  // systemAlerts,
 }: BookingsAndHighlightsProps) {
   const navigate = useNavigate();
 
-  return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.6fr_1fr]">
-      {/* Bảng đặt sân mới nhất */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-sm">Đặt sân mới nhất</CardTitle>
-          <Button
-            variant="link"
-            size="sm"
-            className="h-auto p-0 text-xs"
-            onClick={() => navigate("/admin/bookings/history")}
-          >
-            Xem tất cả →
-          </Button>
-        </CardHeader>
-        <CardContent className="overflow-auto max-h-[380px]">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Mã đặt sân</TableHead>
-                <TableHead>Khách hàng</TableHead>
-                <TableHead>Sân</TableHead>
-                <TableHead>Thời gian</TableHead>
-                <TableHead>Tiền cọc</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead className="text-right">Thao tác</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {bookings.map((booking) => (
-                <TableRow key={booking.bookingId}>
-                  <TableCell className="font-medium">
-                    {booking.bookingId}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="h-6 w-6 shrink-0 rounded-full border" />
-                      {booking.user.fullName}
-                    </div>
-                  </TableCell>
-                  <TableCell>{booking.field?.name || "trống"}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {formatDate(booking.createdAt)}
-                  </TableCell>
-                  <TableCell>{booking.depositAmount}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{booking.status}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7">
-                        <Eye className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7">
-                        <RotateCcw className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+  const getInitials = (name?: string) => {
+    if (!name) return "KH";
+    const parts = name.trim().split(" ");
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
 
-      {/* Cột phải: Kèo đấu nổi bật + Cảnh báo hệ thống */}
-      <div className="space-y-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm">Kèo đấu nổi bật</CardTitle>
+  return (
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      {/* ================= CỘT TRÁI: ĐẶT SÂN MỚI NHẤT (7 COLS) ================= */}
+      <div className="lg:col-span-7">
+        <div className="rounded-xl bg-[#2d3a4f] p-px transition-all duration-300 hover:bg-[image:var(--token-gradient-brand)] h-full">
+          <Card className="h-full overflow-hidden border-border/50 bg-surface shadow-lg shadow-black/10 flex flex-col justify-between">
+            <div>
+              <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/15 text-brand-primary border border-brand-primary/20">
+                    <CalendarCheck className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-sm font-bold text-text-primary">
+                      Đơn đặt sân mới nhất
+                    </CardTitle>
+                    <p className="text-[11px] text-text-muted mt-0.5">
+                      {bookings.length} đơn đặt gần đây nhất
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-xs font-semibold text-text-secondary hover:text-brand-accent hover:bg-transparent cursor-pointer p-0"
+                  onClick={() => navigate("/admin/bookings/history")}
+                >
+                  Xem tất cả <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                </Button>
+              </CardHeader>
+
+              <CardContent className="p-0 overflow-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-border/60 bg-elevated/30 hover:bg-elevated/30">
+                      <TableHead className="text-center text-[11px] font-bold uppercase tracking-wider text-text-muted">
+                        Mã đơn
+                      </TableHead>
+                      <TableHead className="text-left text-[11px] font-bold uppercase tracking-wider text-text-muted">
+                        Khách hàng
+                      </TableHead>
+                      <TableHead className="text-left text-[11px] font-bold uppercase tracking-wider text-text-muted">
+                        Sân bóng
+                      </TableHead>
+                      <TableHead className="text-left text-[11px] font-bold uppercase tracking-wider text-text-muted">
+                        Thời gian
+                      </TableHead>
+                      <TableHead className="text-right text-[11px] font-bold uppercase tracking-wider text-text-muted">
+                        Tiền cọc
+                      </TableHead>
+                      <TableHead className="text-center text-[11px] font-bold uppercase tracking-wider text-text-muted">
+                        Trạng thái
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+
+                  <TableBody>
+                    {bookings.length === 0 ? (
+                      <TableRow className="border-border/60 hover:bg-transparent">
+                        <TableCell
+                          colSpan={5}
+                          className="py-12 text-center text-xs text-text-muted"
+                        >
+                          Chưa có đơn đặt sân nào gần đây.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      bookings.slice(0, 12).map((booking) => {
+                        const upperStatus = (
+                          booking.status || ""
+                        ).toUpperCase();
+                        const firstSlot = booking.bookingSlots?.[0];
+                        const fieldName =
+                          firstSlot?.fieldSlot?.field?.name ||
+                          booking.field?.name ||
+                          "Sân bóng";
+
+                        return (
+                          <TableRow
+                            key={booking.bookingId}
+                            className="group border-border/50 transition-colors duration-200 hover:bg-surface-hover/60"
+                          >
+                            <TableCell className="text-center font-mono text-xs font-semibold text-text-primary">
+                              #{booking.bookingId}
+                            </TableCell>
+
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Avatar className="h-7 w-7 border border-border/60">
+                                  <AvatarFallback className="bg-[image:var(--token-gradient-brand)] text-[10px] font-bold text-white">
+                                    {getInitials(booking.user?.fullName)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="truncate text-xs font-medium text-text-primary">
+                                  {booking.user?.fullName || "Khách vãng lai"}
+                                </span>
+                              </div>
+                            </TableCell>
+
+                            <TableCell>
+                              <span className="truncate text-xs text-text-secondary">
+                                {fieldName}
+                              </span>
+                            </TableCell>
+
+                            <TableCell>
+                              <span className="truncate text-xs text-text-secondary">
+                                {formatDateTime(booking.createdAt)}
+                              </span>
+                            </TableCell>
+
+                            <TableCell className="text-right">
+                              <span className="text-xs font-semibold text-brand-accent">
+                                {Number(
+                                  booking.depositAmount || 0,
+                                ).toLocaleString("vi-VN")}
+                                &nbsp;đ
+                              </span>
+                            </TableCell>
+
+                            <TableCell className="text-center">
+                              <span
+                                className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold ${
+                                  statusBadge[upperStatus] ||
+                                  "border-border bg-elevated text-text-secondary"
+                                }`}
+                              >
+                                {statusLabel[upperStatus] || booking.status}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      {/* ================= CỘT PHẢI: KÈO ĐẤU & ĐÁNH GIÁ (5 COLS) ================= */}
+      <div className="space-y-6 lg:col-span-5">
+        {/* KÈO ĐẤU NỔI BẬT */}
+        <Card className="rounded-xl border border-border bg-surface shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-status-warning-bg text-status-warning border border-status-warning/20">
+                <Swords className="h-3.5 w-3.5" />
+              </div>
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-text-primary">
+                Kèo đấu nổi bật
+              </CardTitle>
+            </div>
+
             <Button
-              variant="link"
+              variant="ghost"
               size="sm"
-              className="h-auto p-0 text-xs"
+              className="h-7 text-xs font-semibold text-text-secondary hover:text-brand-accent hover:bg-transparent cursor-pointer p-0"
               onClick={() => navigate("/admin/matches")}
             >
-              Xem tất cả →
+              Xem tất cả <ArrowRight className="ml-1 h-3 w-3" />
             </Button>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {matchs.map((match) => (
-              <div
-                key={match.matchId}
-                className="flex items-center gap-3 rounded-md border p-3"
-              >
-                <div className="h-8 w-8 shrink-0 rounded-md border" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {match.fieldType}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {match.timeNote}
-                  </p>
-                  {/* <p className="text-xs text-muted-foreground">{match.playerCount}</p> */}
-                </div>
-                <Badge variant="outline">{match.status}</Badge>
-              </div>
-            ))}
+
+          <CardContent className="space-y-2.5 pt-3">
+            {matchs.length === 0 ? (
+              <p className="py-6 text-center text-xs text-text-muted">
+                Không có kèo đấu nào đang mở.
+              </p>
+            ) : (
+              matchs.slice(0, 3).map((match) => {
+                const upperStatus = (match.status || "").toUpperCase();
+                return (
+                  <div
+                    key={match.matchId}
+                    className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-elevated/40 p-3 transition-colors hover:border-border"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-primary/15 text-brand-primary border border-brand-primary/20">
+                        <Swords className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-semibold text-text-primary">
+                          Kèo sân{" "}
+                          {match.fieldType === "FIVE"
+                            ? "5 người"
+                            : match.fieldType === "SEVEN"
+                              ? "7 người"
+                              : "11 người"}
+                        </p>
+                        <p className="truncate text-[11px] text-text-muted flex items-center gap-1 mt-0.5">
+                          <Clock className="h-3 w-3" />
+                          {match.timeNote || "Chưa có thời gian"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <Badge
+                      variant="outline"
+                      className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 ${
+                        statusBadge[upperStatus] ||
+                        "border-border bg-elevated text-text-secondary"
+                      }`}
+                    >
+                      {statusLabel[upperStatus] || match.status}
+                    </Badge>
+                  </div>
+                );
+              })
+            )}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm">Đánh giá gần đây</CardTitle>
+        {/* ĐÁNH GIÁ GẦN ĐÂY */}
+        <Card className="rounded-xl border border-border bg-surface shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/15 text-amber-400 border border-amber-500/20">
+                <Star className="h-3.5 w-3.5 fill-amber-400" />
+              </div>
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-text-primary">
+                Đánh giá gần đây
+              </CardTitle>
+            </div>
+
             <Button
-              variant="link"
+              variant="ghost"
               size="sm"
-              className="h-auto p-0 text-xs"
+              className="h-7 text-xs font-semibold text-text-secondary hover:text-brand-accent hover:bg-transparent cursor-pointer p-0"
               onClick={() => navigate("/admin/feedback")}
             >
-              Xem tất cả →
+              Xem tất cả <ArrowRight className="ml-1 h-3 w-3" />
             </Button>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {reviews.map((review) => (
-              <div
-                key={review.reviewId}
-                className="flex flex-row items-center justify-between gap-3 rounded-md border p-3"
-              >
-                <div className="flex flex-row gap-2 items-center justify-center">
-                  <div className="h-3 w-3 shrink-0 rounded-full border" />
-                  <p className="truncate text-xs font-medium">
-                    {review.user.fullName}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {review.comment}
+
+          <CardContent className="space-y-2.5 pt-3">
+            {reviews.length === 0 ? (
+              <p className="py-6 text-center text-xs text-text-muted">
+                Chưa có đánh giá nào từ khách hàng.
+              </p>
+            ) : (
+              reviews.slice(0, 3).map((review) => (
+                <div
+                  key={review.reviewId}
+                  className="rounded-lg border border-border/60 bg-elevated/40 p-3 transition-colors hover:border-border space-y-1.5"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Avatar className="h-6 w-6 border border-border">
+                        <AvatarFallback className="bg-[image:var(--token-gradient-brand)] text-[9px] font-bold text-white">
+                          {getInitials(review.user?.fullName)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="truncate text-xs font-semibold text-text-primary">
+                        {review.user?.fullName || "Khách hàng"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <span className="text-xs font-bold text-amber-400">
+                        {review.rating}/5
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-text-secondary line-clamp-2 italic">
+                    "{review.comment || "Không có lời nhận xét"}"
                   </p>
                 </div>
-                <p className="truncate text-xs font-medium">
-                  {review.rating}/5
-                </p>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
       </div>

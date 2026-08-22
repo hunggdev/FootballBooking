@@ -1,3 +1,4 @@
+// src/features/admin-booking/BookingFormDialog.tsx
 import { useState, useEffect } from "react";
 
 import {
@@ -9,7 +10,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -17,9 +18,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Field as FieldWrapper,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 
-import type { Booking, CreateBookingPayload, UpdateBookingPayload } from "@/types/booking";
-import { formatTime } from "@/lib/utils";
+import type {
+  Booking,
+  CreateBookingPayload,
+  UpdateBookingPayload,
+} from "@/types/booking";
+import { AlertCircle, Loader2 } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -32,10 +42,15 @@ interface Props {
 
 const getInitialFormState = (booking?: Booking | null) => ({
   userId: booking?.user?.userId ?? 0,
-  fieldId: booking?.field?.fieldId ?? 0,
-  // starttime: booking?.fieldSlot?.starttime ? formatTime(booking.fieldSlot.starttime) : "",
-  // endtime: booking?.fieldSlot?.endtime ? formatTime(booking.fieldSlot.endtime) : "",
-  status: (booking?.status ?? "PENDING") as "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED",
+  customerName: booking?.user?.fullName ?? "",
+  fieldName:
+    booking?.bookingSlots?.[0]?.fieldSlot?.field?.name ??
+    booking?.field?.name ??
+    "",
+  status: (booking?.status ?? "CONFIRMED") as
+    | "CONFIRMED"
+    | "CANCELLED"
+    | "COMPLETED",
 });
 
 export function BookingFormDialog({
@@ -46,7 +61,9 @@ export function BookingFormDialog({
   isSubmitting,
   serverError,
 }: Props) {
-  const [formState, setFormState] = useState(() => getInitialFormState(initialData));
+  const [formState, setFormState] = useState(() =>
+    getInitialFormState(initialData),
+  );
 
   useEffect(() => {
     if (open) {
@@ -54,120 +71,149 @@ export function BookingFormDialog({
     }
   }, [open, initialData]);
 
-  const handleOpenChange = (value: boolean) => {
-    onOpenChange(value);
-  };
-
   const handleSubmit = () => {
     if (initialData) {
-      onSubmit(formState as UpdateBookingPayload);
-    } 
-    // else {
-    //   onSubmit(formState as CreateBookingPayload);
-    // }
+      onSubmit({ status: formState.status } as UpdateBookingPayload);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {initialData ? "Chỉnh sửa Booking" : "Tạo Booking mới"}
-          </DialogTitle>
-        </DialogHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-xl p-0 overflow-hidden border-border bg-surface text-text-primary">
+        {/* Header Section */}
+        <div className="bg-elevated/80 p-6 border-b border-border">
+          <DialogHeader className="space-y-1">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/15 text-brand-primary border border-brand-primary/20">
+                {/* <CalendarEdit className="h-5 w-5" /> */}
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-bold tracking-tight text-text-primary">
+                  {initialData
+                    ? `Cập nhật đơn đặt sân #${initialData.bookingId}`
+                    : "Tạo đơn đặt sân mới"}
+                </DialogTitle>
+                <p className="text-xs text-text-muted mt-0.5">
+                  Thay đổi trạng thái tiến trình xử lý đơn đặt sân của khách
+                </p>
+              </div>
+            </div>
+          </DialogHeader>
+        </div>
 
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="userId">User ID</Label>
-            <Input
-              id="userId"
-              type="number"
-              value={formState.userId}
-              disabled={true}
-              onChange={(e) =>
-                setFormState((prev) => ({ ...prev, userId: Number(e.target.value) }))
-              }
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="fieldId">Field ID</Label>
-            <Input
-              id="fieldId"
-              type="number"
-              value={formState.fieldId}
-              disabled={true}
-              onChange={(e) =>
-                setFormState((prev) => ({ ...prev, fieldId: Number(e.target.value) }))
-              }
-            />
-          </div>
-
-          {/* <div>
-            <Label htmlFor="starttime">Start Time</Label>
-            <Input
-              id="starttime"
-              type="datetime-local"
-              value={formState.starttime}
-              onChange={(e) =>
-                setFormState((prev) => ({ ...prev, starttime: e.target.value }))
-              }
-            />
-          </div> */}
-
-          {/* <div>
-            <Label htmlFor="endtime">End Time</Label>
-            <Input
-              id="endtime"
-              type="datetime-local"
-              value={formState.endtime}
-              onChange={(e) =>
-                setFormState((prev) => ({ ...prev, endtime: e.target.value }))
-              }
-            />
-          </div> */}
-
-          {initialData && (
-            <div>
-              <Label>Trạng thái</Label>
-              <Select
-                value={formState.status}
-                onValueChange={(value) =>
-                  setFormState((prev) => ({
-                    ...prev,
-                    status: value as "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED",
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn trạng thái" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="PENDING">Pending</SelectItem>
-                  <SelectItem value="CONFIRMED">Confirmed</SelectItem>
-                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                  <SelectItem value="COMPLETED">Completed</SelectItem>
-                </SelectContent>
-              </Select>
+        {/* Body Content */}
+        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          {serverError && (
+            <div className="flex items-center gap-2.5 rounded-xl border border-status-danger/30 bg-status-danger-bg p-3.5 text-xs font-medium text-status-danger">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{serverError}</span>
             </div>
           )}
 
-          {serverError && (
-            <p className="text-sm text-red-500">{serverError}</p>
-          )}
+          {initialData && (
+            <FieldGroup className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FieldWrapper>
+                  <FieldLabel className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+                    Khách hàng
+                  </FieldLabel>
+                  <Input
+                    value={formState.customerName || "Khách vãng lai"}
+                    readOnly
+                    className="border-border bg-elevated/60 text-text-muted disabled:opacity-70 disabled:cursor-not-allowed"
+                  />
+                </FieldWrapper>
 
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => handleOpenChange(false)}>
-              Hủy
-            </Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting}>
-              {isSubmitting
-                ? "Đang lưu..."
-                : initialData
-                ? "Cập nhật"
-                : "Tạo mới"}
-            </Button>
-          </div>
+                <FieldWrapper>
+                  <FieldLabel className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+                    Sân bóng
+                  </FieldLabel>
+                  <Input
+                    value={formState.fieldName || "Chưa xác định"}
+                    readOnly
+                    className="border-border bg-elevated/60 text-text-muted disabled:opacity-70 disabled:cursor-not-allowed"
+                  />
+                </FieldWrapper>
+              </div>
+
+              <FieldWrapper>
+                <FieldLabel className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+                  Trạng thái đơn đặt sân{" "}
+                  <span className="text-status-danger">*</span>
+                </FieldLabel>
+                <Select
+                  value={formState.status}
+                  onValueChange={(value) =>
+                    setFormState((prev) => ({
+                      ...prev,
+                      status: value as "CONFIRMED" | "CANCELLED" | "COMPLETED",
+                    }))
+                  }
+                >
+                  <SelectTrigger className="border-border bg-elevated/60 text-text-primary">
+                    <SelectValue>
+                      {formState.status === "CONFIRMED"
+                        ? "Đã xác nhận"
+                        : formState.status === "CANCELLED"
+                          ? "Đã hủy đơn"
+                          : "Đã hoàn thành"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="border-border bg-elevated text-text-primary">
+                    <SelectItem
+                      value="CONFIRMED"
+                      className="text-text-secondary focus:text-text-primary"
+                    >
+                      Đã xác nhận (CONFIRMED)
+                    </SelectItem>
+                    <SelectItem
+                      value="COMPLETED"
+                      className="text-text-secondary focus:text-text-primary"
+                    >
+                      Đã hoàn thành (COMPLETED)
+                    </SelectItem>
+                    <SelectItem
+                      value="CANCELLED"
+                      className="text-text-secondary focus:text-text-primary"
+                    >
+                      Đã hủy đơn (CANCELLED)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </FieldWrapper>
+            </FieldGroup>
+          )}
+        </div>
+
+        {/* Footer Actions */}
+        <Separator className="bg-border" />
+        <div className="flex items-center justify-end gap-3 p-4 bg-elevated/40">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isSubmitting}
+            className="border-border bg-transparent text-text-secondary hover:bg-surface-hover hover:text-text-primary cursor-pointer px-5"
+          >
+            Hủy
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="bg-brand-primary text-white hover:bg-brand-primary-hover font-semibold px-6 cursor-pointer"
+          >
+            {isSubmitting ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Đang lưu...
+              </span>
+            ) : initialData ? (
+              "Lưu thay đổi"
+            ) : (
+              "Tạo đơn"
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

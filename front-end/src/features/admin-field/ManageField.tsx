@@ -41,7 +41,9 @@ export function ManageField() {
   const deleteField = useDeleteField();
 
   const [search, setSearch] = useState("");
-  const [fieldType, setFieldType] = useState<"all" | "FIVE" | "SEVEN" | "ELEVEN" >("all");
+  const [fieldType, setFieldType] = useState<
+    "ALL" | "FIVE" | "SEVEN" | "ELEVEN"
+  >("ALL");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [editingField, setEditingField] = useState<Field | null>(null);
@@ -57,14 +59,13 @@ export function ManageField() {
         .includes(search.trim().toLowerCase());
 
       const matchFieldType =
-        fieldType === "all" || field.fieldType === fieldType;
+        fieldType === "ALL" || field.fieldType === fieldType;
 
       return matchSearch && matchFieldType;
     });
   }, [fields, search, fieldType]);
 
   const totalPages = Math.max(1, Math.ceil(filteredFields.length / PAGE_SIZE));
-
 
   const handleAdd = () => {
     setEditingField(null);
@@ -73,6 +74,7 @@ export function ManageField() {
   };
 
   const handleEdit = (field: Field) => {
+    setDetailFieldId(field.fieldId);
     setEditingField(field);
     setFormError(null);
     setDialogOpen(true);
@@ -84,6 +86,7 @@ export function ManageField() {
   };
 
   const handleDelete = (field: Field) => {
+    setDetailFieldId(field.fieldId);
     const ok = confirm(`Bạn có chắc muốn xóa sân "${field.name}"?`);
     if (!ok) return;
 
@@ -113,7 +116,7 @@ export function ManageField() {
           onError(error) {
             setFormError(getErrorMessage(error, "Cập nhật sân thất bại."));
           },
-        }
+        },
       );
       return;
     }
@@ -165,8 +168,13 @@ export function ManageField() {
         currentPage={currentPage}
         pageSize={PAGE_SIZE}
       />
-      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}  />
-      
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        totalItems={fields.length}
+        pageSize={PAGE_SIZE}
+      />
 
       <FieldFormDialog
         fieldId={detailFieldId}
