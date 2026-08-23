@@ -86,7 +86,7 @@ export function BookingsAndHighlights({
                   variant="ghost"
                   size="sm"
                   className="h-8 text-xs font-semibold text-text-secondary hover:text-brand-accent hover:bg-transparent cursor-pointer p-0"
-                  onClick={() => navigate("/admin/bookings/history")}
+                  onClick={() => navigate("/admin/bookings")}
                 >
                   Xem tất cả <ArrowRight className="ml-1 h-3.5 w-3.5" />
                 </Button>

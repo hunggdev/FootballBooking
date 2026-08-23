@@ -12,21 +12,27 @@ import {
   getMyHolds,
   getSlotStatusRange,
 } from "../controllers/bookingController.js";
-import { protectedRoute, requireAdmin } from "../middlewares/authMiddleware.js";
+import { optionalAuth, protectedRoute, requireAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/slots", protectedRoute, getSlots);
-router.get("/myHolds", protectedRoute, getMyHolds);
-router.get("/statusRange", protectedRoute, getSlotStatusRange); 
-router.post("/hold", protectedRoute, holdSlot);
-router.delete("/hold", protectedRoute, deleteSlotHold);
-router.post("/", protectedRoute, createBooking);
-router.get("/history/me", protectedRoute, bookingHistory);
-router.get("/", protectedRoute, requireAdmin, getBookings);
-router.get("/:id", protectedRoute, getBookingById);
-router.put("/:id", protectedRoute, requireAdmin, updateBooking);
-router.put("/:id/cancel", protectedRoute, cancelBooking);
+router.get("/slots", optionalAuth, getSlots);
+router.get("/statusRange", getSlotStatusRange);
+
+router.use(protectedRoute);
+router.get("/myHolds", getMyHolds);
+
+router.post("/hold", holdSlot);
+router.delete("/hold", deleteSlotHold);
+
+router.post("/", createBooking);
+router.get("/history/me", bookingHistory);
+router.put("/:id/cancel", cancelBooking);
+
+router.get("/", requireAdmin, getBookings);
+router.put("/:id", requireAdmin, updateBooking);
+
+router.get("/:id", getBookingById);
 
 
 export default router;

@@ -90,7 +90,7 @@ export function SignupForm({
               {/* họ và tên */}
               <div className="flex flex-col gap-3">
                 <Label htmlFor="fullName" className="block text-sm text-left">
-                  Họ và tên
+                  Họ và tên <span className="text-status-danger">*</span>
                 </Label>
                 <Input
                   type="text"
@@ -108,12 +108,15 @@ export function SignupForm({
               {/*  email */}
               <div className="flex flex-col gap-3">
                 <Label htmlFor="email" className="block text-sm text-left">
-                  Email
+                  Email <span className="text-status-danger">*</span>
                 </Label>
                 <Input
                   type="text"
                   id="email"
                   placeholder="user@gmail.com"
+                  className="w-full rounded-lg border px-3 py-2
+                            autofill:shadow-[inset_0_0_0px_1000px_#ffffff]
+                            autofill:[-webkit-text-fill-color:#000000]"
                   {...register("email")}
                 />
                 {errors.email && (
@@ -126,7 +129,7 @@ export function SignupForm({
               {/*  phone */}
               <div className="flex flex-col gap-3">
                 <Label htmlFor="phone" className="block text-sm text-left">
-                  Số điện thoại
+                  Số điện thoại <span className="text-status-danger">*</span>
                 </Label>
                 <Input
                   type="text"
@@ -144,12 +147,15 @@ export function SignupForm({
               {/* password */}
               <div className="flex flex-col gap-3">
                 <Label htmlFor="password" className="block text-sm text-left">
-                  Mật khẩu
+                  Mật khẩu <span className="text-status-danger">*</span>
                 </Label>
                 <Input
                   type="password"
                   id="password"
                   placeholder="********"
+                  className="w-full rounded-lg border px-3 py-2
+                            autofill:shadow-[inset_0_0_0px_1000px_#ffffff]
+                            autofill:[-webkit-text-fill-color:#000000]"
                   {...register("password")}
                 />
                 {errors.password && (

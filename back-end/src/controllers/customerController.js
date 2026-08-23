@@ -49,6 +49,11 @@ export const getCustomers = async (req, res) => {
 
     const stats = await prisma.booking.groupBy({
       by: ["userId"],
+      where: {
+        status: {
+          not: "CANCELLED",
+        },
+      },
       _count: {
         bookingId: true,
       },

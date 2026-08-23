@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/booking-format";
 import type { Service } from "@/types/service";
+import { useState } from "react";
 
 interface ServiceSelectorProps {
   services: Service[];
@@ -25,14 +26,19 @@ export function ServiceSelector({
   onChangeQuantity,
   onRemove,
 }: ServiceSelectorProps) {
+  const [serviceId, setServiceId] = useState<number | null>(null);
   return (
     <div className="space-y-2">
-      <p className="text-sm font-semibold text-text-primary">
-        Dịch vụ thêm
-      </p>
+      <p className="text-sm font-semibold text-text-primary">Dịch vụ thêm</p>
 
       {services.length > 0 && (
-        <Select onValueChange={onAdd}>
+        <Select
+          value={String(serviceId)}
+          onValueChange={(value) => {
+            setServiceId(Number(value));
+            onAdd(value);
+          }}
+        >
           <SelectTrigger
             className="
               w-full
@@ -43,7 +49,12 @@ export function ServiceSelector({
               focus:ring-brand-primary/20
             "
           >
-            <SelectValue placeholder="+ Chọn dịch vụ muốn thêm" />
+            <SelectValue>
+              {serviceId === null
+                ? "Chọn dịch vụ muốn thêm"
+                : services?.find((service) => service.serviceId === serviceId)
+                    ?.name}
+            </SelectValue>
           </SelectTrigger>
 
           <SelectContent
@@ -87,9 +98,7 @@ export function ServiceSelector({
           "
         >
           <div>
-            <p className="font-medium text-text-primary">
-              {service.name}
-            </p>
+            <p className="font-medium text-text-primary">{service.name}</p>
 
             <p className="text-xs text-text-muted">
               {formatCurrency(service.price)}

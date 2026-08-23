@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { bookingService } from "@/services/bookingService";
+import { useAuthStore } from "@/stores/useAuthStore";
 import type { HoldSlot } from "@/types/field";
 import type {
   CreateBookingPayload,
@@ -41,12 +42,14 @@ export const useBooking = (bookingId: number) => {
 
 // Lấy lịch sử booking của user
 export const useMyBookings = () => {
+  const user = useAuthStore((state) => state.user);
   return useQuery({
     queryKey: ["my-bookings"],
     queryFn: async () => {
       const data = await bookingService.getMyBookings();
       return data ?? []; // ✅ luôn là array
     },
+    enabled: Boolean(user),
   });
 };
 
@@ -60,12 +63,14 @@ export const useSlots = (fieldId: number, date: string) => {
 };
 
 export const useMyHolds = () => {
+  const user = useAuthStore((state) => state.user);
   return useQuery<HoldSlot[]>({
     queryKey: ["my-holds"],
     queryFn: async () => {
       const data = await bookingService.getMyHolds();
       return data ?? []; 
     },
+    enabled: Boolean(user),
   });
 };
 

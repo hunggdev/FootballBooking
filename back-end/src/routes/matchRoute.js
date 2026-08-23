@@ -1,11 +1,14 @@
 import express from "express";
 import { getMatches, getMatchById, createMatch, updateMatch, deleteMatch, statsMatch, joinMatch, cancelJoinMatch } from "../controllers/matchController.js";
-
+import { optionalAuth, protectedRoute, requireAdmin } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
-router.get("/", getMatches);
-router.get("/stats", statsMatch);
-router.get("/:id", getMatchById);
+router.get("/", optionalAuth, getMatches);
+router.get("/:id", optionalAuth, getMatchById);
+
+router.use(protectedRoute); 
+
+router.get("/stats", requireAdmin, statsMatch);
 router.post("/", createMatch);
 router.post("/:id/join", joinMatch);
 router.delete("/:id/join", cancelJoinMatch);

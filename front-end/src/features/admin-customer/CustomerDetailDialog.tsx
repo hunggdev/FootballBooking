@@ -41,11 +41,13 @@ const bookingStatusConfig: Record<
   },
   CONFIRMED: {
     label: "Đã xác nhận",
-    className: "border-status-success/20 bg-status-success-bg text-status-success",
+    className:
+      "border-status-success/20 bg-status-success-bg text-status-success",
   },
   PENDING: {
     label: "Chờ xác nhận",
-    className: "border-status-warning/20 bg-status-warning-bg text-status-warning",
+    className:
+      "border-status-warning/20 bg-status-warning-bg text-status-warning",
   },
   CANCELLED: {
     label: "Đã hủy",
@@ -59,11 +61,13 @@ const customerStatusBadge: Record<
 > = {
   ACTIVE: {
     label: "Đang hoạt động",
-    className: "border-status-success/30 bg-status-success-bg text-status-success",
+    className:
+      "border-status-success/30 bg-status-success-bg text-status-success",
   },
   INACTIVE: {
     label: "Ngưng hoạt động",
-    className: "border-status-warning/30 bg-status-warning-bg text-status-warning",
+    className:
+      "border-status-warning/30 bg-status-warning-bg text-status-warning",
   },
   BANNED: {
     label: "Đã khóa",
@@ -90,10 +94,12 @@ export function CustomerDetailDialog({
     customer?.bookings?.reduce(
       (acc, b) =>
         b.status === "COMPLETED" || b.status === "CONFIRMED"
-          ? acc + (Number(b.totalPrice || 0))
+          ? acc + Number(b.totalPrice || 0)
           : acc,
-      0
-    ) || customer?.totalSpent || 0;
+      0,
+    ) ||
+    customer?.totalSpent ||
+    0;
 
   const statusInfo = customer?.status
     ? customerStatusBadge[customer.status.toUpperCase()]
@@ -162,7 +168,9 @@ export function CustomerDetailDialog({
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-12 text-text-muted gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-              <p className="text-sm font-medium">Đang tải thông tin khách hàng...</p>
+              <p className="text-sm font-medium">
+                Đang tải thông tin khách hàng...
+              </p>
             </div>
           )}
 
@@ -215,9 +223,12 @@ export function CustomerDetailDialog({
                     <ShoppingBag className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-xs text-text-muted font-medium">Tổng số đơn đặt sân</p>
+                    <p className="text-xs text-text-muted font-medium">
+                      Tổng số đơn đặt sân
+                    </p>
                     <p className="text-lg font-bold text-text-primary mt-0.5">
-                      {customer.bookings?.length ?? customer.bookingCount ?? 0}&nbsp;đơn
+                      {customer.bookings?.length ?? customer.bookingCount ?? 0}
+                      &nbsp;đơn
                     </p>
                   </div>
                 </div>
@@ -227,7 +238,9 @@ export function CustomerDetailDialog({
                     <CreditCard className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-xs text-text-muted font-medium">Tổng tiền đã đặt</p>
+                    <p className="text-xs text-text-muted font-medium">
+                      Tổng tiền đã đặt
+                    </p>
                     <p className="text-lg font-bold text-brand-accent mt-0.5">
                       {Number(totalSpent).toLocaleString("vi-VN")}&nbsp;đ
                     </p>
@@ -248,26 +261,32 @@ export function CustomerDetailDialog({
                       <tr className="border-b border-border bg-elevated/60 text-text-muted">
                         <th className="p-3 font-semibold">Mã đơn</th>
                         <th className="p-3 font-semibold">Ngày tạo</th>
-                        <th className="p-3 font-semibold text-right">Tổng tiền</th>
-                        <th className="p-3 font-semibold text-center">Trạng thái</th>
+                        <th className="p-3 font-semibold text-right">
+                          Tổng tiền
+                        </th>
+                        <th className="p-3 font-semibold text-center">
+                          Trạng thái
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/40">
                       {!customer.bookings || customer.bookings.length === 0 ? (
                         <tr>
-                          <td colSpan={4} className="p-6 text-center text-text-muted">
+                          <td
+                            colSpan={4}
+                            className="p-6 text-center text-text-muted"
+                          >
                             Khách hàng này chưa có đơn đặt sân nào.
                           </td>
                         </tr>
                       ) : (
                         customer.bookings.map((booking) => {
                           const upperSt = (booking.status || "").toUpperCase();
-                          const stBadge =
-                            bookingStatusConfig[upperSt] || {
-                              label: booking.status,
-                              className:
-                                "border-border bg-elevated text-text-secondary",
-                            };
+                          const stBadge = bookingStatusConfig[upperSt] || {
+                            label: booking.status,
+                            className:
+                              "border-border bg-elevated text-text-secondary",
+                          };
                           return (
                             <tr
                               key={booking.bookingId}
@@ -281,7 +300,7 @@ export function CustomerDetailDialog({
                               </td>
                               <td className="p-3 text-right font-semibold text-text-primary">
                                 {Number(booking.totalPrice || 0).toLocaleString(
-                                  "vi-VN"
+                                  "vi-VN",
                                 )}
                                 &nbsp;đ
                               </td>

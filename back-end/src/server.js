@@ -5,7 +5,7 @@ import { connectDB } from "./config/database.js";
 import authRoute from "./routes/authRoute.js";
 import cookieParser from "cookie-parser";
 import userRoute from "./routes/userRoute.js";
-import { protectedRoute } from "./middlewares/authMiddleware.js";
+import { protectedRoute, requireAdmin } from "./middlewares/authMiddleware.js";
 import { cleanExpiredUsers } from "./utils/cleanExpiredUsers.js";
 import customerRoute from "./routes/customerRoute.js";
 import fieldRoute from "./routes/fieldRoute.js";
@@ -47,23 +47,22 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 
-// public routes
+// public & hybrid routes (tự quản lý middleware trong từng file route)
 app.use("/api/auth", authRoute);
-
-// private routes
-app.use(protectedRoute);
-app.use("/api/users", userRoute);
-app.use("/api/customers", customerRoute);
 app.use("/api/fields", fieldRoute);
 app.use("/api/services", serviceRoute);
-app.use("/api/bookings", bookingRoute);
-app.use("/api/invoices", invoiceRoute);
-app.use("/api/reviews", reviewRoute);
-app.use("/api/dashboard", dashboardRoute);
 app.use("/api/matches", matchRoute);
+app.use("/api/reviews", reviewRoute);
 app.use("/api/payments", paymentRoute);
-app.use("/api/notifications", notificationRoute);
+app.use("/api/bookings", bookingRoute);
 
+// private routes (bắt buộc đăng nhập)
+app.use(protectedRoute);
+app.use("/api/users", userRoute);
+app.use("/api/notifications", notificationRoute); 
+app.use("/api/invoices", invoiceRoute);
+app.use("/api/dashboard", dashboardRoute);
+app.use("/api/customers", customerRoute);
 // ------------------------------------------------
 
 connectDB().then(() => {

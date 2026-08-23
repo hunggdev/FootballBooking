@@ -8,25 +8,32 @@ import FieldListPage from "@/pages/user/FieldListPage";
 import UserHistoryPage from "@/pages/user/UserHistoryPage";
 import ReviewPage from "@/pages/user/ReviewPage";
 import MatchPage from "@/pages/user/MatchPage";
-
 import FieldDetailPage from "@/pages/user/FieldDetailPage";
 
 export const userRoutes: RouteObject = {
   path: "/user",
-  element: <ProtectedRoute allowedRoles={["admin", "customer"]} />,
+  element: <UserLayout />, // Đưa Layout ra ngoài làm khung chung
   children: [
+    // ==========================================
+    // 1. PUBLIC ROUTES (Khách vãng lai chưa login vẫn xem được) 
+    // ==========================================
+    { path: "", element: <HomePage /> },
+    { path: "booking", element: <FieldTypePage /> },
+    { path: "booking/:typeSlug", element: <FieldListPage /> },
+    { path: "booking/:typeSlug/:fieldId", element: <FieldDetailPage /> },
+    { path: "match", element: <MatchPage /> },
+    { path: "reviews", element: <ReviewPage /> },
+
+
+    // ==========================================
+    // 2. PROTECTED ROUTES (Bắt buộc đăng nhập mới truy cập được)
+    // ==========================================
     {
-      element: <UserLayout />,
+      element: <ProtectedRoute allowedRoles={["admin", "customer"]} />,
       children: [
-        { path: "", element: <HomePage /> },
         { path: "account", element: <ProfilePage /> },
         { path: "history", element: <UserHistoryPage /> },
         { path: "reviews", element: <ReviewPage /> },
-        { path: "booking", element: <FieldTypePage /> },
-        { path: "booking/:typeSlug", element: <FieldListPage /> },
-        // { path: "booking/:typeSlug/:fieldId", element: <FieldDetailPage /> },
-        { path: "booking/:typeSlug/:fieldId", element: <FieldDetailPage /> }, 
-        { path: "match", element: <MatchPage /> },
       ],
     },
   ],

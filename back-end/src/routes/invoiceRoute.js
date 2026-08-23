@@ -9,15 +9,11 @@ import {
 import { protectedRoute, requireAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
-router.get("/", protectedRoute, requireAdmin, getInvoices);
 
-router.get("/:invoiceId", protectedRoute, getInvoiceById);
+router.use(protectedRoute, requireAdmin);
 
-router.post(
-  "/generate/:bookingId",
-  protectedRoute,
-  requireAdmin,
-  generateInvoice,
-);
+router.get("/", getInvoices);
+router.get("/:invoiceId", getInvoiceById);
+router.post("/generate/:bookingId", generateInvoice);
 
 export default router;

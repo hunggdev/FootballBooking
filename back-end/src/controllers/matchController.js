@@ -11,12 +11,10 @@ import {
   validateEmail,
   duplicateUser,
 } from "../utils/validateUsers.js";
-import { use } from "react";
-
 //Xem danh sách trận đấu
 export const getMatches = async (req, res) => {
   try {
-    const currentUserId = req.user.userId;
+    const currentUserId = req.user?.userId;
     const showAll = req.query.all === "1";
     const matches = await prisma.match.findMany({
       orderBy: {
@@ -35,20 +33,31 @@ export const getMatches = async (req, res) => {
         participants: {
           select: {
             participantId: true,
+            userId: true,
+            joinedAt: true,
+            user: {
+              select: {
+                userId: true,
+                fullName: true,
+                email: true,
+              },
+            },
           },
         },
       },
     });
     const result = matches.map((match) => ({
       ...match,
-      isMine: match.userId === currentUserId,
-      isJoined: match.participants?.participantId ? true : false,
+      isMine: Boolean(currentUserId && match.userId === currentUserId),
+      isJoined: Boolean(
+        currentUserId && match.participants?.userId === currentUserId
+      ),
     }));
     return res.status(200).json({
       matches: result,
     });
   } catch (error) {
-    console.log(error);
+    console.error("GET MATCHES:", error);
     return res.status(500).json({ message: "Lỗi hệ thống" });
   }
 };
@@ -57,6 +66,14 @@ export const getMatches = async (req, res) => {
 export const getMatchById = async (req, res) => {
   try {
     const matchId = Number(req.params.id);
+    if (!matchId || isNaN(matchId)) {
+      return res.status(400).json({
+        message: "ID trận đấu không hợp lệ",
+      });
+    }
+
+    const currentUserId = req.user?.userId;
+
     const match = await prisma.match.findUnique({
       where: {
         matchId,
@@ -74,6 +91,7 @@ export const getMatchById = async (req, res) => {
         participants: {
           select: {
             participantId: true,
+            userId: true,
             joinedAt: true,
 
             user: {
@@ -87,16 +105,21 @@ export const getMatchById = async (req, res) => {
         },
       },
     });
-    const result = {
-      ...match,
-      isMine: match.userId === req.user.userId,
-      isJoined: match.participants?.user?.userId ? true : false,
-    };
+
     if (!match) {
       return res.status(404).json({
         message: "Không tìm thấy trận đấu",
       });
     }
+
+    const result = {
+      ...match,
+      isMine: Boolean(currentUserId && match.userId === currentUserId),
+      isJoined: Boolean(
+        currentUserId && match.participants?.userId === currentUserId
+      ),
+    };
+
     return res.status(200).json({
       match: result,
     });

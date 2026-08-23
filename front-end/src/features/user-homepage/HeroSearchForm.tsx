@@ -46,7 +46,7 @@ export function HeroSearchForm() {
 
   const handleSearch = () => {
     if (selectedFieldId !== "ALL") {
-      const field = fields?.find((f) => f.fieldId === Number(selectedFieldId));
+      const field = fields?.find((f) => f.name === String(selectedFieldId));
 
       if (field) {
         const slug =

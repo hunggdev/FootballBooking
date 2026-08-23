@@ -35,7 +35,7 @@ export function SlotGrid({
 
       {!isLoading && (!slots || slots.length === 0) ? (
         <p className="py-8 text-center text-sm text-text-muted">
-          Chưa có khung giờ cho ngày này.
+          Chưa có khung giờ cho ngày này. Hoặc có thể do bạn chưa ĐĂNG NHẬP.
         </p>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

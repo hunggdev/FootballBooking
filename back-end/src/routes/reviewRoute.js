@@ -14,11 +14,14 @@ import { protectedRoute, requireAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", protectedRoute, getAllReviews);
-router.get("/field/:fieldId", protectedRoute, getFieldReviews);
-router.get("/:reviewId", protectedRoute, getReviewById);
-router.post("/", protectedRoute, createReview);
-router.put("/:reviewId", protectedRoute, updateReview);
-router.patch("/:reviewId/reply", protectedRoute, requireAdmin, replyReview);
+router.get("/", getAllReviews);
+router.get("/field/:fieldId", getFieldReviews);
+
+router.use(protectedRoute);
+
+router.get("/:reviewId", getReviewById);
+router.post("/", createReview);
+router.put("/:reviewId", updateReview);
+router.patch("/:reviewId/reply", requireAdmin, replyReview);
 router.delete("/:reviewId", protectedRoute, deleteReview);
 export default router;

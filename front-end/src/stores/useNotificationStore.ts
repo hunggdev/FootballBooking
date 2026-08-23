@@ -1,21 +1,25 @@
-import { queryClient } from "@/lib/queryClient"
-import { notificationService } from "@/services/notificationService"
-import { useMutation, useQuery } from "@tanstack/react-query"
-
+import { queryClient } from "@/lib/queryClient";
+import { notificationService } from "@/services/notificationService";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 export const useGetNotification = () => {
-    return useQuery({
-        queryKey: ["notifications"],
-        queryFn: () => notificationService.getNotifications(),
-    })
-}
+  const user = useAuthStore((state) => state.user);
+  return useQuery({
+    queryKey: ["notifications"],
+    queryFn: () => notificationService.getNotifications(),
+    enabled: Boolean(user),
+  });
+};
 
 export const useGetUnreadNotification = () => {
-    return useQuery({
-        queryKey: ["notifications-unread"],
-        queryFn: () => notificationService.getUnreadNotifications(),
-    })
-}
+  const user = useAuthStore((state) => state.user);
+  return useQuery({
+    queryKey: ["notifications-unread"],
+    queryFn: () => notificationService.getUnreadNotifications(),
+    enabled: Boolean(user),
+  });
+};
 
 export const useMarkAsRead = () => {
     return useMutation({

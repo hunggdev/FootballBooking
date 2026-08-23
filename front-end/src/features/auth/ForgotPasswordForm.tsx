@@ -72,6 +72,9 @@ export function ForgotPasswordForm({
                 type="text"
                 id="email"
                 placeholder="user@gmail.com"
+                className="w-full rounded-lg border px-3 py-2
+                            autofill:shadow-[inset_0_0_0px_1000px_#ffffff]
+                            autofill:[-webkit-text-fill-color:#000000]"
                 {...register("email")}
               />
               {errors.email && (

@@ -92,7 +92,7 @@ export const signIn = async (req, res) => {
         .json({ message: "Email và mật khẩu không được để trống" });
     }
 
-    const validate = validateEmail(email) && validatePassword(password);
+    const validate = validateEmail(email) || validatePassword(password);
     if (validate) {
       return res.status(400).json({ message: validate });
     }
@@ -287,7 +287,7 @@ export const forgotPassword = async (req, res) => {
     }
 
     const validate = validateEmail(email);
-    if (!validate) {
+    if (validate) {
       return res.status(400).json({ message: validate });
     }
 
@@ -359,9 +359,9 @@ export const resetPassword = async (req, res) => {
         .json({ message: "Token và mật khẩu không được để trống" });
     }
 
-    const validatePassword = validatePassword(newPassword);
-    if (validatePassword) {
-      return res.status(400).json({ message: validatePassword });
+    const validateP = validatePassword(newPassword);
+    if (validateP) {
+      return res.status(400).json({ message: validateP });
     }
 
     const passwordResetToken = await prisma.passwordResetToken.findFirst({

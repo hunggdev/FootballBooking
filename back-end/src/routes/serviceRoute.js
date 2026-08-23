@@ -1,5 +1,5 @@
 import express from "express";
-import { requireAdmin } from "../middlewares/authMiddleware.js";
+import { protectedRoute, requireAdmin } from "../middlewares/authMiddleware.js";
 import {
   getServices,
   getServiceById,
@@ -13,8 +13,10 @@ const router = express.Router();
 router.get("/", getServices);
 router.get("/:id", getServiceById);
 
-router.post("/", requireAdmin, createService);
-router.put("/:id", requireAdmin, updateService);
-router.delete("/:id", requireAdmin, deleteService);
+router.use(protectedRoute, requireAdmin);
+
+router.post("/", createService);
+router.put("/:id", updateService);
+router.delete("/:id", deleteService);
 
 export default router;

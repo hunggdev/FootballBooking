@@ -1,4 +1,3 @@
-import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -25,12 +24,6 @@ export function JoinMatchDialog({
   isSubmitting = false,
   serverError,
 }: JoinMatchDialogProps) {
-  const handleSubmit = () => {
-    toast.success("Gửi yêu cầu tham gia thành công!", {
-      position: "top-center",
-    });
-    onSubmit();
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -100,7 +93,7 @@ export function JoinMatchDialog({
 
           <Button
             type="button"
-            onClick={handleSubmit}
+            onClick={onSubmit}
             disabled={isSubmitting}
             className="bg-brand-primary text-white hover:bg-brand-primary-hover font-semibold px-6 cursor-pointer"
           >

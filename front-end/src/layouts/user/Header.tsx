@@ -16,7 +16,8 @@ import {
   ShieldCheck,
   Menu,
   X,
-  Sparkles,
+  LogIn,
+  UserPlus,
 } from "lucide-react";
 
 const navItems = [
@@ -125,125 +126,147 @@ export function Header() {
             <span>Đặt sân ngay</span>
           </Link>
 
-          {/* Notifications */}
-          <NotificationDropdown />
+          {user ? (
+            <>
+              {/* Notifications */}
+              <NotificationDropdown />
 
-          {/* User Profile Dropdown */}
-          <div className="relative" ref={profileRef}>
-            <button
-              type="button"
-              onClick={() => setProfileOpen((prev) => !prev)}
-              className="flex cursor-pointer items-center gap-2 rounded-lg border border-border/80 bg-surface-hover/60 p-1.5 pr-2.5 text-left transition-all duration-200 hover:border-border hover:bg-surface-hover focus:outline-hidden"
-            >
-              <Avatar className="h-7 w-7 border border-border/60">
-                <AvatarFallback className="bg-[image:var(--token-gradient-brand)] text-[11px] font-bold text-white">
-                  {getInitials(user?.fullName)}
-                </AvatarFallback>
-              </Avatar>
+              {/* User Profile Dropdown */}
+              <div className="relative" ref={profileRef}>
+                <button
+                  type="button"
+                  onClick={() => setProfileOpen((prev) => !prev)}
+                  className="flex cursor-pointer items-center gap-2 rounded-lg border border-border/80 bg-surface-hover/60 p-1.5 pr-2.5 text-left transition-all duration-200 hover:border-border hover:bg-surface-hover focus:outline-hidden"
+                >
+                  <Avatar className="h-7 w-7 border border-border/60">
+                    <AvatarFallback className="bg-[image:var(--token-gradient-brand)] text-[11px] font-bold text-white">
+                      {getInitials(user?.fullName)}
+                    </AvatarFallback>
+                  </Avatar>
 
-              <div className="hidden flex-col leading-tight sm:flex">
-                <span className="max-w-[110px] truncate text-xs font-semibold text-text-primary">
-                  {user?.fullName || "Khách hàng"}
-                </span>
-                <span className="text-[10px] text-text-muted">
-                  {isAdmin ? "Quản trị viên" : "Thành viên"}
-                </span>
-              </div>
-
-              <ChevronDown
-                className={`h-3.5 w-3.5 text-text-muted opacity-70 transition-transform duration-200 ${
-                  profileOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-
-            {/* Profile Dropdown Menu */}
-            {profileOpen && (
-              <div className="absolute right-0 z-50 mt-2 w-60 rounded-xl border border-border bg-surface p-1.5 text-text-primary shadow-[0_10px_30px_rgba(0,0,0,0.6)] animate-in fade-in-0 zoom-in-95">
-                {/* Header Info */}
-                <div className="p-2">
-                  <div className="flex flex-col gap-0.5">
-                    <p className="text-xs font-semibold text-text-primary truncate">
+                  <div className="hidden flex-col leading-tight sm:flex">
+                    <span className="max-w-[110px] truncate text-xs font-semibold text-text-primary">
                       {user?.fullName || "Khách hàng"}
-                    </p>
-                    <p className="truncate text-[11px] text-text-muted">
-                      {user?.email || "customer@sanbongs.vn"}
-                    </p>
-                    <div className="mt-1.5">
-                      <Badge
-                        variant="outline"
-                        className={`px-1.5 py-0.5 text-[10px] font-medium border ${
-                          isAdmin
-                            ? "border-brand-primary/30 bg-brand-primary/10 text-brand-primary"
-                            : "border-brand-accent/30 bg-brand-accent/10 text-brand-accent"
-                        }`}
-                      >
-                        {isAdmin ? "Admin Panel" : "Thành viên VIP"}
-                      </Badge>
-                    </div>
+                    </span>
+                    <span className="text-[10px] text-text-muted">
+                      {isAdmin ? "Quản trị viên" : "Thành viên"}
+                    </span>
                   </div>
-                </div>
 
-                <Separator className="my-1 bg-border/60" />
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 text-text-muted opacity-70 transition-transform duration-200 ${
+                      profileOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
 
-                {/* Navigation Items */}
-                <div className="flex flex-col gap-0.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setProfileOpen(false);
-                      navigate("/user/account");
-                    }}
-                    className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-text-secondary transition-colors duration-150 hover:bg-surface-hover hover:text-text-primary text-left"
-                  >
-                    <User className="h-3.5 w-3.5 text-text-muted" />
-                    <span>Thông tin tài khoản</span>
-                  </button>
+                {/* Profile Dropdown Menu */}
+                {profileOpen && (
+                  <div className="absolute right-0 z-50 mt-2 w-60 rounded-xl border border-border bg-surface p-1.5 text-text-primary shadow-[0_10px_30px_rgba(0,0,0,0.6)] animate-in fade-in-0 zoom-in-95">
+                    {/* Header Info */}
+                    <div className="p-2">
+                      <div className="flex flex-col gap-0.5">
+                        <p className="text-xs font-semibold text-text-primary truncate">
+                          {user?.fullName || "Khách hàng"}
+                        </p>
+                        <p className="truncate text-[11px] text-text-muted">
+                          {user?.email || "customer@sanbongs.vn"}
+                        </p>
+                        <div className="mt-1.5">
+                          <Badge
+                            variant="outline"
+                            className={`px-1.5 py-0.5 text-[10px] font-medium border ${
+                              isAdmin
+                                ? "border-brand-primary/30 bg-brand-primary/10 text-brand-primary"
+                                : "border-brand-accent/30 bg-brand-accent/10 text-brand-accent"
+                            }`}
+                          >
+                            {isAdmin ? "Admin Panel" : "Thành viên VIP"}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setProfileOpen(false);
-                      navigate("/user/history");
-                    }}
-                    className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-text-secondary transition-colors duration-150 hover:bg-surface-hover hover:text-text-primary text-left"
-                  >
-                    <History className="h-3.5 w-3.5 text-text-muted" />
-                    <span>Lịch sử đặt sân</span>
-                  </button>
+                    <Separator className="my-1 bg-border/60" />
 
-                  {isAdmin && (
+                    {/* Navigation Items */}
+                    <div className="flex flex-col gap-0.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfileOpen(false);
+                          navigate("/user/account");
+                        }}
+                        className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-text-secondary transition-colors duration-150 hover:bg-surface-hover hover:text-text-primary text-left"
+                      >
+                        <User className="h-3.5 w-3.5 text-text-muted" />
+                        <span>Thông tin tài khoản</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfileOpen(false);
+                          navigate("/user/history");
+                        }}
+                        className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-text-secondary transition-colors duration-150 hover:bg-surface-hover hover:text-text-primary text-left"
+                      >
+                        <History className="h-3.5 w-3.5 text-text-muted" />
+                        <span>Lịch sử đặt sân</span>
+                      </button>
+
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProfileOpen(false);
+                            navigate("/admin");
+                          }}
+                          className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-brand-primary transition-colors duration-150 hover:bg-brand-primary/10 text-left"
+                        >
+                          <ShieldCheck className="h-3.5 w-3.5 text-brand-primary" />
+                          <span>Vào Trang Quản Trị</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <Separator className="my-1 bg-border/60" />
+
+                    {/* Logout Button */}
                     <button
                       type="button"
                       onClick={() => {
                         setProfileOpen(false);
-                        navigate("/admin");
+                        handleLogout();
                       }}
-                      className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-brand-primary transition-colors duration-150 hover:bg-brand-primary/10 text-left"
+                      className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-status-danger transition-colors duration-150 hover:bg-status-danger-bg hover:text-status-danger text-left"
                     >
-                      <ShieldCheck className="h-3.5 w-3.5 text-brand-primary" />
-                      <span>Vào Trang Quản Trị</span>
+                      <LogOut className="h-3.5 w-3.5" />
+                      <span>Đăng xuất</span>
                     </button>
-                  )}
-                </div>
-
-                <Separator className="my-1 bg-border/60" />
-
-                {/* Logout Button */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProfileOpen(false);
-                    handleLogout();
-                  }}
-                  className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-status-danger transition-colors duration-150 hover:bg-status-danger-bg hover:text-status-danger text-left"
-                >
-                  <LogOut className="h-3.5 w-3.5" />
-                  <span>Đăng xuất</span>
-                </button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/signin"
+                className="flex items-center gap-1.5 rounded-lg border border-border/80 bg-surface px-3 py-1.5 text-xs font-semibold text-text-primary transition-all duration-200 hover:border-brand-primary/50 hover:bg-surface-hover hover:text-brand-primary"
+              >
+                <LogIn className="h-3.5 w-3.5" />
+                <span>Đăng nhập</span>
+              </Link>
+
+              <Link
+                to="/signup"
+                className="flex items-center gap-1.5 rounded-lg bg-[image:var(--token-gradient-brand)] px-3 py-1.5 text-xs font-semibold text-white shadow-[0_2px_10px_rgba(34,165,90,0.3)] transition-all duration-200 hover:opacity-95 hover:shadow-[0_4px_16px_rgba(34,165,90,0.4)] hover:-translate-y-px"
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                <span>Đăng ký</span>
+              </Link>
+            </div>
+          )}
 
           {/* Mobile Hamburger Menu Toggle */}
           <button
@@ -284,7 +307,7 @@ export function Header() {
             ))}
           </nav>
 
-          <div className="pt-2 border-t border-border">
+          <div className="pt-2 border-t border-border space-y-2">
             <Link
               to="/user/booking"
               onClick={() => setMobileMenuOpen(false)}
@@ -293,6 +316,49 @@ export function Header() {
               <CalendarCheck className="h-4 w-4" />
               <span>Đặt sân bóng ngay</span>
             </Link>
+
+            {!user ? (
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <Link
+                  to="/signin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-surface py-2 text-xs font-semibold text-text-primary hover:bg-surface-hover"
+                >
+                  <LogIn className="h-3.5 w-3.5" />
+                  <span>Đăng nhập</span>
+                </Link>
+                <Link
+                  to="/signup"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-1.5 rounded-lg bg-[image:var(--token-gradient-brand)] py-2 text-xs font-semibold text-white shadow-xs"
+                >
+                  <UserPlus className="h-3.5 w-3.5" />
+                  <span>Đăng ký</span>
+                </Link>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1 pt-1">
+                <Link
+                  to="/user/account"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-text-secondary rounded-lg hover:bg-surface-hover"
+                >
+                  <User className="h-3.5 w-3.5" />
+                  <span>Tài khoản ({user.fullName})</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleLogout();
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-status-danger rounded-lg hover:bg-status-danger-bg text-left"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span>Đăng xuất</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -13,7 +13,7 @@ export const protectedRoute = (req, res, next) => {
     }
 
     if (!token) {
-      return res.status(401).json({ message: "Không tìm thấy access token" });
+      return res.status(401).json({ message: "Đăng nhập để tiếp tục" });
     }
 
     // xac nhan token hop le
@@ -27,7 +27,7 @@ export const protectedRoute = (req, res, next) => {
             .status(401)
             .json({ message: "Access token hết hạn hoặc không đúng" });
         }
-        
+
         try {
           // tim user
           const user = await prisma.user.findUnique({
@@ -73,35 +73,74 @@ export const requireAdmin = (req, res, next) => {
   next();
 };
 
-
 // Quyền cập nhật kèo đấu
 
 export const requireMatchOwner = async (req, res, next) => {
-    if (req.user.role === "ADMIN") {
-        next();
-        return;
-    }
-  
-    const { matchId } = req.params;
-    const userId = req.user.userId;
+  if (req.user.role === "ADMIN") {
+    next();
+    return;
+  }
 
-    const match = await prisma.match.findUnique({
-        where: { matchId }
+  const { matchId } = req.params;
+  const userId = req.user.userId;
+
+  const match = await prisma.match.findUnique({
+    where: { matchId },
+  });
+
+  if (!match) {
+    return res.status(404).json({
+      message: "Không tìm thấy kèo.",
+    });
+  }
+
+  if (match.userId !== userId) {
+    return res.status(403).json({
+      message: "Bạn không có quyền.",
+    });
+  }
+
+  req.match = match;
+
+  next();
+};
+
+export const optionalAuth = async (req, res, next) => {
+  try {
+    const authHeader = req.headers["authorization"];
+    let token = authHeader && authHeader.split(" ")[1];
+
+    if (!token && req.cookies) {
+      token = req.cookies.accessToken || req.cookies.token;
+    }
+
+    // 1. Nếu không có token -> Coi như khách vãng lai
+    if (!token) {
+      req.user = null;
+      return next();
+    }
+
+    // 2. Verify token (nếu token sai/hết hạn sẽ tự nhảy xuống catch bên dưới)
+    const decodedUser = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+    // 3. Tìm user trong DB
+    const user = await prisma.user.findUnique({
+      where: {
+        userId: decodedUser.userId,
+      },
+      omit: {
+        passwordHash: true,
+      },
     });
 
-    if (!match) {
-        return res.status(404).json({
-            message: "Không tìm thấy kèo."
-        });
-    }
+    // Nếu tìm thấy user thì gán, không thì để null
+    req.user = user || null;
 
-    if (match.userId !== userId) {
-        return res.status(403).json({
-            message: "Bạn không có quyền."
-        });
-    }
+  } catch (error) {
+    // Nếu token hết hạn, token giả, hoặc lỗi DB -> Coi như khách vãng lai
+    req.user = null;
+  }
 
-    req.match = match;
-
-    next();
+  // Luôn chỉ gọi next() ĐÚNG 1 LẦN DUY NHẤT ở đây
+  return next();
 };

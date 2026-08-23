@@ -14,6 +14,7 @@ import type {
 } from "@/types/match";
 import type { AxiosError } from "axios";
 import { MatchDetailDialog } from "./MatchDetailDialog";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 const PAGE_SIZE = 10;
 
@@ -53,6 +54,8 @@ export default function ManageMatch() {
   const [filter, setFilter] = useState("OPEN");
   const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const user = useAuthStore((s) => s.user);
 
   const matches: Match[] = data?.matches ?? [];
 
@@ -188,7 +191,7 @@ export default function ManageMatch() {
             setFormError(
               getErrorMessage(
                 error,
-                "Cập nhật sân thất bại."
+                "Cập nhật kèo thất bại."
               )
             );
           },
@@ -206,7 +209,7 @@ export default function ManageMatch() {
           setFormError(
             getErrorMessage(
               error,
-              "Tạo khách hàng thất bại."
+              "Tạo kèo đấu thất bại."
             )
           );
         },
