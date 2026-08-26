@@ -151,7 +151,7 @@ export function FooterSection() {
               <div className="flex items-start gap-2.5">
                 <Clock3 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-accent" />
                 <span className="leading-relaxed">
-                  07:00 - 22:00 (Mở cửa tất cả các ngày)
+                  05:00 - 23:00 (Mở cửa tất cả các ngày)
                 </span>
               </div>
             </div>

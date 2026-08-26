@@ -13,7 +13,7 @@ export function FieldCard({ field }: { field: Field }) {
 
   const minPrice = field.fieldSlots?.length
     ? Math.min(...field.fieldSlots.map((s) => Number(s.price)))
-    : 150000;
+    : 180000;
 
   const handleNavigate = () => {
     navigate(`/user/booking/${slug}/${field.fieldId}`);

@@ -21,6 +21,7 @@ export const checkFieldConflict = async ({ fieldId, name, fieldType }) => {
         equals: name,
         mode: "insensitive",
       },
+      status: "ACTIVE", 
       fieldType,
 
       ...(fieldId && {

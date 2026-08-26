@@ -52,7 +52,7 @@ export default function FieldSlotGrid() {
 
   const totalPages = Math.ceil(totalItems / pageSize);
 
-  const paginatedFields = fields.slice(
+  const paginatedFields = fields.filter((field) => field.status === "ACTIVE").slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
   );
@@ -90,6 +90,7 @@ export default function FieldSlotGrid() {
             variant="outline"
             size="sm"
             onClick={() => changeDate(-1)}
+            disabled={selectedDate === dayjs().format("YYYY-MM-DD")}
             className="h-9 gap-1 border-border bg-surface text-text-primary hover:bg-surface-hover hover:text-text-primary"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -100,6 +101,7 @@ export default function FieldSlotGrid() {
             <input
               type="date"
               value={selectedDate}
+              min={dayjs().format("YYYY-MM-DD")}
               onChange={(e) => {
                 if (e.target.value) {
                   setSelectedDate(e.target.value);
@@ -109,7 +111,6 @@ export default function FieldSlotGrid() {
               className="h-9 rounded-md border border-border bg-surface px-3 text-xs font-semibold text-text-primary shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-primary"
             />
           </div>
-
           <Button
             variant="outline"
             size="sm"
@@ -123,6 +124,7 @@ export default function FieldSlotGrid() {
           <Button
             variant="secondary"
             size="sm"
+            disabled={selectedDate === dayjs().format("YYYY-MM-DD")}
             onClick={() => {
               setSelectedDate(dayjs().format("YYYY-MM-DD"));
               setCurrentPage(1);
@@ -151,6 +153,10 @@ export default function FieldSlotGrid() {
               {
                 value: "SEVEN",
                 label: "Sân 7 người",
+              },
+              {
+                value: "ELEVEN",
+                label: "Sân 11 người",
               },
             ] as const
           ).map((tab) => (
@@ -292,109 +298,6 @@ export default function FieldSlotGrid() {
                     </div>
                   </div>
                 </CardHeader>
-
-                {/* ================= FIELD SLOTS ================= */}
-                {/*
-                  Nếu muốn hiển thị trực tiếp danh sách slot
-                  tại đây thì bỏ comment phần CardContent bên dưới.
-                */}
-
-                {/*
-                <CardContent className="p-4">
-                  {!field.slots ||
-                  field.slots.length === 0 ? (
-                    <p className="py-4 text-center text-xs text-text-muted">
-                      Sân chưa được thiết lập khung giờ.
-                    </p>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                      {field.slots.map((slot: FieldSlot) => {
-                        const isAvailable =
-                          slot.status === "AVAILABLE";
-
-                        const isMyHold =
-                          Boolean(slot.isMyHold);
-
-                        const isBooked =
-                          slot.status === "BOOKED";
-
-                        const isHold =
-                          slot.status === "HOLD" &&
-                          !isMyHold;
-
-                        const isMaintenance =
-                          slot.status === "MAINTENANCE";
-
-                        const canClick =
-                          isAvailable || isMyHold;
-
-                        let badgeText = "Còn trống";
-
-                        let styleClasses =
-                          "border-status-success/40 bg-status-success/5 hover:bg-status-success/20 hover:border-status-success text-text-primary cursor-pointer shadow-xs";
-
-                        if (isMyHold) {
-                          badgeText = "Bạn đang giữ";
-
-                          styleClasses =
-                            "border-status-success bg-status-success/20 hover:bg-status-success/30 text-status-success font-bold cursor-pointer ring-2 ring-status-success/40 shadow-sm";
-                        } else if (isBooked) {
-                          badgeText = "Đã đặt";
-
-                          styleClasses =
-                            "border-border bg-surface-hover text-text-muted opacity-60 cursor-not-allowed";
-                        } else if (isHold) {
-                          badgeText = "Đang giữ";
-
-                          styleClasses =
-                            "border-status-warning/40 bg-status-warning/10 text-status-warning cursor-not-allowed opacity-80";
-                        } else if (isMaintenance) {
-                          badgeText = "Bảo trì";
-
-                          styleClasses =
-                            "border-status-danger/30 bg-status-danger/10 text-status-danger cursor-not-allowed";
-                        }
-
-                        return (
-                          <button
-                            key={slot.slotId}
-                            type="button"
-                            disabled={!canClick}
-                            onClick={() =>
-                              handleSlotClick(
-                                field.fieldType,
-                                field.fieldId,
-                                slot.slotId
-                              )
-                            }
-                            className={`flex flex-col items-center justify-center rounded-lg border p-3 text-center transition-all ${styleClasses}`}
-                          >
-                            <span className="text-xs font-semibold">
-                              {formatTimeRange(
-                                slot.starttime,
-                                slot.endtime
-                              )}
-                            </span>
-
-                            <span className="mt-1 text-xs font-bold text-status-success">
-                              {Number(
-                                slot.price
-                              ).toLocaleString(
-                                "vi-VN"
-                              )}{" "}
-                              đ
-                            </span>
-
-                            <span className="mt-1 text-[10px] font-medium uppercase tracking-wider">
-                              {badgeText}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </CardContent>
-                */}
               </Card>
             ))}
           </div>

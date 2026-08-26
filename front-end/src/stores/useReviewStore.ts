@@ -79,6 +79,7 @@ export const useCreateReview = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
       queryClient.invalidateQueries({ queryKey: ["user-reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
     },
   });
 }

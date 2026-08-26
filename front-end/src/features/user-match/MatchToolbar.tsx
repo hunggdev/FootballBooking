@@ -81,7 +81,7 @@ export function MatchToolbar({
               data-[state=active]:hover:bg-brand-primary-hover
             "
           >
-            Kèo đã tham gia
+            Kèo đang tham gia
           </TabsTrigger>
 
           <TabsTrigger

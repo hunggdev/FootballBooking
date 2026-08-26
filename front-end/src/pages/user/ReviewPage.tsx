@@ -26,14 +26,23 @@ import type { Review } from "@/types/review";
 import type { FieldType } from "@/types/field";
 import type { Booking } from "@/types/booking";
 import dayjs from "dayjs";
+import { Pagination } from "@/components/common/Pagination";
+
+
+const PAGE_SIZE = 10;
 
 export default function ReviewPage() {
   const [selectedType, setSelectedType] = useState<FieldType | "ALL">("ALL");
   const [selectedFieldId, setSelectedFieldId] = useState<number | "ALL">("ALL");
   const [openReviewDialog, setOpenReviewDialog] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  
 
   const { data: fields = [] } = useFields();
+
+  // Calculate total pages
+  
 
   const {
     data: reviews = [],
@@ -52,8 +61,21 @@ export default function ReviewPage() {
     refetchInterval: 3000,
   });
 
+  
+
+  const totalPages =
+    reviews.length > 0 ? Math.ceil(reviews.length / PAGE_SIZE) : 1;
+
+  // Get reviews for current page
+  const paginatedReviews =
+    reviews.length > 0
+      ? reviews.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+      : [];
+
   const { data: myBookings = [] } = useMyBookings();
-  const unreviewedBookings = myBookings.filter((b) => b.status === "CONFIRMED");
+  const unreviewedBookings = myBookings.filter(
+    (b) => (b.status === "COMPLETED") && !b.review,
+  );
 
   // Calculate statistics
   const totalReviews = reviews.length;
@@ -113,7 +135,7 @@ export default function ReviewPage() {
                 className="bg-brand-primary hover:bg-brand-primary-hover text-white font-semibold shadow-sm"
               >
                 <MessageSquarePlus className="mr-1.5 h-4 w-4" />
-                Viết đánh giá ({unreviewedBookings.length})
+                Viết đánh giá  
               </Button>
             )}
           </div>
@@ -130,6 +152,7 @@ export default function ReviewPage() {
                 { value: "ALL", label: "Tất cả" },
                 { value: "FIVE", label: "Sân 5" },
                 { value: "SEVEN", label: "Sân 7" },
+                { value: "ELEVEN", label: "Sân 11" },
               ] as const
             ).map((tab) => (
               <button
@@ -138,6 +161,7 @@ export default function ReviewPage() {
                 onClick={() => {
                   setSelectedType(tab.value);
                   setSelectedFieldId("ALL");
+                  setCurrentPage(1);
                 }}
                 className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
                   selectedType === tab.value
@@ -155,17 +179,18 @@ export default function ReviewPage() {
             <Filter className="h-4 w-4 text-text-muted" />
             <select
               value={selectedFieldId}
-              onChange={(e) =>
+              onChange={(e) => {
                 setSelectedFieldId(
                   e.target.value === "ALL" ? "ALL" : Number(e.target.value),
-                )
-              }
+                );
+                setCurrentPage(1);
+              }}
               className="rounded-lg border bg-surface px-3 py-1.5 text-xs font-medium text-text-primary focus:outline-hidden focus:ring-1 focus:ring-brand-primary"
             >
               <option value="ALL">Tất cả sân cụ thể</option>
               {filteredFields.map((f) => (
                 <option key={f.fieldId} value={f.fieldId}>
-                  {f.name} ({f.fieldType === "FIVE" ? "Sân 5" : "Sân 7"})
+                  {f.name} ({f.fieldType === "FIVE" ? "Sân 5" : f.fieldType === "SEVEN" ? "Sân 7" : "Sân 11"})
                 </option>
               ))}
             </select>
@@ -205,7 +230,7 @@ export default function ReviewPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {reviews.map((review) => {
+          {paginatedReviews.map((review) => {
             const fieldType = review.field?.fieldType;
             const labelMap: Record<string, string> = {
               FIVE: "Sân 5",
@@ -294,6 +319,17 @@ export default function ReviewPage() {
         </div>
       )}
 
+      {/* Pagination */}
+      {!isLoading && !error && reviews.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={reviews.length}
+          pageSize={PAGE_SIZE}
+        />
+      )}
+
       {/* Review Modal */}
       <Dialog open={openReviewDialog} onOpenChange={setOpenReviewDialog}>
         <DialogContent className="sm:max-w-md border-border bg-elevated text-text-primary">
@@ -310,17 +346,17 @@ export default function ReviewPage() {
 
           {unreviewedBookings.length === 0 ? (
             <p className="text-sm text-text-muted py-4 text-center">
-              Bạn không có trận đấu nào chưa đánh giá.
+              Bạn không có đơn đặt sân nào chưa đánh giá.
             </p>
           ) : (
             <div className="space-y-4">
               {unreviewedBookings.length > 1 && (
                 <div>
                   <label className="mb-1 block text-sm font-semibold">
-                    Chọn sân đấu
+                    Chọn mã đơn đặt sân (Booking ID)
                   </label>
                   <select
-                    className="w-full rounded-md border p-2 text-sm bg-surface"
+                    className="w-full rounded-md border border-border p-2 text-sm bg-surface text-text-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
                     value={selectedBooking?.bookingId}
                     onChange={(e) => {
                       const b = unreviewedBookings.find(
@@ -329,21 +365,18 @@ export default function ReviewPage() {
                       if (b) setSelectedBooking(b);
                     }}
                   >
-                    {unreviewedBookings
-                      .filter(
-                        (b, index, arr) =>
-                          index ===
-                          arr.findIndex(
-                            (x) =>
-                              x.bookingSlots[0]?.fieldSlot.field.name ===
-                              b.bookingSlots[0]?.fieldSlot.field.name,
-                          ),
-                      )
-                      .map((b) => (
+                    {unreviewedBookings.map((b) => {
+                      const fieldName =
+                        b.bookingSlots[0]?.fieldSlot?.field?.name || "Sân bóng";
+                      const dateStr = b.bookingSlots[0]?.bookingDate
+                        ? ` - Ngày ${dayjs(b.bookingSlots[0].bookingDate).format("DD/MM/YYYY")}`
+                        : "";
+                      return (
                         <option key={b.bookingId} value={b.bookingId}>
-                          {b.bookingSlots[0]?.fieldSlot.field.name}
+                          Mã đơn #{b.bookingId} ({fieldName}{dateStr})
                         </option>
-                      ))}
+                      );
+                    })}
                   </select>
                 </div>
               )}
@@ -359,5 +392,6 @@ export default function ReviewPage() {
         </DialogContent>
       </Dialog>
     </div>
+
   );
 }

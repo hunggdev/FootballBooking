@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { Loader2 } from "lucide-react";
 import { SlotButton } from "./SlotButton";
 import type { HoldSlot } from "@/types/field";
@@ -21,6 +23,9 @@ export function SlotGrid({
   bookingDone,
   onSelectSlot,
 }: SlotGridProps) {
+  const navigate = useNavigate();
+  const { user, accessToken } = useAuthStore();
+  const isAuthenticated = Boolean(user || accessToken);
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -69,7 +74,13 @@ export function SlotGrid({
                 isBooked={isBooked}
                 isMaintenance={isMaintenance}
                 disabled={!canSelect || bookingDone}
-                onClick={() => onSelectSlot(slot)}
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    navigate("/signin");
+                    return;
+                  }
+                  onSelectSlot(slot);
+                }}
               />
             );
           })}

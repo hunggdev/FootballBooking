@@ -5,12 +5,14 @@ interface DateNavigatorProps {
   dateLabel: string;
   onPrev: () => void;
   onNext: () => void;
+  disabledPrev?: boolean;
 }
 
 export function DateNavigator({
   dateLabel,
   onPrev,
   onNext,
+  disabledPrev = false,
 }: DateNavigatorProps) {
   return (
     <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-surface p-2">
@@ -18,6 +20,7 @@ export function DateNavigator({
         variant="outline"
         size="sm"
         onClick={onPrev}
+        disabled={disabledPrev}
         className="
           border-border
           bg-surface

@@ -266,11 +266,11 @@ export function MatchFormDialog({
                   <SelectTrigger className="border-border bg-elevated/60 text-text-primary">
                     <SelectValue>
                       {form.costRule === "SPLIT"
-                        ? "Chia đều tiền sân (50/50)"
+                        ? "Chia đều (50/50)"
                         : form.costRule === "LOSER_PAYS"
-                          ? "Thua trả toàn bộ"
+                          ? "Thua trả (100%)"
                           : form.costRule === "WINNER_PAYS"
-                            ? "Thắng trả toàn bộ"
+                            ? "Thắng trả (100%)"
                             : "Thương lượng"}
                     </SelectValue>
                   </SelectTrigger>
@@ -279,19 +279,19 @@ export function MatchFormDialog({
                       value="SPLIT"
                       className="text-text-secondary focus:text-text-primary"
                     >
-                      Chia đều tiền sân (50/50)
+                      Chia đều (50/50)
                     </SelectItem>
                     <SelectItem
                       value="LOSER_PAYS"
                       className="text-text-secondary focus:text-text-primary"
                     >
-                      Thua trả toàn bộ (100%)
+                      Thua trả (100%)
                     </SelectItem>
                     <SelectItem
                       value="WINNER_PAYS"
                       className="text-text-secondary focus:text-text-primary"
                     >
-                      Thắng trả toàn bộ (100%)
+                      Thắng trả (100%)
                     </SelectItem>
                     <SelectItem
                       value="NEGOTIATE"

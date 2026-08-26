@@ -76,7 +76,8 @@ export function InvoiceDetailDialog({ invoice, open, onOpenChange }: Props) {
                   </DialogTitle>
                   <p className="text-xs text-text-muted mt-0.5 flex items-center gap-1">
                     <CalendarDays className="h-3.5 w-3.5" />
-                    Đơn đặt #{invoice.bookingId} • Tạo ngày {formatDateTime(inv.createdAt)}
+                    Đơn đặt #{invoice.bookingId} • Tạo ngày{" "}
+                    {formatDateTime(inv.createdAt)}
                   </p>
                 </div>
               </div>
@@ -151,14 +152,22 @@ export function InvoiceDetailDialog({ invoice, open, onOpenChange }: Props) {
                 <tbody className="divide-y divide-border/40">
                   {slots.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="p-4 text-center text-text-muted">
+                      <td
+                        colSpan={5}
+                        className="p-4 text-center text-text-muted"
+                      >
                         Chưa có thông tin khung giờ
                       </td>
                     </tr>
                   ) : (
                     slots.map((slot, idx) => (
-                      <tr key={slot.bookingSlotId || idx} className="hover:bg-surface-hover/40">
-                        <td className="p-3 font-mono text-text-muted">{idx + 1}</td>
+                      <tr
+                        key={slot.bookingSlotId || idx}
+                        className="hover:bg-surface-hover/40"
+                      >
+                        <td className="p-3 font-mono text-text-muted">
+                          {idx + 1}
+                        </td>
                         <td className="p-3 font-medium text-text-primary">
                           {slot.fieldSlot?.field?.name || "Sân bóng"}
                         </td>
@@ -169,12 +178,13 @@ export function InvoiceDetailDialog({ invoice, open, onOpenChange }: Props) {
                           {slot.fieldSlot
                             ? formatTimeRange(
                                 slot.fieldSlot.starttime,
-                                slot.fieldSlot.endtime
+                                slot.fieldSlot.endtime,
                               )
                             : "--"}
                         </td>
                         <td className="p-3 text-right font-semibold text-text-primary">
-                          {Number(slot.price || 0).toLocaleString("vi-VN")}&nbsp;đ
+                          {Number(slot.price || 0).toLocaleString("vi-VN")}
+                          &nbsp;đ
                         </td>
                       </tr>
                     ))
@@ -197,9 +207,13 @@ export function InvoiceDetailDialog({ invoice, open, onOpenChange }: Props) {
                   <thead>
                     <tr className="border-b border-border bg-elevated/60 text-text-muted">
                       <th className="p-3 font-semibold">Tên dịch vụ</th>
-                      <th className="p-3 font-semibold text-center">Số lượng</th>
+                      <th className="p-3 font-semibold text-center">
+                        Số lượng
+                      </th>
                       <th className="p-3 font-semibold text-right">Đơn giá</th>
-                      <th className="p-3 font-semibold text-right">Thành tiền</th>
+                      <th className="p-3 font-semibold text-right">
+                        Thành tiền
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">
@@ -207,7 +221,10 @@ export function InvoiceDetailDialog({ invoice, open, onOpenChange }: Props) {
                       const qty = item.quantity || 1;
                       const price = Number(item.price || 0);
                       return (
-                        <tr key={item.serviceId || idx} className="hover:bg-surface-hover/40">
+                        <tr
+                          key={item.serviceId || idx}
+                          className="hover:bg-surface-hover/40"
+                        >
                           <td className="p-3 font-medium text-text-primary">
                             {item.name || item.service?.name || "Dịch vụ"}
                           </td>
@@ -247,7 +264,8 @@ export function InvoiceDetailDialog({ invoice, open, onOpenChange }: Props) {
               <div className="flex justify-between text-text-secondary">
                 <span>Tổng tiền dịch vụ:</span>
                 <span className="font-medium text-text-primary">
-                  {Number(inv.serviceAmount || 0).toLocaleString("vi-VN")}&nbsp;đ
+                  {Number(inv.serviceAmount || 0).toLocaleString("vi-VN")}
+                  &nbsp;đ
                 </span>
               </div>
 

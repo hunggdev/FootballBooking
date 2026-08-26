@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PageIntro } from "./PageIntro";
 import { MatchToolbar } from "./MatchToolbar";
 import { MatchesTable } from "./MatchTable";
@@ -15,6 +16,7 @@ import type {
 import type { AxiosError } from "axios";
 import { MatchDetailDialog } from "./MatchDetailDialog";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { toast } from "sonner";
 
 const PAGE_SIZE = 10;
 
@@ -56,6 +58,7 @@ export default function ManageMatch() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const user = useAuthStore((s) => s.user);
+  const navigate = useNavigate();
 
   const matches: Match[] = data?.matches ?? [];
 
@@ -88,6 +91,10 @@ export default function ManageMatch() {
   const totalPages = Math.max(1, Math.ceil(filteredMatches.length / PAGE_SIZE));
 
   const handleClickJoin = (matchId: number) => {
+    if (!user) {
+      navigate("/signin");
+      return;
+    }
     setSelectedMatchId(matchId);
     setDialogJoinOpen(true);
   };
@@ -116,6 +123,9 @@ export default function ManageMatch() {
     if (!ok) return;
     setListError(null);
     deleteMatch.mutate(match.matchId, {
+      onSuccess() {
+        toast.success("Xóa kèo đấu thành công");
+      },
       onError(error) {
         setListError(
           getErrorMessage(
@@ -134,6 +144,9 @@ export default function ManageMatch() {
     if (!ok) return;
     setListError(null);
     cancelMatch.mutate(match.matchId, {
+      onSuccess() {
+        toast.success("Hủy tham gia kèo đấu thành công");
+      },
       onError(error) {
         setListError(
           getErrorMessage(
@@ -157,6 +170,7 @@ export default function ManageMatch() {
       onSuccess() {
         setDialogJoinOpen(false);
         setSelectedMatchId(null);
+        toast.success("Đã tham gia kèo đấu thành công");
       },
 
       onError(error) {
@@ -185,6 +199,7 @@ export default function ManageMatch() {
           onSuccess() {
             setDialogOpen(false);
             setEditingMatch(null);
+            toast.success("Cập nhật kèo đấu thành công");
           },
 
           onError(error) {
@@ -204,6 +219,7 @@ export default function ManageMatch() {
       {
         onSuccess() {
           setDialogOpen(false);
+          toast.success("Tạo kèo đấu thành công");
         },
         onError(error) {
           setFormError(
