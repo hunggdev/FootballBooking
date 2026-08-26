@@ -14,9 +14,7 @@ export const userRoutes: RouteObject = {
   path: "/user",
   element: <UserLayout />, // Đưa Layout ra ngoài làm khung chung
   children: [
-    // ==========================================
     // 1. PUBLIC ROUTES (Khách vãng lai chưa login vẫn xem được) 
-    // ==========================================
     { path: "", element: <HomePage /> },
     { path: "booking", element: <FieldTypePage /> },
     { path: "booking/:typeSlug", element: <FieldListPage /> },
@@ -24,10 +22,7 @@ export const userRoutes: RouteObject = {
     { path: "match", element: <MatchPage /> },
     { path: "reviews", element: <ReviewPage /> },
 
-
-    // ==========================================
-    // 2. PROTECTED ROUTES (Bắt buộc đăng nhập mới truy cập được)
-    // ==========================================
+    // 2. PROTECTED ROUTES (Bắt buộc đăng nhập mới truy cập được) 
     {
       element: <ProtectedRoute allowedRoles={["admin", "customer"]} />,
       children: [

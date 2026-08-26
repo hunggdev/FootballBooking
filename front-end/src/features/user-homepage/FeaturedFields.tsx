@@ -13,10 +13,11 @@ export function FeaturedFields() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 8;
 
-  const totalItems = fields.length;
+  const activeFields = fields.filter((field) => field.status === "ACTIVE");
+  const totalItems = activeFields.length;
   const totalPages = Math.ceil(totalItems / pageSize);
 
-  const paginatedFields = fields.slice(
+  const paginatedFields = activeFields.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );

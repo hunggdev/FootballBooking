@@ -10,6 +10,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 import type { Match } from "@/types/match";
 import { fieldTypeBadge, fieldTypeLabel } from "@/types/field";
@@ -75,6 +77,10 @@ export function MatchesTable({
   onCancel,
   filter,
 }: Props) {
+  const navigate = useNavigate();
+  const { user, accessToken } = useAuthStore();
+  const isAuthenticated = Boolean(user || accessToken);
+
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
 
@@ -142,6 +148,10 @@ export function MatchesTable({
                 const upperStatus = (match.status || "").toUpperCase();
                 const upperType = (match.fieldType || "").toUpperCase();
                 const upperCost = (match.costRule || "").toUpperCase();
+                const isOwner = Boolean(
+                  match.isMine ||
+                  (user && (String(match.userId) === String(user.userId) || String(match.user?.userId) === String(user.userId)))
+                );
                 return (
                   <TableRow
                     key={match.matchId}
@@ -236,8 +246,15 @@ export function MatchesTable({
                         {filter === "OPEN" && (
                           <Button
                             size="sm"
-                            onClick={() => onSelect?.(match.matchId)}
-                            className="bg-brand-primary text-white hover:bg-brand-primary-hover"
+                            disabled={isOwner}
+                            onClick={() => {
+                              if (!isAuthenticated) {
+                                navigate("/signin");
+                                return;
+                              }
+                              onSelect?.(match.matchId);
+                            }}
+                            className="bg-brand-primary text-white hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             Tham gia
                           </Button>

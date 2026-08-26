@@ -73,7 +73,8 @@ export function GenerateInvoiceDialog({
           <FieldGroup className="space-y-3">
             <FieldWrapper>
               <FieldLabel className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-                Mã đơn đặt sân (Booking ID) <span className="text-status-danger">*</span>
+                Mã đơn đặt sân (Booking ID){" "}
+                <span className="text-status-danger">*</span>
               </FieldLabel>
               <Input
                 id="bookingId"
@@ -88,7 +89,8 @@ export function GenerateInvoiceDialog({
             <div className="rounded-xl border border-border bg-elevated/30 p-3.5 flex items-start gap-2.5 text-xs text-text-secondary">
               <Info className="h-4 w-4 text-brand-primary shrink-0 mt-0.5" />
               <p>
-                Hệ thống sẽ tự động tổng hợp tiền sân và các dịch vụ phát sinh từ đơn đặt sân này để xuất hóa đơn.
+                Hệ thống sẽ tự động tổng hợp tiền sân và các dịch vụ phát sinh
+                từ đơn đặt sân này để xuất hóa đơn.
               </p>
             </div>
           </FieldGroup>

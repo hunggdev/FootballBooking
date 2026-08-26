@@ -30,11 +30,11 @@ const statusConfig: Record<
   { label: string; className: string }
 > = {
   OPEN: {
-    label: "Đang tìm đối",
+    label: "Đang tìm",
     className: "border-status-success/20 bg-status-success-bg text-status-success",
   },
   MATCHED: {
-    label: "Đã ghép đối",
+    label: "Đã ghép",
     className: "border-status-warning/20 bg-status-warning-bg text-status-warning",
   },
   FINISHED: {
@@ -256,7 +256,7 @@ export function MatchDetailDialog({
               {/* Match Criteria & Specs */}
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted mb-3">
-                  Thông số & Điều kiện ghép đối
+                  Thông số & Điều kiện ghép kèo
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {/* Field Type */}

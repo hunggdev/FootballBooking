@@ -142,7 +142,7 @@ export function BookingTable({ bookings, onView, onEdit, onDelete }: Props) {
                     >
                       {/* Mã đơn */}
                       <TableCell className="text-center">
-                        <span className="font-mono text-xs font-semibold text-text-primary">
+                        <span className="text-center text-xs font-medium text-text-muted">
                           #{booking.bookingId}
                         </span>
                       </TableCell>

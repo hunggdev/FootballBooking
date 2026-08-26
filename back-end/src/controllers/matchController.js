@@ -1,6 +1,8 @@
 import { prisma } from "../config/database.js";
 import bcrypt from "bcrypt";
 import { createNotification } from "../libs/notifications.js";
+import { sendEmail } from "../utils/sendEmail.js";
+
 
 const ACCESS_TOKEN_TTL = 1 * 24 * 60 * 60 * 1000;
 const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000;
@@ -17,9 +19,7 @@ export const getMatches = async (req, res) => {
     const currentUserId = req.user?.userId;
     const showAll = req.query.all === "1";
     const matches = await prisma.match.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: [{ status: "asc" }, { createdAt: "desc" }],
 
       include: {
         user: {
@@ -50,7 +50,7 @@ export const getMatches = async (req, res) => {
       ...match,
       isMine: Boolean(currentUserId && match.userId === currentUserId),
       isJoined: Boolean(
-        currentUserId && match.participants?.userId === currentUserId
+        currentUserId && match.participants?.userId === currentUserId,
       ),
     }));
     return res.status(200).json({
@@ -116,7 +116,7 @@ export const getMatchById = async (req, res) => {
       ...match,
       isMine: Boolean(currentUserId && match.userId === currentUserId),
       isJoined: Boolean(
-        currentUserId && match.participants?.userId === currentUserId
+        currentUserId && match.participants?.userId === currentUserId,
       ),
     };
 
@@ -299,7 +299,7 @@ export const deleteMatch = async (req, res) => {
     });
 
     if (customer.role !== "ADMIN") {
-      await createNotification({ 
+      await createNotification({
         recipientId: 1,
         actorId: userId,
         type: "MATCH_CANCELLED",
@@ -310,9 +310,8 @@ export const deleteMatch = async (req, res) => {
       }).then(() => {
         io.to("user:1").emit("user:notification", { userId: 1 });
       });
-    }
-    else{
-      const id = match?.userId
+    } else {
+      const id = match?.userId;
       await createNotification({
         recipientId: id,
         actorId: 1,
@@ -322,13 +321,14 @@ export const deleteMatch = async (req, res) => {
         entityType: "MATCH",
         entityId: matchId,
       }).then(() => {
-        io.to(`user:${id}`).emit("user:notification", { userId:  id});
+        io.to(`user:${id}`).emit("user:notification", { userId: id });
       });
     }
 
     const joinerId = match.participants?.userId;
-    const actorId = (customer.role !=="ADMIN") ? userId : 1;
-    const actorName = (customer.role !=="ADMIN") ? req.user.fullName : "Quản trị viên";
+    const actorId = customer.role !== "ADMIN" ? userId : 1;
+    const actorName =
+      customer.role !== "ADMIN" ? req.user.fullName : "Quản trị viên";
 
     if (joinerId) {
       await createNotification({
@@ -508,6 +508,22 @@ export const joinMatch = async (req, res) => {
       io.to("user:1").emit("user:notification", {
         userId: 1,
       });
+    });
+
+    const url = `${process.env.CLIENT_URL || "http://localhost:5173"}/user/match`;
+
+    const messageHtml = `
+            <h2>Xin chào ${match.user.fullName},</h2>
+            <p>Có người mới tham gia trận đấu của bạn. Vui lòng click vào link bên dưới để xem chi tiết trận đấu:</p>
+            <a href="${url}" style="padding: 10px 20px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px;">Xem chi tiết trận đấu</a>
+            <br/><br/>
+            <p>Hoặc copy link này dán vào trình duyệt: <br> <a href="${url}">${url}</a></p>
+        `;
+
+    await sendEmail({
+      to: match.user.email,
+      subject: "CÓ NGƯỜI MỚI THAM GIA TRẬN ĐẤU CỦA BẠN",
+      html: messageHtml,
     });
 
     return res.status(200).json({

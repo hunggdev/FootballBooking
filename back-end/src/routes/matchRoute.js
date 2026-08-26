@@ -4,11 +4,11 @@ import { optionalAuth, protectedRoute, requireAdmin } from "../middlewares/authM
 const router = express.Router();
 
 router.get("/", optionalAuth, getMatches);
+router.get("/stats", protectedRoute, requireAdmin, statsMatch);
 router.get("/:id", optionalAuth, getMatchById);
 
 router.use(protectedRoute); 
 
-router.get("/stats", requireAdmin, statsMatch);
 router.post("/", createMatch);
 router.post("/:id/join", joinMatch);
 router.delete("/:id/join", cancelJoinMatch);

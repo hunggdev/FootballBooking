@@ -12,6 +12,9 @@ export const getFields = async (req, res) => {
             fieldType: type,
           }
         : {},
+      orderBy: {
+        status: "asc",
+      },
     });
 
     return res.status(200).json({

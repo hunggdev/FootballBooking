@@ -13,22 +13,22 @@ import { useAuthStore } from "@/stores/useAuthStore";
 const liveUpdates = [
   {
     id: "1",
-    text: "#KH1032 vừa đặt Sân 5A lúc 18:00 - 19:00",
+    text: "#20 hủy giữ Sân A lúc 18:00 - 19:00",
     time: "2 phút trước",
   },
   {
     id: "2",
-    text: "#KH0987 vừa giữ chỗ Sân 7B lúc 20:00 - 21:00",
+    text: "#12 vừa giữ chỗ Sân E lúc 20:00 - 21:00",
     time: "5 phút trước",
   },
   {
     id: "3",
-    text: "#KH1104 vừa xác nhận đặt cọc thành công",
+    text: "#1 vừa xác nhận đặt cọc thành công", 
     time: "8 phút trước",
   },
   {
     id: "4",
-    text: "Hệ thống sân bóng mở cửa đón khách từ 07:00 - 22:00",
+    text: "Hệ thống sân bóng mở cửa đón khách từ 05:00 - 23:00",
     time: "",
   },
 ];
@@ -89,7 +89,7 @@ export function TopBar() {
 
           <div className="flex items-center gap-1.5">
             <Clock className="h-3 w-3 text-brand-accent" />
-            <span>07:00 - 22:00</span>
+            <span>05:00 - 23:00</span>
           </div>
 
           {isAdmin && (

@@ -20,9 +20,11 @@ export const getCustomers = async (req, res) => {
       where: {
         role: "CUSTOMER",
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: [
+        {
+          createdAt: "desc",
+        },
+      ],
       select: {
         userId: true,
         fullName: true,

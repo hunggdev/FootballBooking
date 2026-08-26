@@ -174,6 +174,11 @@ export default function FieldDetail() {
   }, [holds]);
 
   const handleSelectSlot = async (slot: HoldSlot) => {
+    if (!user) {
+      navigate("/signin");
+      return;
+    }
+
     const formattedDate = slot.bookingDate.split("T")[0];
 
     const isMine = Boolean(slot.isMyHold);
@@ -476,6 +481,8 @@ export default function FieldDetail() {
           name={field.name}
           description={field.description}
           fieldType={field.fieldType}
+          mapImage="../../../images/map.png"
+          address="Nguyễn Trãi, Phường Tây Lộc, Thành phố Huế" 
         />
 
         <BookingTypeTabs
@@ -491,6 +498,7 @@ export default function FieldDetail() {
 
               <DateNavigator
                 dateLabel={dateLabel}
+                disabledPrev={dayjs(selectedDate).isSame(dayjs(), "day")}
                 onPrev={() =>
                   changeDate(
                     dayjs(selectedDate)

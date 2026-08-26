@@ -183,6 +183,13 @@ export interface Booking {
   bookingServices: BookingServiceItem[];
   user: User;
   field: Field;
+  review?: {
+    reviewId: number;
+    rating: number;
+    comment?: string | null;
+    reply?: string | null;
+    createdAt?: string;
+  } | null;
 }
 
 export interface PaymentData {

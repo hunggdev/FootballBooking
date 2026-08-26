@@ -191,12 +191,12 @@ export function MatchFormDialog({
               </div>
               <div>
                 <DialogTitle className="text-xl font-bold tracking-tight text-text-primary">
-                  {isEditing ? "Sửa thông tin kèo đấu" : "Tạo kèo tìm đối mới"}
+                  {isEditing ? "Sửa thông tin kèo đấu" : "Tạo kèo tìm đối thủ mới"}
                 </DialogTitle>
                 <p className="text-xs text-text-muted mt-0.5">
                   {isEditing
                     ? "Cập nhật yêu cầu và thông tin giao lưu bóng đá"
-                    : "Đăng bài tìm đối tác thi đấu bóng đá nhanh chóng"}
+                    : "Đăng bài tìm đối thủ thi đấu bóng đá nhanh chóng"} 
                 </p>
               </div>
             </div>
@@ -224,7 +224,13 @@ export function MatchFormDialog({
                   onValueChange={(value) => updateMatch("fieldType", value ?? "FIVE")}
                 >
                   <SelectTrigger className="border-border bg-elevated/60 text-text-primary">
-                    <SelectValue placeholder="Chọn loại sân" />
+                    <SelectValue>
+                      {form.fieldType === "FIVE"
+                        ? "Sân 5 người"
+                        : form.fieldType === "SEVEN"
+                          ? "Sân 7 người"
+                          : "Sân 11 người"}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="border-border bg-elevated text-text-primary">
                     <SelectItem value="FIVE" className="text-text-secondary focus:text-text-primary">
@@ -249,11 +255,19 @@ export function MatchFormDialog({
                   onValueChange={(value) => updateMatch("costRule", value as CostRule)}
                 >
                   <SelectTrigger className="border-border bg-elevated/60 text-text-primary">
-                    <SelectValue placeholder="Chọn hình thức" />
+                    <SelectValue>
+                      {form.costRule === "LOSER_PAYS"
+                        ? "Thua trả 100%"
+                        : form.costRule === "SPLIT"
+                          ? "Chia đều (50/50)"
+                          : form.costRule === "WINNER_PAYS"
+                            ? "Thắng trả 100%"
+                            : "Thương lượng"}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="border-border bg-elevated text-text-primary">
                     <SelectItem value="SPLIT" className="text-text-secondary focus:text-text-primary">
-                      Chia đều tiền sân (50/50)
+                      Chia đều (50/50)
                     </SelectItem>
                     <SelectItem value="LOSER_PAYS" className="text-text-secondary focus:text-text-primary">
                       Thua trả 100%
@@ -324,7 +338,7 @@ export function MatchFormDialog({
               />
             </FieldWrapper>
 
-            {/* Trạng thái khi chỉnh sửa */}
+            {/* Trạng thái khi chỉnh sửa
             {isEditing && (
               <FieldWrapper>
                 <FieldLabel className="text-xs font-semibold uppercase tracking-wider text-text-muted">
@@ -339,10 +353,10 @@ export function MatchFormDialog({
                   </SelectTrigger>
                   <SelectContent className="border-border bg-elevated text-text-primary">
                     <SelectItem value="OPEN" className="text-text-secondary focus:text-text-primary">
-                      Đang mở tìm đối
+                      Đang mở
                     </SelectItem>
                     <SelectItem value="MATCHED" className="text-text-secondary focus:text-text-primary">
-                      Đã ghép đối
+                      Đã ghép
                     </SelectItem>
                     <SelectItem value="FINISHED" className="text-text-secondary focus:text-text-primary">
                       Đã kết thúc
@@ -353,7 +367,7 @@ export function MatchFormDialog({
                   </SelectContent>
                 </Select>
               </FieldWrapper>
-            )}
+            )} */}
           </FieldGroup>
         </div>
 
@@ -383,7 +397,7 @@ export function MatchFormDialog({
             ) : isEditing ? (
               "Lưu thay đổi"
             ) : (
-              "Đăng tin tìm đối"
+              "Tạo kèo đấu"
             )}
           </Button>
         </div>

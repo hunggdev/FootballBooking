@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Calendar,
   Clock,
@@ -33,7 +33,11 @@ import {
 import FeedbackForm from "@/features/user-review/FeedbackForm";
 import { CancelBookingDialog } from "@/features/user-booking/CancelBookingDialog";
 import type { Booking, BookingSlot } from "@/types/booking";
+import { Pagination } from "@/components/common/Pagination";
+
 import { formatTimeRange } from "@/lib/utils";
+
+const PAGE_SIZE = 10;
 
 function formatCurrency(value: number | string) {
   return `${Math.round(Number(value)).toLocaleString("vi-VN")} đ`;
@@ -60,7 +64,7 @@ const STATUS_CONFIG: Record<
     badgeClass:
       "border-status-danger/25 bg-status-danger-bg text-status-danger",
     icon: XCircle,
-  }
+  },
 };
 
 // ── Single Booking Card ────────────────────────────────────────────────────
@@ -78,12 +82,14 @@ function BookingCard({
   const [expanded, setExpanded] = useState(false);
 
   const firstSlot = booking.bookingSlots[0];
-  const fieldName = firstSlot?.fieldSlot?.field?.name ?? `Sân #${booking.bookingId}`; 
+  const fieldName =
+    firstSlot?.fieldSlot?.field?.name ?? `Sân #${booking.bookingId}`;
   const fieldType = firstSlot?.fieldSlot?.field?.fieldType;
   const cfg = STATUS_CONFIG[booking.status] ?? STATUS_CONFIG.CONFIRMED;
   const StatusIcon = cfg.icon;
-  const isConfirmed = booking.status === "CONFIRMED";
+  const isCompleted = booking.status === "COMPLETED";
   const isCancellable = booking.status === "CONFIRMED";
+  const hasReviewed = Boolean(booking.review);
 
   const fieldTypeLabel: Record<string, string> = {
     FIVE: "Sân 5",
@@ -102,7 +108,9 @@ function BookingCard({
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-sm font-bold text-text-primary truncate">{fieldName}</p>
+              <p className="text-sm font-bold text-text-primary truncate">
+                {fieldName}
+              </p>
               {fieldType && (
                 <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md border border-brand-primary/20 bg-brand-primary/10 text-brand-primary shrink-0">
                   {fieldTypeLabel[fieldType] ?? fieldType}
@@ -122,7 +130,10 @@ function BookingCard({
 
         {/* Right: status badge + invoice button */}
         <div className="flex items-center gap-2 shrink-0">
-          <Badge variant="outline" className={`gap-1 px-2.5 py-1 text-xs font-semibold ${cfg.badgeClass}`}>
+          <Badge
+            variant="outline"
+            className={`gap-1 px-2.5 py-1 text-xs font-semibold ${cfg.badgeClass}`}
+          >
             <StatusIcon className="h-3.5 w-3.5" />
             {cfg.label}
           </Badge>
@@ -165,7 +176,10 @@ function BookingCard({
         <div className="flex items-center gap-1.5 text-xs text-text-secondary">
           <Clock className="h-3.5 w-3.5 text-brand-primary shrink-0" />
           <span>
-            {formatTimeRange(firstSlot?.fieldSlot?.starttime, firstSlot?.fieldSlot?.endtime)}
+            {formatTimeRange(
+              firstSlot?.fieldSlot?.starttime,
+              firstSlot?.fieldSlot?.endtime,
+            )}
           </span>
         </div>
         {booking.bookingSlots.length > 1 && (
@@ -225,7 +239,10 @@ function BookingCard({
                       {dayjs(slot.bookingDate).format("DD/MM/YYYY")}
                     </span>
                     <span className="text-center text-text-secondary">
-                      {formatTimeRange(slot.fieldSlot?.starttime, slot.fieldSlot?.endtime)}
+                      {formatTimeRange(
+                        slot.fieldSlot?.starttime,
+                        slot.fieldSlot?.endtime,
+                      )}
                     </span>
                     <span className="text-right font-semibold text-brand-accent">
                       {formatCurrency(slot.price)}
@@ -243,16 +260,17 @@ function BookingCard({
                 Dịch vụ kèm theo
               </p>
               <div className="rounded-lg border border-border overflow-hidden">
-                <div className="grid grid-cols-3 bg-elevated/60 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+                <div className="grid grid-cols-4 bg-elevated/60 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
                   <span className="col-span-1">Dịch vụ</span>
                   <span className="text-center">Số lượng</span>
+                  <span className="text-center">Đơn giá</span>
                   <span className="text-right">Thành tiền</span>
                 </div>
                 <div className="divide-y divide-border/40">
                   {booking.bookingServices.map((svc) => (
                     <div
                       key={svc.bookingServiceId}
-                      className="grid grid-cols-3 px-3 py-2.5 text-xs bg-surface hover:bg-surface-hover transition-colors"
+                      className="grid grid-cols-4 px-3 py-2.5 text-xs bg-surface hover:bg-surface-hover transition-colors"
                     >
                       <div className="flex items-center gap-1.5 col-span-1">
                         <Package className="h-3 w-3 text-brand-accent shrink-0" />
@@ -260,7 +278,12 @@ function BookingCard({
                           {svc.service?.name}
                         </span>
                       </div>
-                      <span className="text-center text-text-secondary">x{svc.quantity}</span>
+                      <span className="text-center text-text-secondary">
+                        x{svc.quantity}
+                      </span>
+                      <span className="text-center text-text-secondary">
+                        {formatCurrency(svc.price)}
+                      </span>
                       <span className="text-right font-semibold text-text-primary">
                         {formatCurrency(svc.price * svc.quantity)}
                       </span>
@@ -276,7 +299,9 @@ function BookingCard({
             <div className="flex justify-between text-xs text-text-secondary">
               <span>Tiền thuê sân</span>
               <span className="font-semibold text-text-primary">
-                {formatCurrency(booking.invoice?.fieldAmount ?? booking.totalPrice)}
+                {formatCurrency(
+                  booking.invoice?.fieldAmount ?? booking.totalPrice,
+                )}
               </span>
             </div>
             {booking.bookingServices.length > 0 && (
@@ -291,7 +316,9 @@ function BookingCard({
             <div className="flex justify-between text-sm font-bold">
               <span className="text-text-primary">Tổng cộng</span>
               <span className="text-brand-accent text-base">
-                {formatCurrency(booking.invoice?.totalAmount ?? booking.totalPrice)}
+                {formatCurrency(
+                  booking.invoice?.totalAmount ?? booking.totalPrice,
+                )}
               </span>
             </div>
             <div className="flex justify-between text-xs">
@@ -303,29 +330,41 @@ function BookingCard({
             <div className="flex justify-between text-xs">
               <span className="text-text-muted">Còn thanh toán tại sân</span>
               <span className="font-semibold text-status-warning">
-                {formatCurrency(booking.invoice?.remainAmount ?? (booking.totalPrice - booking.depositAmount))}
+                {formatCurrency(
+                  booking.invoice?.remainAmount ??
+                    booking.totalPrice - booking.depositAmount,
+                )}
               </span>
             </div>
           </div>
 
           {/* Review CTA */}
-          {isConfirmed && (
+          {isCompleted && (
             <div className="flex items-center justify-between rounded-xl border border-brand-primary/20 bg-brand-primary/5 px-4 py-3 gap-3">
               <div>
                 <p className="text-xs font-semibold text-text-primary">
-                  Đánh giá chất lượng sân bóng
+                  {hasReviewed
+                    ? "Đã đánh giá chất lượng sân"
+                    : "Đánh giá chất lượng sân bóng"}
                 </p>
                 <p className="text-xs text-text-muted mt-0.5">
-                  Chia sẻ trải nghiệm mặt sân, ánh sáng và chất lượng phục vụ.
+                  {hasReviewed
+                    ? "Bạn đã gửi đánh giá cho đơn đặt sân này."
+                    : "Chia sẻ trải nghiệm mặt sân, ánh sáng và chất lượng phục vụ."}
                 </p>
               </div>
               <Button
                 size="sm"
+                disabled={hasReviewed}
                 onClick={() => onReview(booking)}
-                className="bg-brand-primary hover:bg-brand-primary-hover text-white font-semibold shrink-0 shadow-[0_2px_8px_rgba(34,165,90,0.3)] cursor-pointer"
+                className={`font-semibold shrink-0 ${
+                  hasReviewed
+                    ? "bg-surface-hover text-text-muted border border-border/60 shadow-none cursor-not-allowed opacity-60"
+                    : "bg-brand-primary hover:bg-brand-primary-hover text-white shadow-[0_2px_8px_rgba(34,165,90,0.3)] cursor-pointer"
+                }`}
               >
                 <MessageSquarePlus className="h-4 w-4 mr-1.5" />
-                Đánh giá
+                {hasReviewed ? "Đã đánh giá" : "Đánh giá"}
               </Button>
             </div>
           )}
@@ -349,12 +388,25 @@ function InvoiceDialog({
   const inv = booking.invoice;
 
   const invoiceStatusConfig: Record<string, { label: string; cls: string }> = {
-    PAID: { label: "Đã thanh toán", cls: "border-status-success/25 bg-status-success-bg text-status-success" },
-    PENDING: { label: "Chờ thanh toán", cls: "border-status-warning/25 bg-status-warning-bg text-status-warning" },
-    DEPOSITED: { label: "Đã đặt cọc", cls: "border-status-warning/25 bg-status-warning-bg text-status-warning" },
-    CANCELLED: { label: "Đã hủy", cls: "border-status-danger/25 bg-status-danger-bg text-status-danger" },
+    PAID: {
+      label: "Đã thanh toán",
+      cls: "border-status-success/25 bg-status-success-bg text-status-success",
+    },
+    PENDING: {
+      label: "Chờ thanh toán",
+      cls: "border-status-warning/25 bg-status-warning-bg text-status-warning",
+    },
+    DEPOSITED: {
+      label: "Đã đặt cọc",
+      cls: "border-status-warning/25 bg-status-warning-bg text-status-warning",
+    },
+    CANCELLED: {
+      label: "Đã hủy",
+      cls: "border-status-danger/25 bg-status-danger-bg text-status-danger",
+    },
   };
-  const invStatus = invoiceStatusConfig[inv.status] ?? invoiceStatusConfig.PENDING;
+  const invStatus =
+    invoiceStatusConfig[inv.status] ?? invoiceStatusConfig.PENDING;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -396,7 +448,10 @@ function InvoiceDialog({
                       {dayjs(slot.bookingDate).format("DD/MM/YYYY")}
                     </span>
                     <span className="text-text-secondary">
-                      {formatTimeRange(slot.fieldSlot?.starttime, slot.fieldSlot?.endtime)}
+                      {formatTimeRange(
+                        slot.fieldSlot?.starttime,
+                        slot.fieldSlot?.endtime,
+                      )}
                     </span>
                     <span className="font-semibold text-text-primary">
                       {formatCurrency(slot.price)}
@@ -420,7 +475,9 @@ function InvoiceDialog({
                       key={svc.bookingServiceId}
                       className="flex items-center justify-between px-3 py-2 text-xs bg-surface hover:bg-surface-hover"
                     >
-                      <span className="text-text-secondary font-medium">{svc.service?.name}</span>
+                      <span className="text-text-secondary font-medium">
+                        {svc.service?.name}
+                      </span>
                       <span className="text-text-muted">x{svc.quantity}</span>
                       <span className="font-semibold text-text-primary">
                         {formatCurrency(svc.price * svc.quantity)}
@@ -436,24 +493,36 @@ function InvoiceDialog({
           <div className="rounded-lg border border-border bg-elevated/40 px-4 py-3 space-y-2.5">
             <div className="flex justify-between text-xs text-text-secondary">
               <span>Tiền thuê sân</span>
-              <span className="font-semibold text-text-primary">{formatCurrency(inv.fieldAmount)}</span>
+              <span className="font-semibold text-text-primary">
+                {formatCurrency(inv.fieldAmount)}
+              </span>
             </div>
             <div className="flex justify-between text-xs text-text-secondary">
               <span>Tiền dịch vụ</span>
-              <span className="font-semibold text-text-primary">{formatCurrency(inv.serviceAmount)}</span>
+              <span className="font-semibold text-text-primary">
+                {formatCurrency(inv.serviceAmount)}
+              </span>
             </div>
             <Separator className="bg-border/50" />
             <div className="flex justify-between text-sm font-bold">
               <span className="text-text-primary">Tổng cộng</span>
-              <span className="text-brand-accent text-base">{formatCurrency(inv.totalAmount)}</span>
+              <span className="text-brand-accent text-base">
+                {formatCurrency(inv.totalAmount)}
+              </span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-text-muted">Đã đặt cọc</span>
-              <span className="font-semibold text-status-success">{formatCurrency(inv.deposit)}</span>
+              <span className="font-semibold text-status-success">
+                {formatCurrency(inv.deposit)}
+              </span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-text-muted">Còn lại thanh toán tại sân</span>
-              <span className="font-semibold text-status-warning">{formatCurrency(inv.remainAmount)}</span>
+              <span className="text-text-muted">
+                Còn lại thanh toán tại sân
+              </span>
+              <span className="font-semibold text-status-warning">
+                {formatCurrency(inv.remainAmount)}
+              </span>
             </div>
           </div>
 
@@ -464,7 +533,9 @@ function InvoiceDialog({
               {invStatus.label}
             </Badge>
             <span className="text-xs text-text-muted">
-              {inv.createdAt ? dayjs(inv.createdAt).format("DD/MM/YYYY HH:mm") : "—"}
+              {inv.createdAt
+                ? dayjs(inv.createdAt).format("DD/MM/YYYY HH:mm")
+                : "—"}
             </span>
           </div>
         </div>
@@ -478,14 +549,33 @@ export default function UserHistoryPage() {
   const { data: bookings = [], isLoading, error } = useMyBookings();
   const cancelBookingMutation = useCancelBooking();
 
-  const [selectedForReview, setSelectedForReview] = useState<Booking | null>(null);
-  const [selectedForInvoice, setSelectedForInvoice] = useState<Booking | null>(null);
-  const [selectedForCancel, setSelectedForCancel] = useState<Booking | null>(null);
+  const [selectedForReview, setSelectedForReview] = useState<Booking | null>(
+    null,
+  );
+  const [selectedForInvoice, setSelectedForInvoice] = useState<Booking | null>(
+    null,
+  );
+  const [selectedForCancel, setSelectedForCancel] = useState<Booking | null>(
+    null,
+  );
   const [cancelError, setCancelError] = useState<string | null>(null);
 
-  const confirmedCount = bookings.filter((b) => b.status === "CONFIRMED").length;
-  const completedCount = bookings.filter((b) => b.status === "COMPLETED").length;
-  const cancelledCount = bookings.filter((b) => b.status === "CANCELLED").length;
+  const confirmedCount = bookings.filter(
+    (b) => b.status === "CONFIRMED",
+  ).length;
+  const completedCount = bookings.filter(
+    (b) => b.status === "COMPLETED",
+  ).length;
+  const cancelledCount = bookings.filter(
+    (b) => b.status === "CANCELLED",
+  ).length;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.max(1, Math.ceil(bookings.length / PAGE_SIZE));
+  const paginatedBookings = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return bookings.slice(start, start + PAGE_SIZE);
+  }, [bookings, currentPage]);
 
   const handleCancelConfirm = (cancelReason: string) => {
     if (!selectedForCancel) return;
@@ -498,11 +588,11 @@ export default function UserHistoryPage() {
         },
         onError: (err: unknown) => {
           const msg =
-            (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-            "Hủy booking thất bại. Vui lòng thử lại.";
+            (err as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message ?? "Hủy booking thất bại. Vui lòng thử lại.";
           setCancelError(msg);
         },
-      }
+      },
     );
   };
   return (
@@ -529,15 +619,21 @@ export default function UserHistoryPage() {
         {!isLoading && !error && bookings.length > 0 && (
           <div className="grid grid-cols-3 divide-x divide-border/50 bg-base/30">
             <div className="flex flex-col items-center py-4 px-2">
-              <p className="text-2xl font-bold text-text-primary">{bookings.length}</p>
+              <p className="text-2xl font-bold text-text-primary">
+                {bookings.length}
+              </p>
               <p className="text-xs text-text-muted mt-0.5">Tổng đặt sân</p>
             </div>
             <div className="flex flex-col items-center py-4 px-2">
-              <p className="text-2xl font-bold text-status-success">{confirmedCount}</p>
+              <p className="text-2xl font-bold text-status-success">
+                {confirmedCount}
+              </p>
               <p className="text-xs text-text-muted mt-0.5">Đang xác nhận</p>
             </div>
             <div className="flex flex-col items-center py-4 px-2">
-              <p className="text-2xl font-bold text-status-info">{completedCount}</p>
+              <p className="text-2xl font-bold text-status-info">
+                {completedCount}
+              </p>
               <p className="text-xs text-text-muted mt-0.5">Hoàn thành</p>
             </div>
           </div>
@@ -556,7 +652,9 @@ export default function UserHistoryPage() {
       {error && (
         <div className="flex items-center gap-3 rounded-xl border border-status-danger/30 bg-status-danger-bg p-5 text-status-danger">
           <AlertCircle className="h-5 w-5 shrink-0" />
-          <p className="text-sm">Không thể tải lịch sử đặt sân. Vui lòng thử lại sau.</p>
+          <p className="text-sm">
+            Không thể tải lịch sử đặt sân. Vui lòng thử lại sau.
+          </p>
         </div>
       )}
 
@@ -567,7 +665,9 @@ export default function UserHistoryPage() {
             <CalendarCheck className="h-8 w-8" />
           </div>
           <div>
-            <p className="text-base font-semibold text-text-primary">Chưa có đơn đặt sân nào</p>
+            <p className="text-base font-semibold text-text-primary">
+              Chưa có đơn đặt sân nào
+            </p>
             <p className="text-sm text-text-muted mt-1">
               Hãy đặt sân ngay để bắt đầu trận đấu!
             </p>
@@ -578,13 +678,16 @@ export default function UserHistoryPage() {
       {/* ── Booking list ── */}
       {!isLoading && !error && bookings.length > 0 && (
         <div className="space-y-4">
-          {bookings.map((booking) => (
+          {paginatedBookings.map((booking) => (
             <BookingCard
               key={booking.bookingId}
               booking={booking}
               onReview={setSelectedForReview}
               onViewInvoice={setSelectedForInvoice}
-              onCancel={(b) => { setSelectedForCancel(b); setCancelError(null); }}
+              onCancel={(b) => {
+                setSelectedForCancel(b);
+                setCancelError(null);
+              }}
             />
           ))}
         </div>
@@ -637,13 +740,24 @@ export default function UserHistoryPage() {
       <CancelBookingDialog
         open={!!selectedForCancel}
         onOpenChange={(open) => {
-          if (!open) { setSelectedForCancel(null); setCancelError(null); }
+          if (!open) {
+            setSelectedForCancel(null);
+            setCancelError(null);
+          }
         }}
         bookingId={selectedForCancel?.bookingId ?? null}
         fieldName={selectedForCancel?.bookingSlots[0]?.fieldSlot?.field?.name}
         onConfirm={handleCancelConfirm}
         isSubmitting={cancelBookingMutation.isPending}
         serverError={cancelError}
+      />
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        totalItems={bookings.length}
+        pageSize={PAGE_SIZE}
       />
     </div>
   );

@@ -114,9 +114,9 @@ export const getAllReviews = async (req, res) => {
         field: true,
         booking: true,
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy:[
+        {createdAt: "desc"},
+      ],
     });
 
     return res.status(200).json({
